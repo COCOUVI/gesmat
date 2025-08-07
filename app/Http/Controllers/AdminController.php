@@ -72,7 +72,7 @@ class AdminController extends Controller
 
   public function showusers()
   {
-    $users = User::where("role", "!=", "admin")->paginate(5);
+    $users = User::where("role", "!=", "admin")->paginate(3);
     return view("admin.listuserpage", compact("users"));
   }
   public function edituserpage(User $user)

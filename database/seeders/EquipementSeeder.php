@@ -12,7 +12,7 @@ class EquipementSeeder extends Seeder
         DB::table('equipements')->insert([
             [
                 'nom' => 'La Fontaine Bonbonne',
-                'etat' => 'inconnue',
+                'etat' => 'disponible',
                 'marque' => 'CWAY',
                 'description' => 'Distributeur d’eau avec bonbonne pour rafraîchissement en bureau.',
                 'date_acquisition' => '2025-01-01',
@@ -521,7 +521,7 @@ class EquipementSeeder extends Seeder
                 'description' => 'Dispositif de sécurité HIKVISION.',
                 'date_acquisition' => '2025-01-01',
                 'image_path' => 'images/dom_hikvision.jpeg',
-                'categorie_id' => 9,
+                'categorie_id' => 2,
                 'quantite' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
