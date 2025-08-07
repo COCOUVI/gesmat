@@ -13,6 +13,8 @@ use App\Http\Controllers\RapportController;
 use App\Http\Controllers\GestionnaireController;
 use App\Http\Middleware\AdminOuGestionnaire;
 use Database\Seeders\AdminSeeder;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class])->group(function () {
 
@@ -153,6 +155,22 @@ Route::prefix("employee")->middleware(['auth', Isemp::class])->group(function ()
     Route::get('/demandes_list',[EmployeController::class,"ShowDemandes"])->name("listes.demandes");
         
 });
+
+
+Route::get('/test-mail', function () {
+    try {
+        Mail::raw('Ceci est un test simple laracon.', function ($message) {
+            $message->to('cocouvialexandro74@gmail.com')
+                    ->subject('Test depuis Laravel avec Hostinger');
+        });
+
+        return "Email envoyé !";
+    } catch (\Exception $e) {
+        Log::error('Erreur envoi mail : ' . $e->getMessage());
+        return "Erreur : " . $e->getMessage();
+    }
+});
+
 
 //deleteuser
 require __DIR__ . '/auth.php';
