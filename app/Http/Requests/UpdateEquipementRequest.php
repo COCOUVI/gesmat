@@ -22,28 +22,30 @@ class UpdateEquipementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
             'nom' => 'required|string|max:255',
-            'etat' => 'required|in:disponible,usagé,en_panne,réparé',
-            'marque' => 'required|string|max:255',
+            'etat' => 'required|in:disponible,usagé,en panne,réparé',
+            'marque' => 'string|max:255',
             'categorie_id' => 'required|exists:categories,id',
-            'description' => 'required|string',
+            'description' => 'string',
             'date_acquisition' => 'required|date',
-            'image_path' => 'nullable|image|max:2048', // 
+            'quantite' => 'nullable|integer|min:0',
+            'image_path' => 'nullable|image|max:2048',
         ];
     }
     public function messages(): array
     {
         return [
-            'nom.required' => 'Le nom de l’équipement est obligatoire.',
-            'decription.required' => 'La description est  obligatoire.',
-            'etat.required' => 'Veuillez sélectionner un état pour l’équipement.',
-            'etat.in' => 'L’état sélectionné est invalide.',
-            'categorie_id.required' => 'Veuillez choisir une catégorie.',
-            'categorie_id.exists' => 'La catégorie sélectionnée est invalide.',
-            'image_path.image' => 'Le fichier doit être une image valide.',
-            'image_path.max' => 'L’image ne doit pas dépasser 2 Mo.',
-            'date_acquisition.required' => "La date d'aquistion est requis"
+            'nom.required' => 'Le nom de l\'equipement est obligatoire.',
+            'description.required' => 'La description est obligatoire.',
+            'etat.required' => 'Veuillez selectionner un etat pour l\'equipement.',
+            'etat.in' => 'L\'etat selectionne est invalide.',
+            'categorie_id.required' => 'Veuillez choisir une categorie.',
+            'categorie_id.exists' => 'La categorie selectionnee est invalide.',
+            'quantite.integer' => 'La quantite doit etre un nombre entier.',
+            'quantite.min' => 'La quantite ne peut pas etre negative.',
+            'image_path.image' => 'Le fichier doit etre une image valide.',
+            'image_path.max' => 'L\'image ne doit pas depasser 2 Mo.',
+            'date_acquisition.required' => "La date d\'acquisition est requise"
         ];
     }
 }
