@@ -252,7 +252,9 @@ class AdminController extends Controller
   public function putTool(UpdateEquipementRequest $request, Equipement $equipement)
   {
     try {
-      $data = $request->only(['nom', 'etat', 'marque', 'description', 'date_acquisition', 'quantite']);
+      Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : " . json_encode($request->all()));
+      $data = $request->only(['nom', 'etat', 'marque', 'categorie_id', 'description', 'date_acquisition', 'quantite']);
+      Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : " . json_encode($data));
 
       if ($request->hasFile('image_path')) {
         $data['image_path'] = $this->storeEquipementImage($request);
@@ -280,15 +282,48 @@ class AdminController extends Controller
     $demandes = Demande::with('equipements')->where("statut", "=", "en_attente")->latest()->paginate(7);
     return view("admin.asklist", compact("demandes"));
   }
+  /**
+   * Accepte une demande et assigne automatiquement les équipements à l'employé
+   */
   public function CheckAsk(Demande $demande)
   {
-    $demande->update(['statut' => 'acceptee']);
-    return redirect()->back()->with("success", "La demande a été validée avec succès");
+    try {
+      DB::beginTransaction();
+
+      // Assigner automatiquement les équipements
+      $pdfPath = $this->assignEquipmentsFromDemande($demande);
+
+      // Mettre à jour le statut de la demande
+      $demande->update(['statut' => 'acceptee']);
+
+      DB::commit();
+
+      $message = 'La demande a été validée et les équipements ont été assignés automatiquement.';
+      if ($pdfPath) {
+        return redirect()->back()
+          ->with('success', $message)
+          ->with('pdf', asset('storage/' . $pdfPath));
+      }
+      return redirect()->back()->with('success', $message);
+    } catch (\Exception $e) {
+      DB::rollBack();
+      Log::error("Erreur lors de l'acceptation de demande: " . $e->getMessage());
+      return redirect()->back()->with('error', $e->getMessage());
+    }
   }
+
+  /**
+   * Rejette une demande d'équipement
+   */
   public function CancelAsk(Demande $demande)
   {
-    $demande->update(['statut' => 'rejetee']);
-    return redirect()->back()->with("error", "La demande a été rejetée avec succès");
+    try {
+      $demande->update(['statut' => 'rejetee']);
+      return redirect()->back()->with('success', 'La demande a été rejetée avec succès');
+    } catch (\Exception $e) {
+      Log::error("Erreur lors du rejet de demande: " . $e->getMessage());
+      return redirect()->back()->with('error', 'Erreur lors du rejet de la demande.');
+    }
   }
 
   public function Showaffectation()
@@ -608,6 +643,71 @@ class AdminController extends Controller
         ? EquipementEtat::DISPONIBLE->value
         : EquipementEtat::USAGÉ->value,
     ]);
+  }
+
+  /**
+   * Assigne automatiquement les équipements d'une demande à l'employé
+   */
+  private function assignEquipmentsFromDemande(Demande $demande): ?string
+  {
+    $user = Auth::user();
+    $equipementsData = $demande->equipements()->get();
+
+    if ($equipementsData->isEmpty()) {
+      return null; // Pas d'équipements à assigner
+    }
+
+    $affectationsDetails = [];
+    $employe_id = $demande->user_id;
+
+    foreach ($equipementsData as $equipement) {
+      $quantite = $equipement->pivot->nbr_equipement ?? 1; // Récupérer la quantité de la pivot
+
+      // Valider la disponibilité
+      $this->validateAffectationAvailability($equipement, $quantite);
+
+      // Créer l'affectation
+      Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employe_id,
+        'date_retour' => null, // La demande ne spécifie pas de date
+        'created_by' => $user->nom . ' ' . $user->prenom,
+        'quantite_affectee' => $quantite,
+      ]);
+
+      // Mettre à jour l'équipement
+      $this->updateEquipementAfterAffectation($equipement, $quantite);
+
+      $affectationsDetails[] = [
+        'nom' => $equipement->nom,
+        'reference' => $equipement->reference ?? '',
+        'quantite' => $quantite,
+      ];
+    }
+
+    // Créer le bon de sortie
+    $pdfName = 'bon_sortie_demande_' . $demande->id . '_' . now()->timestamp . '.pdf';
+    $pdfPath = 'bon_sortie/' . $pdfName;
+
+    $employe = User::find($employe_id);
+    $bon = Bon::create([
+      'user_id' => $employe_id,
+      'motif' => $demande->motif ?? 'Affectation automatique de demande',
+      'statut' => 'sortie',
+      'fichier_pdf' => $pdfPath,
+    ]);
+
+    $this->generateBonPdf($bon, [
+      'date' => now()->format('d/m/Y'),
+      'nom' => $employe->nom ?? 'Employé',
+      'prenom' => $employe->prenom ?? '',
+      'motif' => $demande->motif ?? 'Affectation via demande approuvée',
+      'numero_bon' => $bon->id,
+      'type' => $bon->statut,
+      'equipements' => $affectationsDetails,
+    ]);
+
+    return $pdfPath;
   }
 
   /**

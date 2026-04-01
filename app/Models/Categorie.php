@@ -5,19 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
+/**
+ * Categorie - Modèle pour la gestion des catégories d'équipements
+ *
+ * Attributs:
+ * - nom: string (unique)
+ */
 class Categorie extends Model
 {
-    //
     protected $fillable = ['nom'];
-    protected $table = 'categories'; // Spécifie le nom de la table
+    protected $table = 'categories';
 
-    // Relation AU PLURIEL car une catégorie peut avoir PLUSIEURS équipements
-    public function equipements()
+    /**
+     * Relation avec les équipements de cette catégorie
+     */
+    public function equipements(): HasMany
     {
         return $this->hasMany(Equipement::class);
     }
-
-    
-
 }

@@ -5,16 +5,37 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Panne - Modèle pour la gestion des pannes d'équipements
+ *
+ * Attributs:
+ * - equipement_id: foreignId
+ * - user_id: foreignId (employé signalant la panne)
+ * - description: text
+ * - statut: enum(en_attente, resolu)
+ */
 class Panne extends Model
 {
-    //
-  public function equipement(){
-   return $this->belongsTo(Equipement::class);
+    protected $fillable = [
+        'equipement_id',
+        'user_id',
+        'description',
+        'statut'
+    ];
 
-  }
-  public function user(){
+    /**
+     * Relation avec l'équipement en panne
+     */
+    public function equipement(): BelongsTo
+    {
+        return $this->belongsTo(Equipement::class);
+    }
 
-    return $this->BelongsTo(User::class);
-  }
-
+    /**
+     * Relation avec l'utilisateur ayant signalé la panne
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

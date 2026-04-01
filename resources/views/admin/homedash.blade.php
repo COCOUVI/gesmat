@@ -63,7 +63,7 @@
                             <i class="mdi mdi-alert mdi-24px float-right"></i>
                         </h4>
                         <h2 class="mb-5">{{ $nbr_panne}}</h2>
-                        <h6 class="card-text">À vérifier rapidement</h6>
+                        <h6 class="card-text">Résolu</h6>
                     </div>
                 </div>
             </div>
