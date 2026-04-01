@@ -25,7 +25,6 @@ final class UpdateEquipementRequest extends FormRequest
     {
         return [
             'nom' => 'required|string|max:255',
-            'etat' => 'required|in:disponible,usagé,en panne,réparé',
             'marque' => 'string|max:255',
             'categorie_id' => 'required|exists:categories,id',
             'description' => 'string',
@@ -40,8 +39,6 @@ final class UpdateEquipementRequest extends FormRequest
         return [
             'nom.required' => 'Le nom de l\'equipement est obligatoire.',
             'description.required' => 'La description est obligatoire.',
-            'etat.required' => 'Veuillez selectionner un etat pour l\'equipement.',
-            'etat.in' => 'L\'etat selectionne est invalide.',
             'categorie_id.required' => 'Veuillez choisir une categorie.',
             'categorie_id.exists' => 'La categorie selectionnee est invalide.',
             'quantite.integer' => 'La quantite doit etre un nombre entier.',

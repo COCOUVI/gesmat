@@ -54,8 +54,20 @@
                                         <td>{{ $equip->description }}</td>
                                         <td>{{ $equip->categorie->nom }}</td>
                                         <td>
-                                            <span class="badge bg-{{ \App\Helpers\EquipementEtatHelper::badgeColor($equip->etat) }}">
-                                                {{ \App\Helpers\EquipementEtatHelper::label($equip->etat) }}
+                                            @php
+                                                $disponible = $equip->getQuantiteDisponible();
+                                                $enPanne = $equip->getQuantiteEnPanne();
+                                                
+                                                if ($disponible > 0 && $enPanne == 0) {
+                                                    $etatBadge = ['Disponible', 'success'];
+                                                } elseif ($disponible > 0 && $enPanne > 0) {
+                                                    $etatBadge = ['Partiellement en panne', 'warning'];
+                                                } else {
+                                                    $etatBadge = ['Non disponible', 'danger'];
+                                                }
+                                            @endphp
+                                            <span class="badge bg-{{ $etatBadge[1] }}">
+                                                {{ $etatBadge[0] }}
                                             </span>
                                         </td>
                                         <td>

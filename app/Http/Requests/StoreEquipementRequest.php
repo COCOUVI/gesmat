@@ -17,7 +17,6 @@ final class StoreEquipementRequest extends FormRequest
     {
         return [
             'nom' => 'required|string|max:255',
-            'etat' => 'required',
             'categorie_id' => 'required|integer|exists:categories,id',
             'description' => 'nullable|string',
             'marque' => 'nullable|string',
@@ -33,7 +32,6 @@ final class StoreEquipementRequest extends FormRequest
             'nom.required' => 'Le nom est requis.',
             'nom.string' => 'Le nom doit être une chaîne de caractères.',
             'nom.max' => 'Le nom ne doit pas dépasser 255 caractères.',
-            'etat.required' => "L'état est requis.",
             'categorie_id.required' => 'La catégorie est requise.',
             'categorie_id.exists' => 'La catégorie sélectionnée est invalide.',
             'quantite.required' => 'La quantité est requise.',

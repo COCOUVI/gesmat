@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\EquipementEtat;
 use App\Models\Affectation;
 use App\Models\Bon;
 use App\Models\CollaborateurExterne;
@@ -54,9 +53,8 @@ final class GestionnaireController extends Controller
         try {
             $affectation = Affectation::with('equipement')->findOrFail($id);
 
-            if ($affectation->equipement) {
-                $affectation->equipement->update(['etat' => EquipementEtat::DISPONIBLE->value]);
-            }
+            // Marquer l'affectation comme retournée
+            $affectation->update(['date_retour' => now()]);
 
             return redirect()->route('gestionnaire.equipements.perdus')
                 ->with('success', 'Équipement marqué comme retourné.');
@@ -99,17 +97,32 @@ final class GestionnaireController extends Controller
     /**
      * Marque une panne comme résolue
      */
+    /**
+     * Résout une panne en la marquant comme résolue
+     */
     public function PutPanne(Panne $panne)
     {
         try {
+            DB::beginTransaction();
+
             $panne->update(['statut' => 'resolu']);
-            Log::info("Panne #{$panne->id} marquée comme résolue.");
 
-            return redirect()->back()->with('success', 'Panne marquée comme résolue.');
+            Log::info("Panne #{$panne->id} résolue par gestionnaire", [
+                'equipement_id' => $panne->equipement_id,
+                'quantite' => $panne->quantite,
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', sprintf(
+                '%d équipement(s) marqué(s) comme réparé(s).',
+                $panne->quantite
+            ));
         } catch (Exception $e) {
-            Log::error('Erreur lors de la résolution de panne: '.$e->getMessage());
+            DB::rollBack();
+            Log::error('Erreur résolution panne gestionnaire: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Erreur lors du traitement.');
+            return redirect()->back()->with('error', 'Erreur lors du traitement. Veuillez réessayer.');
         }
     }
 
@@ -180,7 +193,6 @@ final class GestionnaireController extends Controller
             if ($equipement) {
                 $equipement->update([
                     'quantite' => $equipement->quantite + $affectation->quantite_affectee,
-                    'etat' => EquipementEtat::DISPONIBLE->value,
                 ]);
             }
 
@@ -555,9 +567,6 @@ final class GestionnaireController extends Controller
                 $nouvelleQuantite = $equipement->quantite - $quantite;
                 $equipement->update([
                     'quantite' => $nouvelleQuantite,
-                    'etat' => $nouvelleQuantite > 0
-                        ? EquipementEtat::DISPONIBLE->value
-                        : EquipementEtat::USAGÉ->value,
                 ]);
 
                 $affectationsDetails[] = [
@@ -592,14 +601,6 @@ final class GestionnaireController extends Controller
     }
 
     // ======================================== MÉTHODES PRIVÉES ========================================
-
-    /**
-     * Met à jour l'état d'un équipement
-     */
-    private function updateEquipementState(Equipement $equipement, EquipementEtat $etat): void
-    {
-        $equipement->update(['etat' => $etat->value]);
-    }
 
     /**
      * Génère un PDF pour un bon de collaborateur externe
@@ -679,15 +680,13 @@ final class GestionnaireController extends Controller
             $quantite = $equipement->pivot->nbr_equipement ?? 1;
 
             // Vérifier la disponibilité
-            if (! in_array($equipement->etat, [EquipementEtat::DISPONIBLE->value, EquipementEtat::RÉPARÉ->value])) {
-                throw new Exception("L'équipement « {$equipement->nom} » est en panne et ne peut pas être affecté.");
-            }
-
-            if ($equipement->quantite < $quantite) {
-                throw new Exception(
-                    "Quantité insuffisante pour l'équipement « {$equipement->nom} » ".
-                    "(disponible : {$equipement->quantite}, demandée : {$quantite})."
-                );
+            if (! $equipement->peutAffecter($quantite)) {
+                throw new Exception(sprintf(
+                    "Quantité insuffisante pour l'équipement « %s » (disponible : %d, demandée : %d).",
+                    $equipement->nom,
+                    $equipement->getQuantiteDisponible(),
+                    $quantite
+                ));
             }
 
             // Créer l'affectation
@@ -703,9 +702,6 @@ final class GestionnaireController extends Controller
             $nouvelleQuantite = $equipement->quantite - $quantite;
             $equipement->update([
                 'quantite' => $nouvelleQuantite,
-                'etat' => $nouvelleQuantite > 0
-                    ? EquipementEtat::DISPONIBLE->value
-                    : EquipementEtat::USAGÉ->value,
             ]);
 
             $affectationsDetails[] = [

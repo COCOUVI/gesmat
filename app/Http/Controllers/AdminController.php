@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\EquipementEtat;
 use App\Http\Requests\EditRequest;
 use App\Http\Requests\UpdateEquipementRequest;
 use App\Models\Affectation;
@@ -49,7 +48,7 @@ final class AdminController extends Controller
             $nbr_equipement = Equipement::count();
             $nbr_user = User::count();
             $nbr_affect = Affectation::sum('quantite_affectee');
-            $nbr_panne = Equipement::where('etat', '=', EquipementEtat::EN_PANNE->value)->count();
+            $nbr_panne = Panne::where('statut', '!=', 'resolu')->count();
             $now = Carbon::now();
             // processus de recuperation du pourcentage d'augmentation des users
             $user_this_month = User::whereMonth('created_at', $now->month)
@@ -283,12 +282,7 @@ final class AdminController extends Controller
 
     public function Showaffectation()
     {
-        $equipements_groupes = Categorie::with(['equipements' => function ($query) {
-            $query->whereIn('etat', [
-                EquipementEtat::DISPONIBLE->value,
-                EquipementEtat::RÉPARÉ->value,
-            ]);
-        }])->get();
+        $equipements_groupes = Categorie::with('equipements')->get();
 
         $employes = User::where('role', '=', 'employé')->get();
 
@@ -486,7 +480,6 @@ final class AdminController extends Controller
         $equipement = $affectation->equipement;
         $equipement->update([
             'quantite' => $equipement->quantite + $affectation->quantite_affectee,
-            'etat' => EquipementEtat::DISPONIBLE->value,
         ]);
         $user = $affectation->user;
 
@@ -528,18 +521,36 @@ final class AdminController extends Controller
         return view('admin.list_rapport', compact('rapports'));
     }
 
+    /**
+     * Résout une panne en la marquant comme résolue
+     * Implique que l'équipement est réparé ou remplacé
+     */
     public function PutPanne(Panne $panne)
     {
-        $panne->statut = 'resolu';
-        $panne->save();
-        $equipement_panne = $panne->equipement;
-        if ($equipement_panne) {
-            $equipement_panne->etat = 'usagé';
-            $equipement_panne->save();
-        }
+        try {
+            DB::beginTransaction();
 
-        // / lorsque la pannne est resolue on rend l'equipement au user
-        return redirect()->back()->with('success', 'La panne a été resolue avec succès');
+            // Marquer la panne comme résolue
+            $panne->update(['statut' => 'resolu']);
+
+            // Log de la résolution
+            Log::info("Panne {$panne->id} résolue par admin", [
+                'equipement_id' => $panne->equipement_id,
+                'quantite' => $panne->quantite,
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', sprintf(
+                '%d équipement(s) marqué(s) comme réparé(s).',
+                $panne->quantite
+            ));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur résolution panne admin: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
+        }
     }
 
     // ============================================================================
@@ -604,9 +615,6 @@ final class AdminController extends Controller
         $nouvelleQuantite = $equipement->quantite - $quantite;
         $equipement->update([
             'quantite' => $nouvelleQuantite,
-            'etat' => $nouvelleQuantite > 0
-              ? EquipementEtat::DISPONIBLE->value
-              : EquipementEtat::USAGÉ->value,
         ]);
     }
 
@@ -680,15 +688,13 @@ final class AdminController extends Controller
      */
     private function validateAffectationAvailability(Equipement $equipement, int $quantite): void
     {
-        if (! in_array($equipement->etat, [
-            EquipementEtat::DISPONIBLE->value,
-            EquipementEtat::RÉPARÉ->value,
-        ])) {
-            throw new Exception("L'équipement « {$equipement->nom} » est en panne et ne peut pas être affecté.");
-        }
-
-        if ($equipement->quantite < $quantite) {
-            throw new Exception("Quantité insuffisante pour l'équipement « {$equipement->nom} » (disponible : {$equipement->quantite}, demandée : {$quantite}).");
+        if (! $equipement->peutAffecter($quantite)) {
+            throw new Exception(sprintf(
+                "Quantité insuffisante pour l'équipement « %s » (disponible : %d, demandée : %d).",
+                $equipement->nom,
+                $equipement->getQuantiteDisponible(),
+                $quantite
+            ));
         }
     }
 }

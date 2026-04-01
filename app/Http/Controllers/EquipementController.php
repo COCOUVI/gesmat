@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\EquipementEtat;
 use App\Models\Categorie;
 use App\Models\Equipement;
+use App\Models\Panne;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -164,9 +164,9 @@ final class EquipementController extends Controller
      */
     public function showPanne()
     {
-        $pannes = Equipement::where('etat', EquipementEtat::EN_PANNE->value)
-            ->orderBy('created_at', 'desc')
-            ->with('categorie')
+        $pannes = Panne::with('equipement', 'user')
+            ->nonResolues()
+            ->orderByDesc('created_at')
             ->paginate(10);
 
         return view('gestionnaire.tools.pannelist', compact('pannes'));

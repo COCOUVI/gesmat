@@ -34,10 +34,6 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <x-equipement-etat-select name="etat" label="État" />
-                                </div>
-
-                                <div class="col-md-6">
                                     <label for="equipmentBrand" class="form-label">Marque</label>
                                     <input type="text" class="form-control" name="marque" id="equipmentBrand"
                                         placeholder="Ex: Dell, HP, Lenovo" required>

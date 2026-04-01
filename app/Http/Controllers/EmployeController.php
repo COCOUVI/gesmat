@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\EquipementEtat;
 use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Demande;
@@ -141,32 +140,64 @@ final class EmployeController extends Controller
     /**
      * Traite le signalement de panne d'équipement
      */
+    /**
+     * Signale une panne d'équipement
+     * Crée une Panne et la lie à l'affectation si applicable
+     */
     public function HandlePanne(Request $request)
     {
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'equipement_id' => 'required|integer|exists:equipements,id',
+            'affectation_id' => 'nullable|integer|exists:affectations,id',
+            'quantite' => 'required|integer|min:1',
+            'description' => 'required|string|min:10|max:1000',
+        ], [
+            'equipement_id.required' => 'Équipement requis',
+            'equipement_id.exists' => 'Équipement inexistant',
+            'affectation_id.exists' => 'Affectation inexistante',
+            'quantite.required' => 'Quantité requise',
+            'quantite.min' => 'Quantité minimale : 1',
+            'description.required' => 'Description requise',
+            'description.min' => 'Description minimum 10 caractères',
+        ]);
+
         try {
             DB::beginTransaction();
             $user = Auth::user();
-            // Créer la panne
+            $equipement = Equipement::findOrFail($validated['equipement_id']);
+
+            // Valider la quantité par rapport à la quantité disponible
+            if ($validated['quantite'] > $equipement->getQuantiteDisponible()) {
+                DB::rollBack();
+
+                return back()->with('error', sprintf(
+                    'Quantité demandée (%d) dépasse la disponibilité (%d).',
+                    $validated['quantite'],
+                    $equipement->getQuantiteDisponible()
+                ));
+            }
+
+            // Créer la panne avec affectation_id si fournie
             Panne::create([
                 'equipement_id' => $validated['equipement_id'],
+                'affectation_id' => $validated['affectation_id'] ?? null,
                 'user_id' => $user->id,
+                'quantite' => $validated['quantite'],
                 'description' => $validated['description'],
-                'statut' => 'en_cours',
+                'statut' => 'en_attente',
             ]);
-            // Mettre à jour l'état de l'équipement
-            $equipement = Equipement::find($validated['equipement_id']);
-            if ($equipement) {
-                $equipement->update(['etat' => EquipementEtat::EN_PANNE->value]);
-            }
+
             DB::commit();
 
-            return back()->with('success', 'Panne signalée avec succès.');
+            return back()->with('success', sprintf(
+                '%d équipement(s) marqué(es) en panne et signalé(e)s avec succès.',
+                $validated['quantite']
+            ));
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erreur lors du signalement de panne: '.$e->getMessage());
+            Log::error('Erreur signalement panne employé: ' . $e->getMessage());
 
-            return back()->with('error', 'Une erreur est survenue lors du signalement de la panne.');
+            return back()->with('error', 'Erreur lors du signalement de la panne. Veuillez réessayer.');
         }
     }
 

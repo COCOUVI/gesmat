@@ -38,6 +38,11 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="quantite" class="form-label">Nombre d'équipements affectés</label>
+                                <input type="number" name="quantite" id="quantite" class="form-control" min="1" value="1" required>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="description" class="form-label">Description de la panne</label>
                                 <textarea name="description" id="description" class="form-control" rows="4" placeholder="Décrivez le problème..." required></textarea>
                             </div>
