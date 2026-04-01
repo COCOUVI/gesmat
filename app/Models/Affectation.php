@@ -9,12 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 class Affectation extends Model
 {
 // <<<<<<< HEAD
-//     protected $fillable = [
-//         'equipement_id', 'user_id', 'date_retour'
-// =======
-//     //
+     protected $fillable = [
+         'equipement_id', 'user_id', 'date_retour','created_by'
+     ];
     protected $casts = [
         'date_retour' => 'datetime',
+
 
     ];
 

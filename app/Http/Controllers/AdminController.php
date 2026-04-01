@@ -11,6 +11,7 @@ use App\Models\CollaborateurExterne;
 use App\Models\Demande;
 use App\Models\Equipement;
 use App\Models\Panne;
+use App\Enums\EquipementEtat;
 use App\Models\Rapport;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -332,60 +333,46 @@ class AdminController extends Controller
     ]);
     set_time_limit(120);
     DB::beginTransaction();
-    $user = Auth::user();
     try {
-      // Charger les équipements en bulk
-      $equipementIds = $request->equipements;
-      $equipements = Equipement::whereIn('id', $equipementIds)->get()->keyBy('id');
-      foreach ($request->equipements as $index => $equipement_id) {
-        $quantite = $request->quantites[$index] ?? 1;
-        $rawDate = $request->dates_retour[$index] ?? null;
-
-        $equipement = $equipements->get($equipement_id);
-
-        if (!$equipement) {
-          throw new \Exception("Équipement ID $equipement_id introuvable.");
-        }
-
-        if ($equipement->quantite < $quantite) {
-          throw new \Exception("Quantité insuffisante pour l'équipement « {$equipement->nom} » (disponible : {$equipement->quantite}, demandée : {$quantite}).");
-        }
-
-        $affectation = new Affectation();
-        $affectation->equipement_id = $equipement_id;
-        $affectation->user_id = $request->employe_id;
-        $affectation->date_retour = $rawDate ?: null;
-        $affectation->created_by = $user->nom . ' ' . $user->prenom;
-        $affectation->quantite_affectee = $quantite;
-        $affectation->save();
-
-        $equipement->quantite -= $quantite;
-        $equipement->etat = ($equipement->quantite > 0) ? "disponible" : "usagé"; ////warning:
-        $equipement->save();
+      $user = Auth::user();
+      $equipements = Equipement::whereIn('id', $request->equipements)->get()->keyBy('id');
+      $affectationsDetails = [];
+      foreach ($request->equipements as $i => $id) {
+        $equipement = $equipements->get($id);
+        $quantite = $request->quantites[$i] ?? 1;
+        $dateRetour = $request->dates_retour[$i] ?? null;
+        if (!$equipement) throw new \Exception("Équipement ID $id introuvable.");
+        if ($equipement->quantite < $quantite) throw new \Exception("Quantité insuffisante pour « {$equipement->nom} » (disponible : {$equipement->quantite}, demandée : {$quantite}).");
+        Affectation::create([
+          'equipement_id' => $id,
+          'user_id' => $request->employe_id,
+          'date_retour' => $dateRetour,
+          'created_by' => $user->nom . ' ' . $user->prenom,
+          'quantite_affectee' => $quantite,
+        ]);
+        $equipement->update([
+          'quantite' => $equipement->quantite - $quantite,
+          'etat' => ($equipement->quantite - $quantite > 0) ? 'disponible' : 'usagé',
+        ]);
         $affectationsDetails[] = [
           'nom' => $equipement->nom,
           'reference' => $equipement->reference ?? '',
           'quantite' => $quantite,
         ];
       }
-
-      $bon = new Bon();
-      $bon->user_id = $request->employe_id;
-      $bon->motif = $request->motif;
-      $bon->statut = "sortie";
+      $bon = Bon::create([
+        'user_id' => $request->employe_id,
+        'motif' => $request->motif,
+        'statut' => 'sortie',
+        'fichier_pdf' => '', // temporaire, sera mis à jour après génération
+      ]);
+      DB::commit();
+      $employe = User::find($request->employe_id);
       $pdfName = 'bon_sortie_' . $request->employe_id . '_' . now()->timestamp . '.pdf';
       $pdfPath = 'bon_sortie/' . $pdfName;
-      $bon->fichier_pdf = $pdfPath;
-      $bon->save();
-
-      DB::commit();
-
-      $employe = User::find($request->employe_id);
-
-
       $pdf = Pdf::loadView('pdf.bon', [
         'date' => now()->format('d/m/Y'),
-        'nom' => $employe->nom ?? 'Admin',
+        'nom' => $employe->nom ?? '',
         'prenom' => $employe->prenom ?? '',
         'motif' => $request->motif,
         'numero_bon' => $bon->id,
@@ -393,16 +380,15 @@ class AdminController extends Controller
         'equipements' => $affectationsDetails,
       ]);
       $pdf->setPaper('A5', 'portrait');
-
       Storage::disk('public')->put($pdfPath, $pdf->output());
-
+      $bon->update(['fichier_pdf' => $pdfPath]);
       return redirect()->back()
         ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
         ->with('pdf', asset('/storage/' . $pdfPath));
     } catch (\Exception $e) {
       DB::rollBack();
       Log::error("Erreur lors de l'affectation : " . $e->getMessage());
-      return redirect()->back()->with("error", $e->getMessage());
+      return redirect()->back()->with('error', $e->getMessage());
     }
   }
 
@@ -585,14 +571,12 @@ class AdminController extends Controller
 
   public function PutPanne(Panne $panne)
   {
-    $panne->statut = "resolu";
+    $panne->statut = 'resolu';
     $panne->save();
-    $equipement_panne = $panne->equipement;
-    if ($equipement_panne) {
-      $equipement_panne->etat = "usagé";
-      $equipement_panne->save();
+    if ($panne->equipement) {
+      $panne->equipement->etat = EquipementEtat::Usage->value;
+      $panne->equipement->save();
     }
-    /// lorsque la pannne est resolue on rend l'equipement au user
-    return redirect()->back()->with("success", "La panne a été resolue avec succès");
+    return redirect()->back()->with('success', 'La panne a été resolue avec succès');
   }
 }
