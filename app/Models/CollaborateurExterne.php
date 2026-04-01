@@ -17,4 +17,5 @@ class CollaborateurExterne extends Model
         'prenom',
         'carte_chemin',
     ];
+
 }
