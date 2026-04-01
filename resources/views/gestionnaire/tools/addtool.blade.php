@@ -50,17 +50,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="equipmentState" class="form-label required-label">État</label>
-                                    <select class="form-select" id="equipmentState" required name="etat">
-                                        <option value="" disabled {{ !isset($equipement) ? 'selected' : '' }}>Sélectionnez un état</option>
-                                        <option value="disponible" {{ (old('etat') ?? $equipement->etat ?? '') == 'disponible' ? 'selected' : '' }}>Disponible</option>
-                                        <option value="usagé" {{ (old('etat') ?? $equipement->etat ?? '') == 'usagé' ? 'selected' : '' }}>Usagé</option>
-                                        <option value="en panne" {{ (old('etat') ?? $equipement->etat ?? '') == 'en panne' ? 'selected' : '' }}>En panne</option>
-                                        <option value="réparé" {{ (old('etat') ?? $equipement->etat ?? '') == 'réparé' ? 'selected' : '' }}>Réparé</option>
-                                    </select>
-                                    @error('etat')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                    <x-equipement-etat-select name="etat" label="" :model="isset($equipement) ? $equipement : null" />
                                 </div>
                             </div>
                         </div>
@@ -80,16 +70,16 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="equipmentCategory" class="form-label required-label">Catégorie</label>
-                                    <select class="form-select" id="equipmentCategory" required name="categorie">
+                                    <select class="form-select" id="equipmentCategory" required name="categorie_id">
                                         <option value="" disabled {{ !isset($equipement) ? 'selected' : '' }}>Sélectionnez une catégorie</option>
                                         @foreach ($categories as $cat)
-                                            <option value="{{ $cat->nom }}"
-                                                {{ (old('categorie') ?? $equipement->categorie->nom ?? '') == $cat->nom ? 'selected' : '' }}>
+                                            <option value="{{ $cat->id }}"
+                                                {{ (old('categorie_id') ?? $equipement->categorie_id ?? '') == $cat->id ? 'selected' : '' }}>
                                                 {{ $cat->nom }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('categorie')
+                                    @error('categorie_id')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>

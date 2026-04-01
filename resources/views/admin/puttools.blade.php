@@ -40,21 +40,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="equipmentState" class="form-label required-label">État</label>
-                                    <select class="form-select" id="equipmentState" required name="etat">
-                                        <option value="" disabled>Sélectionnez un état</option>
-                                        <option value="disponible"
-                                            {{ $equipement->etat == 'disponible' ? 'selected' : '' }}>Disponible</option>
-                                        <option value="usagé" {{ $equipement->etat == 'usagé' ? 'selected' : '' }}>Usagé
-                                        </option>
-                                        <option value="en_panne" {{ $equipement->etat == 'en_panne' ? 'selected' : '' }}>En
-                                            panne</option>
-                                        <option value="réparé" {{ $equipement->etat == 'réparé' ? 'selected' : '' }}>Réparé
-                                        </option>
-                                    </select>
-                                    @error('etat')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
+                                    <x-equipement-etat-select name="etat" label="" :model="$equipement" />
                                 </div>
                             </div>
                         </div>
@@ -82,7 +68,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('categorie')
+                                    @error('categorie_id')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -137,11 +123,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="equipmentQuantity" class="form-label required-label">Quantité
-                                        disponible</label>
+                                    <label for="equipmentQuantity" class="form-label required-label">Quantité disponible</label>
                                     <input type="number" class="form-control" id="equipmentQuantity"
-                                        name="quantite_disponible" min="1" required placeholder="Ex : 10" value="{{$equipement->quantite}}">
-                                    @error('quantite_disponible')
+                                        name="quantite" min="1" required placeholder="Ex : 10" value="{{ $equipement->quantite }}">
+                                    @error('quantite')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>

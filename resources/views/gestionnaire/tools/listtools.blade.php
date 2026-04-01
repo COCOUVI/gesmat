@@ -54,7 +54,9 @@
                                         <td>{{ $equip->description }}</td>
                                         <td>{{ $equip->categorie->nom }}</td>
                                         <td>
-                                            <span class="status-badge status-available">{{ $equip->etat }}</span>
+                                            <span class="badge bg-{{ \App\Helpers\EquipementEtatHelper::badgeColor($equip->etat) }}">
+                                                {{ \App\Helpers\EquipementEtatHelper::label($equip->etat) }}
+                                            </span>
                                         </td>
                                         <td>
                                             <a href="{{ route('tools.put', $equip->id) }}">

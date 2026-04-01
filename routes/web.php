@@ -35,8 +35,9 @@ Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class
         ->middleware([GestionnaireMiddleware::class]);
 
     Route::delete('/rapports/{rapport}', [RapportController::class, 'destroy'])->name('gestionnaire.rapports.destroy');
-    
+
     Route::get('/gestionnaire/rapports/{id}', [RapportController::class, 'show'])->name('gestionnaire.rapports.show');
+    
 
 });
 
@@ -153,7 +154,7 @@ Route::prefix("employee")->middleware(['auth', Isemp::class])->group(function ()
     Route::delete("/delete_ask/{demande}",[EmployeController::class,"DeleteAsk"])->name("delete.ask");
     Route::get('/panne_listes',[EmployeController::class,"ShowPannes"])->name('historique.pannes');
     Route::get('/demandes_list',[EmployeController::class,"ShowDemandes"])->name("listes.demandes");
-        
+
 });
 
 

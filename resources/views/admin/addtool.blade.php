@@ -34,16 +34,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="equipmentState" class="form-label required-label">État</label>
-                                    <select class="form-select" name="etat" id="equipmentState" required>
-                                        <option value="" selected disabled>Choisissez l'état</option>
-                                        <option value="disponible">Disponible</option>
-                                        <option value="usagé">Usagé</option>
-                                        <option value="en_panne">En panne</option>                               
-                                    </select>
-                                    @error('etat')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
+                                    <x-equipement-etat-select name="etat" label="État" />
                                 </div>
 
                                 <div class="col-md-6">
@@ -57,13 +48,13 @@
 
                                 <div class="col-md-6">
                                     <label for="equipmentCategory" class="form-label required-label">Catégorie</label>
-                                    <select class="form-select" name="categorie" id="equipmentCategory" required>
+                                    <select class="form-select" name="categorie_id" id="equipmentCategory" required>
                                         <option value="" selected disabled>Choisissez une catégorie</option>
                                         @foreach ($categories as $cat)
-                                            <option value="{{ $cat->nom }}">{{ $cat->nom }}</option>
+                                            <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
                                         @endforeach
                                     </select>
-                                    @error('categorie')
+                                    @error('categorie_id')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -95,11 +86,10 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="equipmentQuantity" class="form-label required-label">Quantité
-                                        disponible</label>
-                                    <input type="number" min="1" class="form-control" name="quantite_disponible"
+                                    <label for="equipmentQuantity" class="form-label required-label">Quantité</label>
+                                    <input type="number" min="1" class="form-control" name="quantite"
                                         id="equipmentQuantity" required placeholder="Ex: 5">
-                                    @error('quantite_disponible')
+                                    @error('quantite')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>

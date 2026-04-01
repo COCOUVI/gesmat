@@ -104,14 +104,19 @@ class AdminController extends Controller
   //
   public function ModifyUser(EditRequest $request, User $user)
   {
-    $data = $request->only(['nom', 'prenom', 'email', 'role', 'service', 'poste']);
+    $user->nom = $request->nom;
+    $user->prenom = $request->prenom;
+    $user->email = $request->email;
+    $user->role = $request->role;
+    $user->service = $request->service;
+    $user->poste = $request->poste;
 
-    // Modifier le mot de passe seulement s'il est rempli
+    // Ne modifier le mot de passe que s'il est rempli
     if ($request->filled('password')) {
-      $data['password'] = Hash::make($request->password);
+      $user->password = Hash::make($request->password);
     }
 
-    $user->update($data);
+    $user->save();
 
     return redirect()->back()->with("succès", "Utilisateur modifié avec succès");
   }
@@ -127,11 +132,11 @@ class AdminController extends Controller
       'nom' => 'required|string',
       'etat' => 'required',
       'marque' => 'required|min:2',
-      'categorie_id' => 'required|integer|exists:categories,id',
+      'categorie' => 'required|string|exists:categories,nom',
       'description' => 'required|string',
       'date_acquisition' => 'required|date',
       'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-      'quantite' => 'required|integer|min:1'
+      'quantite_disponible' => 'required|integer|min:1'
     ], [
       'nom.required' => 'Le nom de l\'équipement est requis.',
       'nom.string' => 'Le nom de l\'équipement doit être une chaîne de caractères.',
@@ -141,8 +146,8 @@ class AdminController extends Controller
       'marque.required' => 'La marque de l\'équipement est requise.',
       'marque.min' => 'La marque doit contenir au moins :min caractères.',
 
-      'categorie_id.required' => 'La catégorie est requise.',
-      'categorie_id.exists' => 'La catégorie sélectionnée est invalide.',
+      'categorie.required' => 'La catégorie est requise.',
+      'categorie.exists' => 'La catégorie sélectionnée est invalide.',
 
       'description.required' => 'La description est obligatoire.',
       'description.string' => 'La description doit être une chaîne de caractères.',
@@ -155,19 +160,19 @@ class AdminController extends Controller
       'image_path.mimes' => 'Le fichier doit être de type jpeg, png, jpg ou gif.',
       'image_path.max' => 'L\'image ne doit pas dépasser 2 Mo.',
 
-      'quantite.required' => 'La quantité est requise.',
-      'quantite.integer' => 'La quantité doit être un nombre entier.',
-      'quantite.min' => 'La quantité minimale est 1.'
+      'quantite_disponible.required' => 'La quantité disponible est requise.',
+      'quantite_disponible.integer' => 'La quantité doit être un nombre entier.',
+      'quantite_disponible.min' => 'La quantité minimale est 1.'
     ]);
 
-    $equipement = Equipement::create([
-      'nom' => $request->nom,
-      'etat' => $request->etat,
-      'marque' => $request->marque,
-      'description' => $request->description,
-      'date_acquisition' => $request->date_acquisition,
-      'quantite' => $request->quantite,
-      'categorie_id' => $request->categorie_id,    ]);
+    $equipement = new Equipement();
+    $equipement->nom = $request->nom;
+    $equipement->etat = $request->etat;
+    $equipement->marque = $request->marque;
+    $equipement->description = $request->description;
+    $equipement->date_acquisition = $request->date_acquisition;
+    $equipement->quantite = $request->quantite_disponible;
+    $equipement->categorie_id = Categorie::where('nom', $request->categorie)->value('id');
     // Gestion de l'image si elle est envoyée
     if ($request->hasFile('image_path')) {
       $file = $request->file('image_path');
@@ -251,22 +256,47 @@ class AdminController extends Controller
 
   public function putTool(UpdateEquipementRequest $request, Equipement $equipement)
   {
-    try {
-      $data = $request->only(['nom', 'etat', 'marque', 'description', 'date_acquisition', 'quantite']);
+    $equipement->nom = $request->nom;
+    $equipement->etat = $request->etat;
+    $equipement->marque = $request->marque;
+    $equipement->description = $request->description;
+    $equipement->date_acquisition = $request->date_acquisition;
+    $equipement->quantite = $request->quantite_disponible;
 
-      if ($request->hasFile('image_path')) {
-        $data['image_path'] = $this->storeEquipementImage($request);
+    if ($request->hasFile('image_path')) {
+      try {
+        $cloudinary = new Cloudinary();
+
+        // Optionnel : supprimer l'ancienne image si public_id est connu
+        // $cloudinary->uploadApi()->destroy($equipement->cloudinary_public_id);
+
+        $result = $cloudinary->uploadApi()->upload(
+          $request->file('image_path')->getRealPath(),
+          [
+            'folder' => 'equipements',
+            'public_id' => 'equipement_' . time() . '_' . $request->nom,
+            'resource_type' => 'image',
+            'transformation' => [
+              'quality' => 'auto',
+              'fetch_format' => 'auto'
+            ]
+          ]
+        );
+
+        $equipement->image_path = $result['secure_url'];
+        // Optionnel : sauvegarder le public_id pour suppression future
+        // $equipement->cloudinary_public_id = $result['public_id'];
+
+      } catch (\Exception $e) {
+        return redirect()->back()
+          ->with('error', 'Erreur lors de l\'upload de l\'image : ' . $e->getMessage())
+          ->withInput();
       }
-
-      $equipement->update($data);
-
-      return redirect()->back()->with('success', 'Équipement mis à jour avec succès.');
-    } catch (\Exception $e) {
-      Log::error("Erreur lors de la mise à jour d'équipement : " . $e->getMessage());
-      return redirect()->back()
-        ->with('error', 'Une erreur est survenue lors de la mise à jour.')
-        ->withInput();
     }
+
+    $equipement->save();
+
+    return redirect()->back()->with('success', 'Équipement mis à jour avec succès.');
   }
 
   public function DeleteTool(Equipement $equipement)
@@ -281,23 +311,23 @@ class AdminController extends Controller
     return view("admin.asklist", compact("demandes"));
   }
   public function CheckAsk(Demande $demande)
+
   {
-    $demande->update(['statut' => 'acceptee']);
+    $demande->statut = "acceptee";
+    $demande->save();
     return redirect()->back()->with("success", "La demande a été validée avec succès");
   }
   public function CancelAsk(Demande $demande)
   {
-    $demande->update(['statut' => 'rejetee']);
+    $demande->statut = "rejetee";
+    $demande->save();
     return redirect()->back()->with("error", "La demande a été rejetée avec succès");
   }
 
   public function Showaffectation()
   {
     $equipements_groupes = Categorie::with(['equipements' => function ($query) {
-      $query->whereIn('etat', [
-        EquipementEtat::DISPONIBLE->value,
-        EquipementEtat::RÉPARÉ->value
-      ]);
+      $query->whereIn('etat', ['disponible', 'retourné']);
     }])->get();
 
     $employes = User::where("role", "=", "employé")->get();
@@ -314,17 +344,13 @@ class AdminController extends Controller
       'equipements.required' => 'le champ equipement est requis',
       'quantites.required' => 'le champ quantité est requis'
     ]);
-    
     set_time_limit(120);
     DB::beginTransaction();
     $user = Auth::user();
-    
     try {
       // Charger les équipements en bulk
       $equipementIds = $request->equipements;
       $equipements = Equipement::whereIn('id', $equipementIds)->get()->keyBy('id');
-      $affectationsDetails = [];
-      
       foreach ($request->equipements as $index => $equipement_id) {
         $quantite = $request->quantites[$index] ?? 1;
         $rawDate = $request->dates_retour[$index] ?? null;
@@ -335,20 +361,21 @@ class AdminController extends Controller
           throw new \Exception("Équipement ID $equipement_id introuvable.");
         }
 
-        // Valider la disponibilité
-        $this->validateAffectationAvailability($equipement, $quantite);
+        if ($equipement->quantite < $quantite) {
+          throw new \Exception("Quantité insuffisante pour l'équipement « {$equipement->nom} » (disponible : {$equipement->quantite}, demandée : {$quantite}).");
+        }
 
-        Affectation::create([
-          'equipement_id' => $equipement_id,
-          'user_id' => $request->employe_id,
-          'date_retour' => $rawDate ?: null,
-          'created_by' => $user->nom . ' ' . $user->prenom,
-          'quantite_affectee' => $quantite,
-        ]);
+        $affectation = new Affectation();
+        $affectation->equipement_id = $equipement_id;
+        $affectation->user_id = $request->employe_id;
+        $affectation->date_retour = $rawDate ?: null;
+        $affectation->created_by = $user->nom . ' ' . $user->prenom;
+        $affectation->quantite_affectee = $quantite;
+        $affectation->save();
 
-        // Mettre à jour l'équipement
-        $this->updateEquipementAfterAffectation($equipement, $quantite);
-        
+        $equipement->quantite -= $quantite;
+        $equipement->etat = ($equipement->quantite > 0) ? "disponible" : "usagé"; ////warning:
+        $equipement->save();
         $affectationsDetails[] = [
           'nom' => $equipement->nom,
           'reference' => $equipement->reference ?? '',
@@ -356,21 +383,21 @@ class AdminController extends Controller
         ];
       }
 
+      $bon = new Bon();
+      $bon->user_id = $request->employe_id;
+      $bon->motif = $request->motif;
+      $bon->statut = "sortie";
       $pdfName = 'bon_sortie_' . $request->employe_id . '_' . now()->timestamp . '.pdf';
       $pdfPath = 'bon_sortie/' . $pdfName;
-      
-      $bon = Bon::create([
-        'user_id' => $request->employe_id,
-        'motif' => $request->motif,
-        'statut' => 'sortie',
-        'fichier_pdf' => $pdfPath,
-      ]);
+      $bon->fichier_pdf = $pdfPath;
+      $bon->save();
 
       DB::commit();
 
       $employe = User::find($request->employe_id);
 
-      $this->generateBonPdf($bon, [
+
+      $pdf = Pdf::loadView('pdf.bon', [
         'date' => now()->format('d/m/Y'),
         'nom' => $employe->nom ?? 'Admin',
         'prenom' => $employe->prenom ?? '',
@@ -379,6 +406,9 @@ class AdminController extends Controller
         'type' => $bon->statut,
         'equipements' => $affectationsDetails,
       ]);
+      $pdf->setPaper('A5', 'portrait');
+
+      Storage::disk('public')->put($pdfPath, $pdf->output());
 
       return redirect()->back()
         ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
@@ -420,20 +450,55 @@ class AdminController extends Controller
       'chemin_carte' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
     ]);
 
-    $cartePath = null;
+    $collaborator = new CollaborateurExterne();
+    $collaborator->nom = $request->nom;
+    $collaborator->prenom = $request->prenom;
+
+    // Upload vers Cloudinary au lieu du stockage local
+    // if ($request->hasFile('chemin_carte')) {
+    //   try {
+    //     $cloudinary = new Cloudinary();
+
+    //     $result = $cloudinary->uploadApi()->upload(
+    //       $request->file('chemin_carte')->getRealPath(),
+    //       [
+    //         'folder' => 'cartes_identite',
+    //         'public_id' => 'carte_' . time() . '_' . $request->nom,
+    //         'resource_type' => 'auto', // Supporte images et PDF
+    //         'transformation' => [
+    //           'quality' => 'auto',
+    //           'fetch_format' => 'auto'
+    //         ]
+    //       ]
+    //     );
+
+    //     // Sauvegarder l'URL Cloudinary dans la BDD
+    //     $collaborator->carte_chemin = $result['secure_url'];
+    //     // $collaborator->carte_public_id = $result['public_id']; // Pour pouvoir supprimer plus tard
+    //   } catch (\Exception $e) {
+    //     return redirect()->back()
+    //       ->with('error', 'Erreur lors de l\'upload du fichier: ' . $e->getMessage())
+    //       ->withInput();
+    //   }
+    // }
+    // Upload en local dans /public/collaborateurs/cartes
     if ($request->hasFile('chemin_carte')) {
       $file = $request->file('chemin_carte');
+
+      // Génère un nom de fichier unique
       $filename = 'carte_' . time() . '_' . preg_replace('/\s+/', '_', $request->nom) . '.' . $file->getClientOriginalExtension();
+
+      // Déplace le fichier dans public/collaborateurs/cartes
       $file->move(public_path('collaborateurs/cartes'), $filename);
-      $cartePath = 'collaborateurs/cartes/' . $filename;
+
+      // Sauvegarde le chemin relatif dans la base de données
+      $collaborator->carte_chemin = 'collaborateurs/cartes/' . $filename;
     }
 
-    CollaborateurExterne::create([
-      'nom' => $request->nom,
-      'prenom' => $request->prenom,
-      'carte_chemin' => $cartePath,
-    ]);
+    // Sauvegarder l'enregistrement dans la base de données
+    $collaborator->save();
 
+    $collaborator->save();
     return redirect()->back()->with('success', 'Collaborateur ajouté avec succès.');
   }
   public function ShowListCollaborator()
@@ -466,15 +531,14 @@ class AdminController extends Controller
     ]);
 
     $collaborateur = CollaborateurExterne::findOrFail($request->collaborateur_id);
-    $pdfPath = 'bon_collaborateurs/bon_collab_' . time() . '.pdf';
-    
-    $bon = Bon::create([
-      'collaborateur_externe_id' => $collaborateur->id,
-      'motif' => $request->motif,
-      'statut' => $request->type,
-      'fichier_pdf' => $pdfPath,
-    ]);
-    
+    $bon = new Bon();
+    $bon->collaborateur_externe_id = $collaborateur->id;
+    $bon->motif = $request->motif;
+    $bon->statut = $request->type;
+    $pdfName = 'bon_collab_' . $bon->id . '.pdf';
+    $pdfPath = 'bon_collaborateurs/' . $pdfName;
+    $bon->fichier_pdf = $pdfPath;
+    $bon->save();
     $pdf = Pdf::loadView('pdf.bon', [
       'date' => now()->format('d/m/Y'),
       'nom' => $collaborateur->nom ?? 'Admin',
@@ -492,12 +556,12 @@ class AdminController extends Controller
   }
   public function BackTool(Affectation $affectation)
   {
-    $affectation->update(['statut' => 'retourné']);
+    $affectation->statut = "retourné";
+    $affectation->save();
     $equipement = $affectation->equipement;
-    $equipement->update([
-      'quantite' => $equipement->quantite + $affectation->quantite_affectee,
-      'etat' => EquipementEtat::DISPONIBLE->value,
-    ]);
+    $equipement->quantite += $affectation->quantite_affectee;
+    $equipement->etat = "disponible";
+    $equipement->save();
     $user = $affectation->user;
 
     $pdfName = 'retour_perdu_' . $equipement->id . '.pdf';
@@ -523,7 +587,8 @@ class AdminController extends Controller
   }
   public function LoadingAsk(Demande $demande)
   {
-    $demande->update(['statut' => 'en_attente']);
+    $demande->statut = "en_attente";
+    $demande->save();
     return redirect()->back()->with("hold", "Demande mise en attente");
   }
   public function ShowRapport()
@@ -534,96 +599,14 @@ class AdminController extends Controller
 
   public function PutPanne(Panne $panne)
   {
-    $panne->update(['statut' => 'resolu']);
+    $panne->statut = "resolu";
+    $panne->save();
     $equipement_panne = $panne->equipement;
     if ($equipement_panne) {
-      $equipement_panne->update(['etat' => EquipementEtat::USAGÉ->value]);
+      $equipement_panne->etat = "usagé";
+      $equipement_panne->save();
     }
+    /// lorsque la pannne est resolue on rend l'equipement au user
     return redirect()->back()->with("success", "La panne a été resolue avec succès");
-  }
-
-  // ============================================================================
-  // MÉTHODES PRIVÉES - Utilitaires de refactorisation
-  // ============================================================================
-
-  /**
-   * Stocke l'image de l'équipement localement
-   */
-  private function storeEquipementImage(Request $request): string
-  {
-    $file = $request->file('image_path');
-    $nomNettoye = preg_replace('/[^a-zA-Z0-9-_]/', '', strtolower(str_replace(' ', '-', $request->nom)));
-    $imageName = time() . '_' . $nomNettoye . '.' . $file->getClientOriginalExtension();
-    
-    $file->move(public_path('pictures/equipements'), $imageName);
-    
-    return 'pictures/equipements/' . $imageName;
-  }
-
-  /**
-   * Crée un bon d'entrée pour un équipement
-   */
-  private function createBonEntree(Equipement $equipement): Bon
-  {
-    $user = Auth::user();
-    $bon = new Bon();
-    $bon->motif = 'Ajout de nouvel équipement : ' . $equipement->nom;
-    $bon->user_id = $user->id;
-    $bon->statut = "entrée";
-    $pdfName = 'bon_entree_' . $equipement->id . '.pdf';
-    $pdfPath = 'bon_entree/' . $pdfName;
-    $bon->fichier_pdf = $pdfPath;
-    $bon->save();
-
-    $this->generateBonPdf($bon, [
-      'date' => now()->format('d/m/Y'),
-      'nom' => $user->nom ?? 'Admin',
-      'prenom' => $user->prenom ?? '',
-      'motif' => $bon->motif,
-      'numero_bon' => $bon->id,
-      'type' => $bon->statut
-    ]);
-
-    return $bon;
-  }
-
-  /**
-   * Génère le PDF d'un bon
-   */
-  private function generateBonPdf(Bon $bon, array $data): void
-  {
-    $pdf = Pdf::loadView('pdf.bon', $data);
-    Storage::disk('public')->put($bon->fichier_pdf, $pdf->output());
-  }
-
-  /**
-   * Met à jour la quantité et l'état de l'équipement après affectation
-   */
-  private function updateEquipementAfterAffectation(Equipement $equipement, int $quantite): void
-  {
-    $nouvelleQuantite = $equipement->quantite - $quantite;
-    $equipement->update([
-      'quantite' => $nouvelleQuantite,
-      'etat' => $nouvelleQuantite > 0
-        ? EquipementEtat::DISPONIBLE->value
-        : EquipementEtat::USAGÉ->value,
-    ]);
-  }
-
-  /**
-   * Valide la disponibilité et la quantité avant affectation
-   */
-  private function validateAffectationAvailability(Equipement $equipement, int $quantite): void
-  {
-    if (!in_array($equipement->etat, [
-      EquipementEtat::DISPONIBLE->value,
-      EquipementEtat::RÉPARÉ->value
-    ])) {
-      throw new \Exception("L'équipement « {$equipement->nom} » est en panne et ne peut pas être affecté.");
-    }
-
-    if ($equipement->quantite < $quantite) {
-      throw new \Exception("Quantité insuffisante pour l'équipement « {$equipement->nom} » (disponible : {$equipement->quantite}, demandée : {$quantite}).");
-    }
   }
 }
