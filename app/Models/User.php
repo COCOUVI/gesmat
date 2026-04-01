@@ -2,23 +2,30 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Notifications\CustomResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * User - Modèle d'authentification pour les utilisateurs
+ *
+ * Attributs:
+ * - nom: string
+ * - prenom: string
+ * - email: string (unique)
+ * - password: string (hashed)
+ * - role: enum(admin, gestionnaire, employe)
+ * - service: string
+ * - poste: string
+ * - email_verified_at: datetime (nullable)
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'nom',
         'email',
@@ -26,24 +33,15 @@ class User extends Authenticatable
         'prenom',
         'service',
         'role',
-        'poste'
+        'poste',
+        'email_verified_at'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -51,20 +49,51 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function equipements()
+
+    /**
+     * Relation avec les équipements affectés à cet utilisateur
+     */
+    public function equipements(): BelongsToMany
     {
-        return $this->belongsToMany(Equipement::class, "affectations")
-            ->withPivot("date_retour");
+        return $this->belongsToMany(Equipement::class, 'affectations')
+            ->withPivot('date_retour', 'quantite_affectee', 'created_by')
+            ->withTimestamps();
     }
-    public function pannes()
+
+    /**
+     * Relation avec les pannes signalées par cet utilisateur
+     */
+    public function pannes(): HasMany
     {
         return $this->hasMany(Panne::class);
     }
 
+    /**
+     * Relation avec les demandes d'équipement de cet utilisateur
+     */
+    public function demandes(): HasMany
+    {
+        return $this->hasMany(Demande::class);
+    }
 
-public function sendPasswordResetNotification($token)
-{
-    $this->notify(new CustomResetPassword($token));
-}
+    /**
+     * Relation avec les bons associés à cet utilisateur
+     */
+    public function bons(): HasMany
+    {
+        return $this->hasMany(Bon::class);
+    }
 
+    /**
+     * Relation avec les demandes assignées à cet utilisateur (gestionnaire)
+     */
+    public function demandesAssignees(): HasMany
+    {
+        return $this->hasMany(Demande::class, 'gestionnaire_id');
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPassword($token));
+    }
 }
