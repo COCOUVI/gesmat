@@ -85,7 +85,13 @@ final class EmployeController extends Controller
      */
     public function ShowAskpage()
     {
-        $equipements_par_categorie = Categorie::with('equipements')->get();
+        // Charger les catégories avec UNIQUEMENT les équipements en stock (quantite > 0)
+        $equipements_par_categorie = Categorie::with([
+            'equipements' => function ($query) {
+                $query->withStock();
+            },
+        ])->get();
+
         $user = Auth::user();
 
         return view('employee.layouts.askpage', compact('user', 'equipements_par_categorie'));
@@ -129,12 +135,16 @@ final class EmployeController extends Controller
     public function signalerPanne()
     {
         $user = Auth::user();
-        $equipements_user = Affectation::where('user_id', $user->id)
-            ->with('equipement')
-            ->get()
-            ->pluck('equipement');
 
-        return view('employee.layouts.panne', compact('user', 'equipements_user'));
+        // Récupérer les affectations actives avec leurs équipements et pannes en cours
+        $affectations = Affectation::where('user_id', $user->id)
+            ->whereNull('date_retour')  // Non retournés
+            ->with(['equipement', 'pannes' => function ($query) {
+                $query->where('statut', '!=', 'resolu');
+            }])
+            ->get();
+
+        return view('employee.layouts.panne', compact('user', 'affectations'));
     }
 
     /**
@@ -142,23 +152,23 @@ final class EmployeController extends Controller
      */
     /**
      * Signale une panne d'équipement
-     * Crée une Panne et la lie à l'affectation si applicable
+     * Valide d'abord que l'employé a reçu cet équipement et pas déjà signalé tout
      */
     public function HandlePanne(Request $request)
     {
         $validated = $request->validate([
             'equipement_id' => 'required|integer|exists:equipements,id',
-            'affectation_id' => 'nullable|integer|exists:affectations,id',
             'quantite' => 'required|integer|min:1',
             'description' => 'required|string|min:10|max:1000',
         ], [
             'equipement_id.required' => 'Équipement requis',
             'equipement_id.exists' => 'Équipement inexistant',
-            'affectation_id.exists' => 'Affectation inexistante',
             'quantite.required' => 'Quantité requise',
             'quantite.min' => 'Quantité minimale : 1',
+            'quantite.integer' => 'La quantité doit être un nombre',
             'description.required' => 'Description requise',
             'description.min' => 'Description minimum 10 caractères',
+            'description.max' => 'Description maximum 1000 caractères',
         ]);
 
         try {
@@ -166,21 +176,49 @@ final class EmployeController extends Controller
             $user = Auth::user();
             $equipement = Equipement::findOrFail($validated['equipement_id']);
 
-            // Valider la quantité par rapport à la quantité disponible
-            if ($validated['quantite'] > $equipement->getQuantiteDisponible()) {
+            // VÉRIFICATION CRITIQUE: L'employé a-t-il reçu cet équipement?
+            $affectations = Affectation::where('user_id', $user->id)
+                ->where('equipement_id', $validated['equipement_id'])
+                ->whereNull('date_retour')  // Non retourné
+                ->get();
+
+            if ($affectations->isEmpty()) {
                 DB::rollBack();
 
-                return back()->with('error', sprintf(
-                    'Quantité demandée (%d) dépasse la disponibilité (%d).',
-                    $validated['quantite'],
-                    $equipement->getQuantiteDisponible()
-                ));
+                return back()->withErrors([
+                    'equipement_id' => 'Vous n\'avez pas reçu cet équipement.',
+                ])->withInput();
             }
 
-            // Créer la panne avec affectation_id si fournie
+            // Calculer la quantité affectée total à cet employé
+            $quantiteAffectee = $affectations->sum('quantite_affectee');
+
+            // Calculer la quantité déjà signalée en panne pour cet équipement
+            $quantiteEnPanneSignalee = Panne::where('user_id', $user->id)
+                ->where('equipement_id', $validated['equipement_id'])
+                ->where('statut', '!=', 'resolu')  // Non résolues
+                ->sum('quantite');
+
+            // Vérifier que la quantité à signaler ne dépasse pas ce qui reste
+            $quantiteRestante = $quantiteAffectee - $quantiteEnPanneSignalee;
+
+            if ($validated['quantite'] > $quantiteRestante) {
+                DB::rollBack();
+
+                return back()->withErrors([
+                    'quantite' => sprintf(
+                        'Vous ne pouvez signaler que %d équipement(s) en panne (affecté: %d, déjà signalé: %d).',
+                        $quantiteRestante,
+                        $quantiteAffectee,
+                        $quantiteEnPanneSignalee
+                    ),
+                ])->withInput();
+            }
+
+            // Créer la panne liée à la première affectation
             Panne::create([
                 'equipement_id' => $validated['equipement_id'],
-                'affectation_id' => $validated['affectation_id'] ?? null,
+                'affectation_id' => $affectations->first()->id,
                 'user_id' => $user->id,
                 'quantite' => $validated['quantite'],
                 'description' => $validated['description'],
@@ -195,9 +233,11 @@ final class EmployeController extends Controller
             ));
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erreur signalement panne employé: ' . $e->getMessage());
+            Log::error('Erreur signalement panne employé: '.$e->getMessage());
 
-            return back()->with('error', 'Erreur lors du signalement de la panne. Veuillez réessayer.');
+            return back()->withErrors([
+                'description' => 'Erreur lors du signalement de la panne. Veuillez réessayer.',
+            ])->withInput();
         }
     }
 

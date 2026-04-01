@@ -3,14 +3,15 @@
     @php $hasEquipementDispo = false; @endphp
     @php $optionsHtml = ''; @endphp
 
-    {{-- Construire options groupées pour équipements disponibles --}}
+    {{-- Construire options groupées pour équipements en stock uniquement --}}
     @foreach ($equipements_groupes as $categorie)
         @if ($categorie->equipements->count() > 0)
             @php $hasEquipementDispo = true; @endphp
             @php
                 $optionsHtml .= '<optgroup label="' . e($categorie->nom) . '">';
                 foreach ($categorie->equipements as $equipement) {
-                    $optionsHtml .= '<option value="' . e($equipement->id) . '">' . e($equipement->nom) . '</option>';
+                    $optionsHtml .= '<option value="' . e($equipement->id) . '">' 
+                        . e($equipement->nom) . ' (Stock: ' . e($equipement->quantite) . ')</option>';
                 }
                 $optionsHtml .= '</optgroup>';
             @endphp
@@ -18,7 +19,7 @@
     @endforeach
 
     @if (!$hasEquipementDispo)
-        @php $optionsHtml .= '<option value="">Aucun équipement disponible</option>'; @endphp
+        @php $optionsHtml .= '<option value="">Aucun équipement en stock</option>'; @endphp
     @endif
 
     <div class="container mt-5">

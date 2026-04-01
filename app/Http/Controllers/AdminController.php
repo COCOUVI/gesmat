@@ -282,7 +282,12 @@ final class AdminController extends Controller
 
     public function Showaffectation()
     {
-        $equipements_groupes = Categorie::with('equipements')->get();
+        // Charger les catégories avec UNIQUEMENT les équipements en stock (quantite > 0)
+        $equipements_groupes = Categorie::with([
+            'equipements' => function ($query) {
+                $query->withStock();
+            },
+        ])->get();
 
         $employes = User::where('role', '=', 'employé')->get();
 
@@ -547,7 +552,7 @@ final class AdminController extends Controller
             ));
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erreur résolution panne admin: ' . $e->getMessage());
+            Log::error('Erreur résolution panne admin: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
         }

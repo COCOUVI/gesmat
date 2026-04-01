@@ -51,7 +51,7 @@
                                               @if ($categorie->equipements->count())
                                                 <optgroup label="{{ $categorie->nom }}">
                                                     @foreach ($categorie->equipements as $equipement)
-                                                        <option value="{{ $equipement->id }}">{{ $equipement->nom }}
+                                                        <option value="{{ $equipement->id }}">{{ $equipement->nom }} (Stock: {{ $equipement->quantite }})
                                                         </option>
                                                     @endforeach
                                                 </optgroup>

@@ -140,4 +140,13 @@ final class Equipement extends Model
 
         return 'partiellement en panne';
     }
+
+    /**
+     * Scope pour obtenir uniquement les équipements avec du stock disponible
+     * Utilisé pour les demandes et assignations
+     */
+    public function scopeWithStock($query)
+    {
+        return $query->where('quantite', '>', 0);
+    }
 }
