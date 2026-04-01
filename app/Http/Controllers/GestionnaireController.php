@@ -304,17 +304,33 @@ class GestionnaireController extends Controller
     }
 
     /**
-     * Accepte une demande d'équipement
+     * Accepte une demande et assigne automatiquement les équipements à l'employé
      */
     public function CheckAsk(Demande $demande)
     {
         try {
+            DB::beginTransaction();
+
+            // Assigner automatiquement les équipements
+            $pdfPath = $this->assignEquipmentsFromDemande($demande);
+
+            // Mettre à jour le statut de la demande
             $demande->update(['statut' => 'acceptee']);
 
-            return redirect()->back()->with('success', 'Demande acceptée.');
+            DB::commit();
+
+            $message = 'La demande a été validée et les équipements ont été assignés automatiquement.';
+            if ($pdfPath) {
+                return redirect()->route('gestionnaire.demandes.list')
+                    ->with('success', $message)
+                    ->with('pdf', asset('storage/' . $pdfPath));
+            }
+            return redirect()->route('gestionnaire.demandes.list')->with('success', $message);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error("Erreur lors de l'acceptation de demande: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur lors du traitement.');
+            return redirect()->route('gestionnaire.demandes.list')
+                ->with('error', $e->getMessage());
         }
     }
 
@@ -326,10 +342,12 @@ class GestionnaireController extends Controller
         try {
             $demande->update(['statut' => 'rejetee']);
 
-            return redirect()->back()->with('success', 'Demande rejetée.');
+            return redirect()->route('gestionnaire.demandes.list')
+                ->with('success', 'Demande rejetée.');
         } catch (\Exception $e) {
             Log::error("Erreur lors du rejet de demande: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur lors du traitement.');
+            return redirect()->route('gestionnaire.demandes.list')
+                ->with('error', 'Erreur lors du traitement.');
         }
     }
 
@@ -341,10 +359,12 @@ class GestionnaireController extends Controller
         try {
             $demande->update(['statut' => 'en_attente']);
 
-            return redirect()->back()->with('success', 'Demande mise en attente.');
+            return redirect()->route('gestionnaire.demandes.list')
+                ->with('success', 'Demande mise en attente.');
         } catch (\Exception $e) {
             Log::error("Erreur lors de la mise en attente: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Erreur lors du traitement.');
+            return redirect()->route('gestionnaire.demandes.list')
+                ->with('error', 'Erreur lors du traitement.');
         }
     }
 
@@ -629,6 +649,78 @@ public function handleAffectation(Request $request)
       ]);
 
       Storage::disk('public')->put($pdfPath, $pdf->output());
+      return $pdfPath;
+  }
+
+  /**
+   * Assigne automatiquement les équipements d'une demande à l'employé
+   */
+  private function assignEquipmentsFromDemande(Demande $demande): ?string
+  {
+      $user = Auth::user();
+      $equipementsData = $demande->equipements()->get();
+
+      if ($equipementsData->isEmpty()) {
+          return null; // Pas d'équipements à assigner
+      }
+
+      $affectationsDetails = [];
+      $employe_id = $demande->user_id;
+
+      foreach ($equipementsData as $equipement) {
+          $quantite = $equipement->pivot->nbr_equipement ?? 1;
+
+          // Vérifier la disponibilité
+          if (!in_array($equipement->etat, [EquipementEtat::DISPONIBLE->value, EquipementEtat::RÉPARÉ->value])) {
+              throw new \Exception("L'équipement « {$equipement->nom} » est en panne et ne peut pas être affecté.");
+          }
+
+          if ($equipement->quantite < $quantite) {
+              throw new \Exception(
+                  "Quantité insuffisante pour l'équipement « {$equipement->nom} » " .
+                  "(disponible : {$equipement->quantite}, demandée : {$quantite})."
+              );
+          }
+
+          // Créer l'affectation
+          Affectation::create([
+              'equipement_id' => $equipement->id,
+              'user_id' => $employe_id,
+              'date_retour' => null,
+              'created_by' => $user->nom . ' ' . $user->prenom,
+              'quantite_affectee' => $quantite,
+          ]);
+
+          // Mettre à jour l'équipement
+          $nouvelleQuantite = $equipement->quantite - $quantite;
+          $equipement->update([
+              'quantite' => $nouvelleQuantite,
+              'etat' => $nouvelleQuantite > 0
+                  ? EquipementEtat::DISPONIBLE->value
+                  : EquipementEtat::USAGÉ->value,
+          ]);
+
+          $affectationsDetails[] = [
+              'nom' => $equipement->nom,
+              'reference' => $equipement->reference ?? '',
+              'quantite' => $quantite,
+          ];
+      }
+
+      // Créer le bon de sortie
+      $pdfName = 'bon_sortie_demande_' . $demande->id . '_' . now()->timestamp . '.pdf';
+      $pdfPath = 'bon_sortie/' . $pdfName;
+
+      $employe = User::find($employe_id);
+      $bon = Bon::create([
+          'user_id' => $employe_id,
+          'motif' => $demande->motif ?? 'Affectation automatique de demande',
+          'statut' => 'sortie',
+          'fichier_pdf' => $pdfPath,
+      ]);
+
+      $this->generateAffectationBonPdf($bon, $affectationsDetails, $employe_id);
+
       return $pdfPath;
   }
 }
