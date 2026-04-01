@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - statut: enum(entrée, sortie)
  * - fichier_pdf: string (nullable, chemin du PDF généré)
  */
-class Bon extends Model
+final class Bon extends Model
 {
     use HasFactory;
 
@@ -23,7 +25,7 @@ class Bon extends Model
         'user_id',
         'motif',
         'statut',
-        'fichier_pdf'
+        'fichier_pdf',
     ];
 
     /**

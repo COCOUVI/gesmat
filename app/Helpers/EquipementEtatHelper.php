@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helpers;
 
 use App\Enums\EquipementEtat;
 
-class EquipementEtatHelper
+final class EquipementEtatHelper
 {
     /**
      * Retourne le label français formaté d'un état d'équipement
      *
-     * @param string $etat Valeur de l'état
+     * @param  string  $etat  Valeur de l'état
      * @return string Label formaté
      */
     public static function label(string $etat): string
@@ -26,7 +28,7 @@ class EquipementEtatHelper
     /**
      * Retourne la classe CSS pour le badge de statut
      *
-     * @param string $etat Valeur de l'état
+     * @param  string  $etat  Valeur de l'état
      * @return string Classe CSS
      */
     public static function badgeClass(string $etat): string
@@ -43,7 +45,7 @@ class EquipementEtatHelper
     /**
      * Retourne la couleur Bootstrap pour le badge de statut
      *
-     * @param string $etat Valeur de l'état
+     * @param  string  $etat  Valeur de l'état
      * @return string Classe couleur Bootstrap
      */
     public static function badgeColor(string $etat): string
@@ -68,6 +70,7 @@ class EquipementEtatHelper
         foreach (EquipementEtat::cases() as $etat) {
             $options[$etat->value] = self::label($etat->value);
         }
+
         return $options;
     }
 }

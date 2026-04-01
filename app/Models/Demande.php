@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * - user_id: foreignId (employé demandeur)
  * - gestionnaire_id: foreignId (nullable, gestionnaire assigné)
  */
-class Demande extends Model
+final class Demande extends Model
 {
     protected $fillable = ['lieu', 'motif', 'statut', 'user_id', 'gestionnaire_id'];
 

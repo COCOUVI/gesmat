@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class IdentifiantsEnvoyes extends Mailable
+final class IdentifiantsEnvoyes extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;
+
     public $password;
 
     /**
@@ -28,6 +31,6 @@ class IdentifiantsEnvoyes extends Mailable
     public function build()
     {
         return $this->subject('Vos identifiants de connexion')
-                    ->view('emails.identifiants');
+            ->view('emails.identifiants');
     }
 }

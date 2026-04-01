@@ -1,16 +1,16 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Equipement;
+use App\Policies\EquipementPolicy;
+// Ajoute ces lignes :
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
-// Ajoute ces lignes :
-use App\Models\Equipement;
-use App\Policies\EquipementPolicy;
-
-class AuthServiceProvider extends ServiceProvider
+final class AuthServiceProvider extends ServiceProvider
 {
     /**
      * The policy mappings for the application.

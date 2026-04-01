@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateEquipementRequest extends FormRequest
+final class UpdateEquipementRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,6 +34,7 @@ class UpdateEquipementRequest extends FormRequest
             'image_path' => 'nullable|image|max:2048',
         ];
     }
+
     public function messages(): array
     {
         return [
@@ -45,7 +48,7 @@ class UpdateEquipementRequest extends FormRequest
             'quantite.min' => 'La quantite ne peut pas etre negative.',
             'image_path.image' => 'Le fichier doit etre une image valide.',
             'image_path.max' => 'L\'image ne doit pas depasser 2 Mo.',
-            'date_acquisition.required' => "La date d\'acquisition est requise"
+            'date_acquisition.required' => "La date d\'acquisition est requise",
         ];
     }
 }

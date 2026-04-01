@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Carbon;
+use Illuminate\Notifications\Notification;
 
-class CustomResetPassword extends Notification
+final class CustomResetPassword extends Notification
 {
     public $token;
 
@@ -28,7 +28,7 @@ class CustomResetPassword extends Notification
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->subject('🔐 Réinitialisation de mot de passe - J-Tools')
             ->view('emails.reset-password', [
                 'url' => $url,

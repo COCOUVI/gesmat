@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Enums\EquipementEtat;
@@ -10,11 +12,13 @@ use App\Models\Equipement;
 use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 /**
  * EmployeController gère les actions des employés
@@ -24,7 +28,7 @@ use Illuminate\Support\Facades\Mail;
  * - Gestion des équipements assignés
  * - Demande d'aide
  */
-class EmployeController extends Controller
+final class EmployeController extends Controller
 {
     /**
      * Affiche le tableau de bord principal avec les statistiques
@@ -76,6 +80,7 @@ class EmployeController extends Controller
             'nbr_assign'
         ));
     }
+
     /**
      * Affiche la page de création de demande d'équipement
      */
@@ -86,19 +91,10 @@ class EmployeController extends Controller
 
         return view('employee.layouts.askpage', compact('user', 'equipements_par_categorie'));
     }
+
     public function SubmitAsk(Request $request)
     {
-        $request->validate([
-            'lieu' => 'required',
-            'motif' => 'required',
-            'quantites' => 'required',
-            'equipements' => 'required'
-        ], [
-            'lieu.required' => 'Le lieu est requis',
-            'motif.required' => 'Le motif est requis',
-            'quantites.required' => 'Une quanitée est requise pour votre demande',
-            'equipements.required' => 'Un equipements est requis pour la demande'
-        ]);
+        // Validation via Form Request
         try {
             DB::beginTransaction();
             $user = Auth::user();
@@ -106,7 +102,7 @@ class EmployeController extends Controller
             $demande->lieu = $request->lieu;
             $demande->motif = $request->motif;
             $demande->user_id = $user->id;
-            $demande->statut = "en_attente";
+            $demande->statut = 'en_attente';
             $demande->save();
             $equipements = $request->equipements;
             $quantity = $request->quantites;
@@ -119,12 +115,15 @@ class EmployeController extends Controller
                 $equipements_ask->save();
             }
             DB::Commit();
-            return back()->with("success", "Demande envoyé avec succès");
-        } catch (\Throwable $e) {
-            Log::error('Erreur lors de la soumission de la demande : ' . $e->getMessage());
+
+            return back()->with('success', 'Demande envoyé avec succès');
+        } catch (Throwable $e) {
+            Log::error('Erreur lors de la soumission de la demande : '.$e->getMessage());
+
             return back()->with('error', 'Une erreur est survenue lors de l’envoi de la demande.');
         }
     }
+
     /**
      * Affiche la page de signalement de panne
      */
@@ -144,45 +143,33 @@ class EmployeController extends Controller
      */
     public function HandlePanne(Request $request)
     {
-        $validated = $request->validate([
-            'equipement_id' => 'required|exists:equipements,id',
-            'description' => 'required|string|min:10|max:1000'
-        ], [
-            'equipement_id.required' => 'L\'équipement est requis',
-            'equipement_id.exists' => 'L\'équipement sélectionné n\'existe pas',
-            'description.required' => 'La description est requise',
-            'description.min' => 'La description doit contenir au moins 10 caractères'
-        ]);
-
+        $validated = $request->validated();
         try {
             DB::beginTransaction();
-
             $user = Auth::user();
-
             // Créer la panne
             Panne::create([
                 'equipement_id' => $validated['equipement_id'],
                 'user_id' => $user->id,
                 'description' => $validated['description'],
-                'statut' => 'en_cours'
+                'statut' => 'en_cours',
             ]);
-
             // Mettre à jour l'état de l'équipement
             $equipement = Equipement::find($validated['equipement_id']);
             if ($equipement) {
                 $equipement->update(['etat' => EquipementEtat::EN_PANNE->value]);
             }
-
             DB::commit();
 
             return back()->with('success', 'Panne signalée avec succès.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erreur lors du signalement de panne: ' . $e->getMessage());
+            Log::error('Erreur lors du signalement de panne: '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors du signalement de la panne.');
         }
     }
+
     /**
      * Affiche les équipements assignés à l'utilisateur
      */
@@ -195,6 +182,7 @@ class EmployeController extends Controller
 
         return view('employee.layouts.assign', compact('user', 'affectation'));
     }
+
     /**
      * Affiche la page d'aide
      */
@@ -204,16 +192,17 @@ class EmployeController extends Controller
 
         return view('employee.layouts.help', compact('user'));
     }
+
     /**
      * Traite la soumission d'une demande d'aide
      */
     public function HandleHelp(Request $request)
     {
         $validated = $request->validate([
-            'message' => 'required|string|min:10|max:2000'
+            'message' => 'required|string|min:10|max:2000',
         ], [
             'message.required' => 'Le message est requis',
-            'message.min' => 'Le message doit contenir au moins 10 caractères'
+            'message.min' => 'Le message doit contenir au moins 10 caractères',
         ]);
 
         try {
@@ -221,19 +210,20 @@ class EmployeController extends Controller
 
             Mail::send('emails.aide', [
                 'email' => Auth::user()->email,
-                'body' => $validated['message']
+                'body' => $validated['message'],
             ], function ($mail) use ($adminEmail) {
                 $mail->to($adminEmail)
                     ->subject('Demande d\'aide d\'un employé');
             });
 
             return back()->with('success', 'Votre message a été envoyé à l\'administrateur.');
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de l\'envoi d\'aide: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Erreur lors de l\'envoi d\'aide: '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de l\'envoi du message.');
         }
     }
+
     /**
      * Supprime un signalement de panne
      */
@@ -245,8 +235,8 @@ class EmployeController extends Controller
             $panne->delete();
 
             return back()->with('success', 'Panne supprimée avec succès.');
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la suppression de panne: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la suppression de panne: '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -263,8 +253,8 @@ class EmployeController extends Controller
             $affectation->delete();
 
             return back()->with('success', 'Affectation supprimée avec succès.');
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la suppression d\'affectation: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la suppression d\'affectation: '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -281,12 +271,13 @@ class EmployeController extends Controller
             $demande->delete();
 
             return back()->with('success', 'Demande supprimée avec succès.');
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la suppression de demande: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la suppression de demande: '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
     }
+
     /**
      * Affiche la liste paginée des pannes
      */
@@ -318,8 +309,7 @@ class EmployeController extends Controller
      * Vérifie l'autorisation pour supprimer une ressource
      *
      * @param  mixed  $model
-     * @param  User  $user
-     * @return void
+     *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     private function authorizeDelete($model, User $user): void

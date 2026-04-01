@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -14,13 +16,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - description: text
  * - statut: enum(en_attente, resolu)
  */
-class Panne extends Model
+final class Panne extends Model
 {
     protected $fillable = [
         'equipement_id',
         'user_id',
         'description',
-        'statut'
+        'statut',
     ];
 
     /**

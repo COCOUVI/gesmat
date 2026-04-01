@@ -1,15 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Seeder;
 
-
-class GestionnaireSeeder extends Seeder
+final class GestionnaireSeeder extends Seeder
 {
     public function run()
     {
@@ -23,7 +21,7 @@ class GestionnaireSeeder extends Seeder
                 'role' => 'gestionnaire',
                 'service' => 'Informatique',
                 'poste' => 'Responsable IT',
-                'email_verified_at' => now()
+                'email_verified_at' => now(),
             ]
         );
     }

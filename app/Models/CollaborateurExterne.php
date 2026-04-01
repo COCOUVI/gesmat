@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Models;
+declare(strict_types=1);
 
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CollaborateurExterne extends Model
+final class CollaborateurExterne extends Model
 {
     use HasFactory;
 
@@ -17,5 +18,4 @@ class CollaborateurExterne extends Model
         'prenom',
         'carte_chemin',
     ];
-
 }

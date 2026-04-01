@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class EditRequest extends FormRequest
+final class EditRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,10 +32,10 @@ class EditRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users')->ignore($this->user)
+                Rule::unique('users')->ignore($this->user),
             ],
             'password' => 'nullable|min:8',
-            'password_confirmation' => 'nullable'
+            'password_confirmation' => 'nullable',
         ];
     }
 

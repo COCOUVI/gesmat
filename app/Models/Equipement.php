@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsCollectionOf;
-    use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * - image_path: string
  * - categorie_id: foreignId
  */
-class Equipement extends Model
+final class Equipement extends Model
 {
     protected $fillable = ['nom', 'etat', 'marque', 'description', 'date_acquisition', 'image_path', 'categorie_id', 'quantite'];
 

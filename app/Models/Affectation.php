@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,14 +17,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - quantite_affectee: integer
  * - created_by: string (nom du créateur)
  */
-class Affectation extends Model
+final class Affectation extends Model
 {
     protected $fillable = [
         'equipement_id',
         'user_id',
         'date_retour',
         'quantite_affectee',
-        'created_by'
+        'created_by',
     ];
 
     protected function casts(): array

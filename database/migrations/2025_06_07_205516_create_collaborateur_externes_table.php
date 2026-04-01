@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('collaborateur_externes', function (Blueprint $table) {
             $table->id();
-            $table->string("nom");
-            $table->string("prenom");
-            $table->string("carte_chemin");
+            $table->string('nom');
+            $table->string('prenom');
+            $table->string('carte_chemin');
             $table->timestamps();
         });
     }

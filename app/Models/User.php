@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Notifications\CustomResetPassword;
@@ -22,7 +24,7 @@ use Illuminate\Notifications\Notifiable;
  * - poste: string
  * - email_verified_at: datetime (nullable)
  */
-class User extends Authenticatable
+final class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -34,7 +36,7 @@ class User extends Authenticatable
         'service',
         'role',
         'poste',
-        'email_verified_at'
+        'email_verified_at',
     ];
 
     protected $hidden = [

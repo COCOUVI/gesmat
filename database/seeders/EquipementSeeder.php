@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class EquipementSeeder extends Seeder
+final class EquipementSeeder extends Seeder
 {
     public function run()
     {
@@ -1666,7 +1668,6 @@ class EquipementSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-
 
         ]);
     }

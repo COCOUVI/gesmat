@@ -1,14 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\CollaborateurExterne;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Bon;
+use App\Models\CollaborateurExterne;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
-
-class BonController extends Controller
+final class BonController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,6 +18,7 @@ class BonController extends Controller
     {
 
         $bons = Bon::all();
+
         return view('gestionnaire.bons.list_bons', compact('bons'));
     }
 
@@ -35,10 +37,11 @@ class BonController extends Controller
     {
         //
     }
-    
+
     public function showExternalCollaboratorForm()
     {
         $collaborateurs = CollaborateurExterne::all();
+
         return view('gestionnaire.bons.bon_external_collaborator', compact('collaborateurs'));
     }
 
@@ -47,30 +50,16 @@ class BonController extends Controller
         $request->validate([
             'collaborateur_id' => 'required|exists:collaborateur_externes,id',
             'motif' => 'required|string|max:500',
-            'type' => 'required|in:entrée,sortie'
+            'type' => 'required|in:entrée,sortie',
         ]);
         // Logique de génération du bon PDF
         $pdfPath = $this->generateBonPdf($request->all());
-    
+
         return back()
             ->with('success', 'Bon généré avec succès')
             ->with('pdf', Storage::url($pdfPath));
     }
 
-    private function generateBonPdf($data)
-    {
-    // Implémentez votre logique de génération PDF ici
-    // Retournez le chemin du fichier généré
-    
-    // Exemple simplifié:
-        $filename = 'bon_collab_'.$data['collaborateur_id'].'_'.time().'.pdf';
-        $path = 'bons/'.$filename;
-    
-    // Ici vous devriez utiliser une librairie PDF comme DomPDF
-    // Storage::put($path, $pdfContent);
-    
-        return $path;
-    }
     /**
      * Display the specified resource.
      */
@@ -95,7 +84,6 @@ class BonController extends Controller
         //
     }
 
-
     public function destroy($id)
     {
         $bon = Bon::findOrFail($id);
@@ -109,13 +97,25 @@ class BonController extends Controller
         $bon->delete();
 
         return redirect()->route('gestionnaire.bons.index')
-                        ->with('success', 'Bon supprimé avec succès.');
+            ->with('success', 'Bon supprimé avec succès.');
     }
 
+    private function generateBonPdf($data)
+    {
+        // Implémentez votre logique de génération PDF ici
+        // Retournez le chemin du fichier généré
 
+        // Exemple simplifié:
+        $filename = 'bon_collab_'.$data['collaborateur_id'].'_'.time().'.pdf';
+        $path = 'bons/'.$filename;
+
+        // Ici vous devriez utiliser une librairie PDF comme DomPDF
+        // Storage::put($path, $pdfContent);
+
+        return $path;
+    }
 
     /**
      * Remove the specified resource from storage.
      */
-
- }
+}

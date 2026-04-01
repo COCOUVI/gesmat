@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -113,6 +115,5 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'info@j-mat.jaspetechnologies.com'),
         'name' => env('MAIL_FROM_NAME', 'Default Name'),
     ],
-
 
 ];
