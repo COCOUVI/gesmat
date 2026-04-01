@@ -315,7 +315,7 @@ final class AdminController extends Controller
             $affectationsDetails = [];
 
             foreach ($request->equipements as $index => $equipement_id) {
-                $quantite = $request->quantites[$index] ?? 1;
+                $quantite = (int) ($request->quantites[$index] ?? 1);
                 $rawDate = $request->dates_retour[$index] ?? null;
 
                 $equipement = $equipements->get($equipement_id);

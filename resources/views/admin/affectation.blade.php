@@ -48,18 +48,24 @@
                     {{-- Sélection employé --}}
                     <div class="mb-3">
                         <label for="employe_id" class="form-label">Employé</label>
-                        <select name="employe_id" id="employe_id" class="form-select" required>
+                        <select name="employe_id" id="employe_id" class="form-select @error('employe_id') is-invalid @enderror" required>
                             <option value="">-- Sélectionnez un employé --</option>
                             @foreach ($employes as $employe)
                                 <option value="{{ $employe->id }}">{{ $employe->nom }} {{ $employe->prenom }}</option>
                             @endforeach
                         </select>
+                        @error('employe_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     {{-- Motif --}}
                     <div class="mb-3">
                         <label for="motif" class="form-label">Motif</label>
-                        <textarea name="motif" id="motif" class="form-control" rows="3" required></textarea>
+                        <textarea name="motif" id="motif" class="form-control @error('motif') is-invalid @enderror" rows="3" required></textarea>
+                        @error('motif')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
 
                     <hr>
@@ -69,13 +75,16 @@
                         <div class="equipement-item row mb-3">
                             <div class="col-md-4">
                                 <label>Équipement</label>
-                                <select name="equipements[]" class="form-select" required>
+                                <select name="equipements[]" class="form-select @error('equipements.*') is-invalid @enderror" required>
                                     <option value="">-- Sélectionner un équipement --</option>
                                     {!! $optionsHtml !!}
                                 </select>   
-                                 @error('equipements')
-                                     <span class="text-danger">{{$message}}</span>
-                                @enderror                             
+                                @error('equipements.*')
+                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                @enderror
+                                @error('equipements')
+                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                @enderror
                             </div>
                             <div class="col-md-3">
                                 <label>Date de retour</label>
@@ -83,10 +92,13 @@
                             </div>
                             <div class="col-md-3">
                                 <label>Quantité à affecter</label>
-                                <input type="number" name="quantites[]" class="form-control" min="1" required>
-                                  @error('quantites')
-                                     <span class="text-danger">{{$message}}</span>
-                                  @enderror
+                                <input type="number" name="quantites[]" class="form-control @error('quantites.*') is-invalid @enderror" min="1" required>
+                                @error('quantites.*')
+                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                @enderror
+                                @error('quantites')
+                                    <span class="text-danger d-block mt-1">{{ $message }}</span>
+                                @enderror
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
                                 <button type="button" class="btn btn-danger btn-sm remove-btn">Supprimer</button>
