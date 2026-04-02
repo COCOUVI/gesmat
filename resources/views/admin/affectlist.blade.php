@@ -109,7 +109,6 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-2">{{ $affectations->links() }}</div>
             </div>
         </div>
     </div>

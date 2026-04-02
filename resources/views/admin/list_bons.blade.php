@@ -70,5 +70,4 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-2">{{ $bons->links() }}</div>
 @endsection

@@ -94,17 +94,6 @@
                             </tbody>
                         </table>
                     </div>
-                    @if ($equipements->count())
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="text-muted">
-                                Affichage de {{ $equipements->firstItem() }} à
-                                {{ $equipements->lastItem() }} sur {{ $equipements->total() }} équipements
-                            </div>
-                            <div>
-                                {{ $equipements->links() }}
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>

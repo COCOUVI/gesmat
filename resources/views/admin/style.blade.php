@@ -566,73 +566,21 @@
         width: 200px;
     }
 
-    .smart-table-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
     }
 
-    .smart-table-toolbar .form-control {
-        max-width: 320px;
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px !important;
+        margin: 0 2px;
     }
 
-    .smart-table-empty-state {
-        display: none;
-        padding: 16px;
-        border: 1px dashed rgba(0, 0, 0, 0.12);
-        border-radius: 10px;
-        color: #6c757d;
-        text-align: center;
-        background: #fff;
-        margin-top: 12px;
-    }
-
-    @media (max-width: 767.98px) {
-        .smart-table-wrapper {
-            overflow: visible;
-        }
-
-        .smart-data-table thead {
-            display: none;
-        }
-
-        .smart-data-table,
-        .smart-data-table tbody,
-        .smart-data-table tr,
-        .smart-data-table td {
-            display: block;
-            width: 100%;
-        }
-
-        .smart-data-table tbody tr {
-            margin-bottom: 14px;
-            padding: 10px 12px;
-        }
-
-        .smart-data-table tbody td {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            text-align: right;
-            padding: 10px 0;
-            white-space: normal;
-        }
-
-        .smart-data-table tbody td::before {
-            content: attr(data-label);
-            font-weight: 700;
-            color: var(--toolzy-dark);
-            text-align: left;
-            flex: 0 0 45%;
-        }
-
-        .smart-data-table tbody td.text-center,
-        .smart-data-table tbody td.text-nowrap {
-            text-align: right !important;
-        }
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 12px;
     }
 </style>

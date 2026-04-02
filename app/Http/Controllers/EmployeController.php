@@ -279,7 +279,7 @@ final class EmployeController extends Controller
         ])
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate(4);
+            ->get();
 
         return view('employee.layouts.assign', compact('user', 'affectations'));
     }
@@ -380,7 +380,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la liste paginée des pannes
+     * Affiche la liste des pannes
      */
     public function ShowPannes()
     {
@@ -388,13 +388,13 @@ final class EmployeController extends Controller
         $pannes = Panne::with('equipement')
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
-            ->paginate(5);
+            ->get();
 
         return view('employee.layouts.pannelist', compact('pannes', 'user'));
     }
 
     /**
-     * Affiche la liste paginée des demandes
+     * Affiche la liste des demandes
      */
     public function ShowDemandes()
     {
@@ -402,7 +402,7 @@ final class EmployeController extends Controller
         $demandes = Demande::with(['equipements', 'affectations'])
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
-            ->paginate(5);
+            ->get();
 
         return view('employee.layouts.list_demandes', compact('user', 'demandes'));
     }

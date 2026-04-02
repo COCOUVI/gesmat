@@ -54,9 +54,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $equipement_lost->links() }}
-                    </div>
                 @endif
             </div>
         </div>

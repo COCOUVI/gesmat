@@ -83,107 +83,6 @@
                                 @endif
                             </td>
                         </tr>
-
-                        {{-- Modal Vérification --}}
-                        <div class="modal fade" id="verificationModal{{ $demande->id }}" tabindex="-1"
-                            aria-labelledby="modalLabel{{ $demande->id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title" id="modalLabel{{ $demande->id }}">
-                                            Vérification de la demande du {{ $demande->created_at->format('d/m/Y H:i') }}
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Fermer"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        @php $demandePeutEtreServie = false; @endphp
-                                        <form action="{{ route('valider.demande', $demande->id) }}" method="POST"
-                                            id="validationForm{{ $demande->id }}">
-                                            @csrf @method('PUT')
-                                            <ul class="list-group">
-                                                @foreach ($demande->equipements as $equipement)
-                                                    @php
-                                                        $quantiteDemandee = (int) $equipement->pivot->nbr_equipement;
-                                                        $quantiteServie = $demande->getQuantiteServiePourEquipement($equipement->id);
-                                                        $quantiteRestante = $demande->getQuantiteRestantePourEquipement($equipement->id, $quantiteDemandee);
-                                                        $stockDisponible = $equipement->getQuantiteDisponible();
-                                                        $quantiteServable = min($quantiteRestante, $stockDisponible);
-                                                        $quantiteParDefaut = old('quantites_a_affecter.' . $equipement->id, $quantiteServable);
-                                                        $demandePeutEtreServie = $demandePeutEtreServie || $quantiteServable > 0;
-                                                    @endphp
-                                                    <li class="list-group-item">
-                                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                                            <div>
-                                                                <strong>{{ $equipement->nom }}</strong>
-                                                            </div>
-                                                            <span class="badge {{ $quantiteServable > 0 ? 'bg-success' : 'bg-danger' }}">
-                                                                Stock disponible : {{ $stockDisponible }}
-                                                            </span>
-                                                        </div>
-
-                                                        <div class="row mt-3 g-3">
-                                                            <div class="col-md-3">
-                                                                <label class="form-label mb-1">Demandé</label>
-                                                                <input type="number" class="form-control" value="{{ $quantiteDemandee }}" disabled>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="form-label mb-1">Déjà servi</label>
-                                                                <input type="number" class="form-control" value="{{ $quantiteServie }}" disabled>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="form-label mb-1">Reste à servir</label>
-                                                                <input type="number" class="form-control" value="{{ $quantiteRestante }}" disabled>
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="form-label mb-1">À affecter maintenant</label>
-                                                                <input type="number"
-                                                                    name="quantites_a_affecter[{{ $equipement->id }}]"
-                                                                    class="form-control"
-                                                                    min="0"
-                                                                    max="{{ $quantiteRestante }}"
-                                                                    value="{{ $quantiteParDefaut }}">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mt-3">
-                                                            <label class="form-label mb-1">Date de retour prévue</label>
-                                                            <input type="date"
-                                                                name="dates_retour[{{ $equipement->id }}]"
-                                                                class="form-control"
-                                                                value="{{ old('dates_retour.' . $equipement->id) }}">
-                                                        </div>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </form>
-
-                                        @unless ($demandePeutEtreServie)
-                                            <div class="alert alert-warning mt-3 mb-0">
-                                                Aucune quantité ne peut être servie pour le moment. La demande reste en attente.
-                                            </div>
-                                        @endunless
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-success me-auto"
-                                            form="validationForm{{ $demande->id }}"
-                                            {{ $demandePeutEtreServie ? '' : 'disabled' }}>
-                                                <i class="mdi mdi-check"></i> Servir la demande
-                                        </button>
-
-                                        <form action="{{ route('loading.demande', $demande->id) }}" method="POST">
-                                            @csrf @method('PUT')
-                                            <button type="submit" class="btn btn-warning">
-                                                <i class="mdi mdi-timer-sand"></i> Mettre en attente
-                                            </button>
-                                        </form>
-
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Fermer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     @empty
                         <tr>
                             <td colspan="4" class="text-center text-muted">Aucune demande pour le moment.</td>
@@ -192,9 +91,110 @@
 
                 </tbody>
             </table>
-            <div class="mt-2">{{ $demandes->links() }}</div>
         </div>
     </div>
+
+    @foreach ($demandes as $demande)
+        <div class="modal fade" id="verificationModal{{ $demande->id }}" tabindex="-1"
+            aria-labelledby="modalLabel{{ $demande->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="modalLabel{{ $demande->id }}">
+                            Vérification de la demande du {{ $demande->created_at->format('d/m/Y H:i') }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        @php $demandePeutEtreServie = false; @endphp
+                        <form action="{{ route('valider.demande', $demande->id) }}" method="POST"
+                            id="validationForm{{ $demande->id }}">
+                            @csrf @method('PUT')
+                            <ul class="list-group">
+                                @foreach ($demande->equipements as $equipement)
+                                    @php
+                                        $quantiteDemandee = (int) $equipement->pivot->nbr_equipement;
+                                        $quantiteServie = $demande->getQuantiteServiePourEquipement($equipement->id);
+                                        $quantiteRestante = $demande->getQuantiteRestantePourEquipement($equipement->id, $quantiteDemandee);
+                                        $stockDisponible = $equipement->getQuantiteDisponible();
+                                        $quantiteServable = min($quantiteRestante, $stockDisponible);
+                                        $quantiteParDefaut = old('quantites_a_affecter.' . $equipement->id, $quantiteServable);
+                                        $demandePeutEtreServie = $demandePeutEtreServie || $quantiteServable > 0;
+                                    @endphp
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                            <div>
+                                                <strong>{{ $equipement->nom }}</strong>
+                                            </div>
+                                            <span class="badge {{ $quantiteServable > 0 ? 'bg-success' : 'bg-danger' }}">
+                                                Stock disponible : {{ $stockDisponible }}
+                                            </span>
+                                        </div>
+
+                                        <div class="row mt-3 g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label mb-1">Demandé</label>
+                                                <input type="number" class="form-control" value="{{ $quantiteDemandee }}" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label mb-1">Déjà servi</label>
+                                                <input type="number" class="form-control" value="{{ $quantiteServie }}" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label mb-1">Reste à servir</label>
+                                                <input type="number" class="form-control" value="{{ $quantiteRestante }}" disabled>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label mb-1">À affecter maintenant</label>
+                                                <input type="number"
+                                                    name="quantites_a_affecter[{{ $equipement->id }}]"
+                                                    class="form-control"
+                                                    min="0"
+                                                    max="{{ $quantiteRestante }}"
+                                                    value="{{ $quantiteParDefaut }}">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label class="form-label mb-1">Date de retour prévue</label>
+                                            <input type="date"
+                                                name="dates_retour[{{ $equipement->id }}]"
+                                                class="form-control"
+                                                value="{{ old('dates_retour.' . $equipement->id) }}">
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </form>
+
+                        @unless ($demandePeutEtreServie)
+                            <div class="alert alert-warning mt-3 mb-0">
+                                Aucune quantité ne peut être servie pour le moment. La demande reste en attente.
+                            </div>
+                        @endunless
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success me-auto"
+                            form="validationForm{{ $demande->id }}"
+                            {{ $demandePeutEtreServie ? '' : 'disabled' }}>
+                                <i class="mdi mdi-check"></i> Servir la demande
+                        </button>
+
+                        <form action="{{ route('loading.demande', $demande->id) }}" method="POST">
+                            @csrf @method('PUT')
+                            <button type="submit" class="btn btn-warning">
+                                <i class="mdi mdi-timer-sand"></i> Mettre en attente
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
 @push('scripts')
     <!-- CSS Bootstrap -->

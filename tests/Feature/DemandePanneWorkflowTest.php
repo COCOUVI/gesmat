@@ -9,6 +9,7 @@ use App\Models\Demande;
 use App\Models\Equipement;
 use App\Models\Panne;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 test('demande validation is blocked when computed available stock is insufficient', function () {
     $admin = User::factory()->create(['role' => 'admin']);
@@ -850,4 +851,78 @@ test('employee dashboard stats use active assigned and unresolved quantities', f
     $response->assertViewHas('nbr_en_attente', 1);
     $response->assertViewHas('nbr_accept', 1);
     $response->assertViewHas('nbr_non_resolue', 2);
+});
+
+test('admin panne list now returns a full collection for datatables', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'DataTables pannes']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Serveur',
+        'marque' => 'HP',
+        'description' => 'Serveur rack',
+        'quantite' => 12,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectation = Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 6,
+        'quantite_retournee' => 0,
+        'created_by' => 'Admin Test',
+        'statut' => 'active',
+    ]);
+
+    foreach (range(1, 6) as $index) {
+        Panne::create([
+            'equipement_id' => $equipement->id,
+            'affectation_id' => $affectation->id,
+            'user_id' => $employee->id,
+            'quantite' => 1,
+            'quantite_retournee_stock' => 0,
+            'quantite_resolue' => 0,
+            'description' => 'Panne '.$index,
+            'statut' => 'en_attente',
+        ]);
+    }
+
+    $response = $this->actingAs($admin)->get(route('equipements.pannes'));
+
+    $response->assertOk();
+    $response->assertSee('dataTables.bootstrap5.min.css', false);
+    $response->assertSee('Panne 6');
+
+    $pannes = $response->viewData('pannes');
+
+    expect($pannes)->toBeInstanceOf(EloquentCollection::class);
+    expect($pannes)->toHaveCount(6);
+});
+
+test('employee demande list now returns a full collection for datatables', function () {
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    foreach (range(1, 6) as $index) {
+        Demande::create([
+            'lieu' => 'Site '.$index,
+            'motif' => 'Demande '.$index,
+            'statut' => 'en_attente',
+            'user_id' => $employee->id,
+        ]);
+    }
+
+    $response = $this->actingAs($employee)->get(route('listes.demandes'));
+
+    $response->assertOk();
+    $response->assertSee('dataTables.bootstrap5.min.css', false);
+    $response->assertSee('Demande 6');
+
+    $demandes = $response->viewData('demandes');
+
+    expect($demandes)->toBeInstanceOf(EloquentCollection::class);
+    expect($demandes)->toHaveCount(6);
 });

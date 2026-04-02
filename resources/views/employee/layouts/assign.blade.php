@@ -85,6 +85,5 @@
                 @endforeach
             </div>
         </div>
-        <div class="mt-2">{{ $affectations->links() }}</div>
     </div>
 @endsection

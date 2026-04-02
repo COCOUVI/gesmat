@@ -43,7 +43,7 @@
                                         bg
                                     ">
                                             <td class="fw-bold">
-                                                {{ $loop->iteration + ($pannes->currentPage() - 1) * $pannes->perPage() }}
+                                                {{ $loop->iteration }}
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -82,11 +82,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        <!-- Pagination simple -->
-                        <div class="d-flex justify-content-center mt-4">
-                            {{ $pannes->links('pagination::bootstrap-5') }}
                         </div>
                     @else
                         <!-- Message vide avec contexte de panne -->

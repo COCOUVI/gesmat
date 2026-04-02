@@ -91,7 +91,7 @@ final class AdminController extends Controller
 
     public function showusers()
     {
-        $users = User::where('role', '!=', 'admin')->paginate(3);
+        $users = User::where('role', '!=', 'admin')->get();
 
         return view('admin.listuserpage', compact('users'));
     }
@@ -180,8 +180,7 @@ final class AdminController extends Controller
 
     public function ShowToolpage()
     {
-        // $equipements = Equipement::with('categorie')->paginate(2);
-        $equipements = Equipement::with('categorie')->paginate(7);
+        $equipements = Equipement::with('categorie')->get();
 
         return view('admin.listtools', compact('equipements'));
     }
@@ -229,7 +228,7 @@ final class AdminController extends Controller
         $demandes = Demande::with(['equipements', 'affectations'])
             ->where('statut', '=', 'en_attente')
             ->latest()
-            ->paginate(7);
+            ->get();
 
         return view('admin.asklist', compact('demandes'));
     }
@@ -427,7 +426,7 @@ final class AdminController extends Controller
         $pannes = Panne::with(['equipement', 'user', 'affectation.user'])
             ->where('statut', '=', 'en_attente')
             ->latest()
-            ->paginate(4);
+            ->get();
 
         $equipementsInternes = Equipement::with('categorie')
             ->get()
@@ -486,7 +485,7 @@ final class AdminController extends Controller
             ->whereDate('date_retour', '<=', now())    // date de retour dépassée
             ->active()                                 // statut non retourné
             ->whereNotNull('date_retour')              // on s'assure que la date de retour est bien définie
-            ->paginate(7);
+            ->get();
 
         return view('admin.lost_tools', compact('equipement_lost'));
     }
@@ -518,7 +517,7 @@ final class AdminController extends Controller
 
     public function ShowListCollaborator()
     {
-        $collaborateurs = CollaborateurExterne::paginate(4);
+        $collaborateurs = CollaborateurExterne::get();
 
         return view('admin.list_collaborator', compact('collaborateurs'));
     }
@@ -532,8 +531,7 @@ final class AdminController extends Controller
 
     public function ShowBons()
     {
-
-        $bons = Bon::paginate(7);
+        $bons = Bon::latest()->get();
 
         return view('admin.list_bons', compact('bons'));
     }
@@ -688,7 +686,7 @@ final class AdminController extends Controller
         $affectations = Affectation::with(['equipement', 'user', 'demande', 'pannes'])
             ->withCount('pannes')
             ->latest()
-            ->paginate(4);
+            ->get();
 
         return view('admin.affectlist', compact('affectations'));
     }
@@ -742,7 +740,7 @@ final class AdminController extends Controller
 
     public function ShowRapport()
     {
-        $rapports = Rapport::orderBy('created_at', 'desc')->paginate(4);
+        $rapports = Rapport::orderBy('created_at', 'desc')->get();
 
         return view('admin.list_rapport', compact('rapports'));
     }

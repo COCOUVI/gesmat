@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <!-- endinject -->
     <!-- inject:css -->
     <link rel="stylesheet" href="css/style.css">
@@ -82,6 +83,9 @@
         <!-- plugins:js -->
         <script src="vendors/js/vendor.bundle.base.js"></script>
         <script src="vendors/js/vendor.bundle.addons.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
         <!-- endinject -->
         <!-- Plugin js for this page-->
         <!-- End plugin js for this page-->
@@ -94,76 +98,41 @@
         <script src="js/dashboard.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('table.smart-data-table').forEach(function(table) {
-                    if (table.dataset.smartTableReady === '1') {
+                $('table.smart-data-table').each(function() {
+                    const table = $(this);
+                    const hasPlaceholderRow = table.find('tbody td[colspan]').length > 0;
+                    const rowCount = table.find('tbody tr').length;
+
+                    if (hasPlaceholderRow || rowCount === 0) {
                         return;
                     }
 
-                    table.dataset.smartTableReady = '1';
+                    const headers = table.find('thead th').map(function() {
+                        return $(this).text().trim().toLowerCase();
+                    }).get();
 
-                    const wrapper = table.closest('.table-responsive') ?? table.parentElement;
-                    const headerLabels = Array.from(table.querySelectorAll('thead th')).map(function(header) {
-                        return header.textContent.trim();
-                    });
+                    const nonSortableTargets = headers.reduce(function(targets, header, index) {
+                        if (['action', 'actions', 'photo', 'téléchargement', 'telechargement'].includes(header)) {
+                            targets.push(index);
+                        }
 
-                    table.querySelectorAll('tbody tr').forEach(function(row) {
-                        Array.from(row.children).forEach(function(cell, index) {
-                            if (!cell.getAttribute('data-label')) {
-                                cell.setAttribute('data-label', headerLabels[index] ?? 'Valeur');
-                            }
-                        });
-                    });
+                        return targets;
+                    }, []);
 
-                    if (!wrapper || !wrapper.parentNode) {
-                        return;
-                    }
-
-                    wrapper.classList.add('smart-table-wrapper');
-
-                    const toolbar = document.createElement('div');
-                    toolbar.className = 'smart-table-toolbar';
-
-                    const hint = document.createElement('span');
-                    hint.className = 'small text-muted';
-                    hint.textContent = 'Recherche rapide';
-
-                    const input = document.createElement('input');
-                    input.type = 'search';
-                    input.className = 'form-control';
-                    input.placeholder = 'Rechercher dans ' + (table.dataset.tableTitle ?? 'ce tableau') + '...';
-
-                    toolbar.appendChild(hint);
-                    toolbar.appendChild(input);
-                    wrapper.parentNode.insertBefore(toolbar, wrapper);
-
-                    const emptyState = document.createElement('div');
-                    emptyState.className = 'smart-table-empty-state';
-                    emptyState.textContent = 'Aucun resultat pour cette recherche.';
-                    wrapper.parentNode.insertBefore(emptyState, wrapper.nextSibling);
-
-                    const rows = Array.from(table.querySelectorAll('tbody tr'));
-
-                    input.addEventListener('input', function() {
-                        const query = input.value.toLowerCase().trim();
-                        let visibleRows = 0;
-
-                        rows.forEach(function(row) {
-                            const placeholderRow = row.querySelector('td[colspan]');
-
-                            if (placeholderRow) {
-                                row.style.display = query === '' ? '' : 'none';
-                                return;
-                            }
-
-                            const matches = row.textContent.toLowerCase().includes(query);
-                            row.style.display = matches ? '' : 'none';
-
-                            if (matches) {
-                                visibleRows += 1;
-                            }
-                        });
-
-                        emptyState.style.display = query !== '' && visibleRows === 0 ? 'block' : 'none';
+                    table.DataTable({
+                        fixedHeader: true,
+                        pageLength: 10,
+                        lengthMenu: [10, 25, 50, 100],
+                        order: [],
+                        autoWidth: false,
+                        scrollX: true,
+                        columnDefs: nonSortableTargets.length > 0 ? [{
+                            orderable: false,
+                            targets: nonSortableTargets,
+                        }] : [],
+                        language: {
+                            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+                        },
                     });
                 });
             });

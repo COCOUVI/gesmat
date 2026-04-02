@@ -53,7 +53,7 @@
                             @foreach ($demandes as $index => $demande)
                                 @php $statutAffichage = $demande->getStatutAffichage(); @endphp
                                 <tr>
-                                    <td>{{ $loop->iteration + ($demandes->currentPage() - 1) * $demandes->perPage() }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ Str::limit($demande->motif, 60) }}</td>
                                     <td>{{ $demande->lieu }}</td>
                                     <td>{{ $demande->created_at->format('d/m/Y') }}</td>
@@ -94,10 +94,6 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
-
-                <div class="mt-3 d-flex justify-content-center">
-                    {{ $demandes->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <div class="no-data text-center">

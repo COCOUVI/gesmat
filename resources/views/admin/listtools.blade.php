@@ -154,22 +154,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    @if ($equipements->count())
-                        <div class="row mt-4">
-                            <div class="col-12 col-md-6 text-center text-md-start mb-2 mb-md-0">
-                                <span class="text-muted">
-                                    Affichage de {{ $equipements->firstItem() }} à
-                                    {{ $equipements->lastItem() }} sur {{ $equipements->total() }} équipements
-                                </span>
-                            </div>
-                            <div class="col-12 col-md-6 d-flex justify-content-center justify-content-md-end">
-                                <div class="pagination-wrapper">
-                                    {{ $equipements->links() }}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -183,43 +167,4 @@
             <div class="image-popup-title" id="popupImageTitle"></div>
         </div>
     </div>
-@endpush
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const tableBody = document.getElementById('equip-table-body');
-
-        const searchDesktopInput = document.getElementById('navbar-search');
-        const searchMobileInput = document.getElementById('navbar-search-mobile');
-
-        const searchIconDesktop = document.getElementById('search-icon-desktop');
-        const searchIconMobile = document.getElementById('search-icon-mobile');
-
-        function filterEquipments(term) {
-            const rows = tableBody.getElementsByTagName('tr');
-            const query = term.toLowerCase().trim();
-
-            Array.from(rows).forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
-            });
-        }
-
-        if (searchIconDesktop) {
-            searchIconDesktop.addEventListener('click', function () {
-                const term = searchDesktopInput?.value || '';
-                filterEquipments(term);
-            });
-        }
-
-        if (searchIconMobile) {
-            searchIconMobile.addEventListener('click', function () {
-                const term = searchMobileInput?.value || '';
-                filterEquipments(term);
-            });
-        }
-    });
-</script>
-
-
 @endpush

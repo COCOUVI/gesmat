@@ -102,7 +102,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        <div class="mt-2">{{ $pannes->links() }}</div>
                     </div>
                 @else
                     <div class="alert alert-info text-center">
