@@ -17,7 +17,6 @@ final class StoreToolRequest extends FormRequest
     {
         return [
             'nom' => 'required|string',
-            'etat' => 'required',
             'marque' => 'required|min:2',
             'categorie_id' => 'required|integer|exists:categories,id',
             'description' => 'required|string',
@@ -32,7 +31,6 @@ final class StoreToolRequest extends FormRequest
         return [
             'nom.required' => "Le nom de l'équipement est requis.",
             'nom.string' => "Le nom de l'équipement doit être une chaîne de caractères.",
-            'etat.required' => "Veuillez sélectionner l'état de l'équipement.",
             'marque.required' => "La marque de l'équipement est requise.",
             'marque.min' => 'La marque doit contenir au moins :min caractères.',
             'categorie_id.required' => 'La catégorie est requise.',

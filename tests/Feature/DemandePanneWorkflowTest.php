@@ -357,6 +357,7 @@ test('partial healthy return increases available stock and keeps affectation act
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
+    $response->assertSessionHas('pdf');
 
     $affectation->refresh();
     $equipement->refresh();
@@ -365,6 +366,7 @@ test('partial healthy return increases available stock and keeps affectation act
     expect($affectation->getQuantiteActive())->toBe(2);
     expect($affectation->statut)->toBe('retour_partiel');
     expect($equipement->getQuantiteDisponible())->toBe(3);
+    expect(Bon::where('user_id', $employee->id)->where('statut', 'entrée')->exists())->toBeTrue();
 });
 
 test('returning unresolved broken quantity keeps available stock unchanged and moves panne to internal stock', function () {
@@ -497,6 +499,58 @@ test('admin can partially resolve an internal breakdown and restore available st
     expect($panne->statut)->toBe('en_attente');
     expect($panne->getQuantiteInterneNonResolue())->toBe(1);
     expect($equipement->getQuantiteDisponible())->toBe(7);
+});
+
+test('admin can resolve a breakdown still held by the employee without replacement', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Resolution employe']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Imprimante mobile',
+        'marque' => 'Canon',
+        'description' => 'Imprimante transportable',
+        'quantite' => 4,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectation = Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 2,
+        'created_by' => 'Admin Test',
+        'statut' => 'active',
+    ]);
+
+    $panne = Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => $affectation->id,
+        'user_id' => $employee->id,
+        'quantite' => 1,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Une unite en panne chez lemploye',
+        'statut' => 'en_attente',
+    ]);
+
+    $response = $this->actingAs($admin)->put(route('pannes.resolu', $panne), [
+        'quantite_resolue' => 1,
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    $panne->refresh();
+    $equipement->refresh();
+
+    expect($panne->statut)->toBe('resolu');
+    expect($panne->getQuantiteEncoreChezEmploye())->toBe(0);
+    expect($panne->getQuantiteInterneNonResolue())->toBe(0);
+    expect($affectation->fresh()->getQuantiteSaineActive())->toBe(2);
+    expect($equipement->getQuantiteDisponible())->toBe(2);
 });
 
 test('admin can replace a broken assigned unit and create a new replacement affectation', function () {

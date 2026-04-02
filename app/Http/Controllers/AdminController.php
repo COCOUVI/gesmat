@@ -127,33 +127,25 @@ final class AdminController extends Controller
     public function addTool(\App\Http\Requests\StoreToolRequest $request)
     {
         $validated = $request->validated();
+        $imagePath = null;
+
+        if ($request->hasFile('image_path')) {
+            $file = $request->file('image_path');
+            $nomNettoye = preg_replace('/[^a-zA-Z0-9-_]/', '', mb_strtolower(str_replace(' ', '-', $validated['nom'])));
+            $imageName = time().'_'.$nomNettoye.'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('pictures/equipements'), $imageName);
+            $imagePath = 'pictures/equipements/'.$imageName;
+        }
+
         $equipement = Equipement::create([
             'nom' => $validated['nom'],
-            'etat' => $validated['etat'],
             'marque' => $validated['marque'],
             'description' => $validated['description'],
             'date_acquisition' => $validated['date_acquisition'],
             'quantite' => $validated['quantite'],
+            'image_path' => $imagePath,
             'categorie_id' => $validated['categorie_id'],
         ]);
-        // Gestion de l'image si elle est envoyée
-        if ($request->hasFile('image_path')) {
-            $file = $request->file('image_path');
-
-            //   // Nettoyer et formater le nom de l’équipement pour le nom du fichier
-            $nomNettoye = preg_replace('/[^a-zA-Z0-9-_]/', '', mb_strtolower(str_replace(' ', '-', $request->nom)));
-
-            //   // Construire le nom du fichier
-            $imageName = time().'_'.$nomNettoye.'.'.$file->getClientOriginalExtension();
-
-            //   // Déplacer dans le dossier public/pictures/equipements
-            $file->move(public_path('pictures/equipements'), $imageName);
-
-            //   // Stocker le chemin relatif dans la base de données
-            $equipement->image_path = 'pictures/equipements/'.$imageName;
-        }
-
-        $equipement->save();
 
         $user = Auth::user();
         $bon = new Bon();
@@ -642,25 +634,39 @@ final class AdminController extends Controller
             $equipement = $affectation->equipement;
             $user = $affectation->user;
 
-            $pdfName = 'retour_perdu_'.$equipement->id.'_'.now()->timestamp.'.pdf';
-            $pdfPath = 'retour_perdu/'.$pdfName;
+            $pdfName = 'bon_entree_retour_'.$affectation->id.'_'.now()->timestamp.'.pdf';
+            $pdfPath = 'bon_entree/'.$pdfName;
 
-            $pdf = Pdf::loadView('pdf.retour_perdu', [
-                'date' => now(),
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
-                'equipement' => $equipement->nom,
-                'quantite_retournee' => $quantiteRetourneeTotale,
-                'quantite_saine_retournee' => $quantiteSaineRetournee,
-                'quantite_panne_retournee' => $quantitePanneRetournee,
+            $bon = Bon::create([
+                'user_id' => $user->id,
+                'motif' => sprintf(
+                    'Retour de matériel : %s (total: %d, sain: %d, en panne: %d)',
+                    $equipement->nom,
+                    $quantiteRetourneeTotale,
+                    $quantiteSaineRetournee,
+                    $quantitePanneRetournee
+                ),
+                'statut' => 'entrée',
+                'fichier_pdf' => $pdfPath,
             ]);
 
-            Storage::disk('public')->put($pdfPath, $pdf->output());
+            $this->generateBonPdf($bon, [
+                'date' => now()->format('d/m/Y'),
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'motif' => $bon->motif,
+                'numero_bon' => $bon->id,
+                'type' => $bon->statut,
+                'equipements' => [[
+                    'nom' => $equipement->nom,
+                    'quantite' => $quantiteRetourneeTotale,
+                ]],
+            ]);
 
             DB::commit();
 
             return redirect()->back()
-                ->with('success', 'Retour du matériel enregistré avec succès. Un PDF de confirmation a été généré.')
+                ->with('success', 'Retour du matériel enregistré avec succès. Un bon d’entrée a été généré.')
                 ->with('pdf', asset('storage/'.$pdfPath));
         } catch (Exception $e) {
             DB::rollBack();

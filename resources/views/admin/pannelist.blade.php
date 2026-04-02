@@ -92,66 +92,6 @@
                                             </div>
                                         </td>
                                     </tr>
-
-                                    @if ($panne->getQuantiteResolvable() > 0)
-                                        <div class="modal fade" id="resolveModal{{ $panne->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header bg-success text-white">
-                                                        <h5 class="modal-title">Résolution partielle de {{ $panne->equipement->nom }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                                    </div>
-                                                    <form action="{{ route('pannes.resolu', $panne->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <div class="modal-body">
-                                                            <label class="form-label">Quantité à résoudre</label>
-                                                            <input type="number" name="quantite_resolue" class="form-control"
-                                                                min="1" max="{{ $panne->getQuantiteResolvable() }}"
-                                                                value="{{ $panne->getQuantiteResolvable() }}" required>
-                                                            <small class="text-muted">
-                                                                Maximum résoluble maintenant : {{ $panne->getQuantiteResolvable() }}
-                                                            </small>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                            <button type="submit" class="btn btn-success">Confirmer</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    @if ($quantiteRemplacable > 0)
-                                        <div class="modal fade" id="replaceModal{{ $panne->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header bg-primary text-white">
-                                                        <h5 class="modal-title">Remplacer une quantité en panne</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                                    </div>
-                                                    <form action="{{ route('pannes.remplacer', $panne->id) }}" method="POST">
-                                                        @csrf
-                                                        <div class="modal-body">
-                                                            <p class="mb-2">La quantité remplacée sera retournée au stock en panne, puis une nouvelle affectation saine sera créée.</p>
-                                                            <label class="form-label">Quantité à remplacer</label>
-                                                            <input type="number" name="quantite_remplacement" class="form-control"
-                                                                min="1" max="{{ $quantiteRemplacable }}"
-                                                                value="{{ $quantiteRemplacable }}" required>
-                                                            <small class="text-muted">
-                                                                Maximum remplaçable maintenant : {{ $quantiteRemplacable }}
-                                                            </small>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                            <button type="submit" class="btn btn-primary">Confirmer</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -165,6 +105,73 @@
             </div>
         </div>
     </div>
+
+    @foreach ($pannes as $panne)
+        @php
+            $quantiteRemplacable = $panne->affectation
+                ? min($panne->getQuantiteEncoreChezEmploye(), $panne->equipement->getQuantiteDisponible())
+                : 0;
+        @endphp
+        @if ($panne->getQuantiteResolvable() > 0)
+            <div class="modal fade" id="resolveModal{{ $panne->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">Résolution de {{ $panne->equipement->nom }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <form action="{{ route('pannes.resolu', $panne->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <label class="form-label">Quantité à résoudre</label>
+                                <input type="number" name="quantite_resolue" class="form-control"
+                                    min="1" max="{{ $panne->getQuantiteResolvable() }}"
+                                    value="{{ $panne->getQuantiteResolvable() }}" required>
+                                <small class="text-muted">
+                                    Maximum résoluble maintenant : {{ $panne->getQuantiteResolvable() }}
+                                </small>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-success">Confirmer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($quantiteRemplacable > 0)
+            <div class="modal fade" id="replaceModal{{ $panne->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">Remplacer une quantité en panne</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <form action="{{ route('pannes.remplacer', $panne->id) }}" method="POST">
+                            @csrf
+                            <div class="modal-body">
+                                <p class="mb-2">Le remplacement retourne la quantité défectueuse au stock interne et crée une nouvelle affectation saine pour l'utilisateur.</p>
+                                <label class="form-label">Quantité à remplacer</label>
+                                <input type="number" name="quantite_remplacement" class="form-control"
+                                    min="1" max="{{ $quantiteRemplacable }}"
+                                    value="{{ $quantiteRemplacable }}" required>
+                                <small class="text-muted">
+                                    Maximum remplaçable maintenant : {{ $quantiteRemplacable }}
+                                </small>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                <button type="submit" class="btn btn-primary">Confirmer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <div class="modal fade" id="internalPanneModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">

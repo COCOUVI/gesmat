@@ -109,7 +109,13 @@ final class Panne extends Model
             return 0;
         }
 
-        return max(0, $this->quantite - $this->getQuantiteRetourneeAuStock());
+        if ($this->affectation_id === null) {
+            return 0;
+        }
+
+        $quantiteInitialeChezEmploye = max(0, $this->quantite - $this->getQuantiteRetourneeAuStock());
+
+        return max(0, $quantiteInitialeChezEmploye - $this->getQuantiteResolue());
     }
 
     /**
@@ -137,7 +143,11 @@ final class Panne extends Model
             return max(0, $this->quantite - $this->getQuantiteResolue());
         }
 
-        return max(0, $this->getQuantiteRetourneeAuStock() - $this->getQuantiteResolue());
+        $quantiteRetournee = $this->getQuantiteRetourneeAuStock();
+        $quantiteInitialeChezEmploye = max(0, $this->quantite - $quantiteRetournee);
+        $quantiteResolueEnInterne = max(0, $this->getQuantiteResolue() - $quantiteInitialeChezEmploye);
+
+        return max(0, $quantiteRetournee - $quantiteResolueEnInterne);
     }
 
     /**
@@ -154,7 +164,7 @@ final class Panne extends Model
      */
     public function getQuantiteResolvable(): int
     {
-        return $this->getQuantiteInterneNonResolue();
+        return $this->getQuantiteNonResolue();
     }
 
     /**
