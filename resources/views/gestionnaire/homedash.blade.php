@@ -40,11 +40,11 @@
             <div class="card bg-gradient-toolzy-primary card-img-holder text-white">
                 <div class="card-body">
                     <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Total Équipements
+                    <h4 class="font-weight-normal mb-3">Stock total
                         <i class="mdi mdi-laptop mdi-24px float-right"></i>
                     </h4>
                     <h2 class="mb-5">{{ $totalEquipements }}</h2>
-                    <h6 class="card-text">Augmentation de 15% ce mois</h6>
+                    <h6 class="card-text">Unités physiques actuellement enregistrées</h6>
                 </div>
             </div>
         </div>
@@ -52,23 +52,23 @@
             <div class="card bg-gradient-toolzy-secondary card-img-holder text-white">
                 <div class="card-body">
                     <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Équipements affectés
+                    <h4 class="font-weight-normal mb-3">Unités affectées
                         <i class="mdi mdi-account-check mdi-24px float-right"></i>
                     </h4>
                     <h2 class="mb-5">{{ $equipementsAffectes }}</h2>
-                    <h6 class="card-text">75% du total des équipements</h6>
+                    <h6 class="card-text">{{ $totalEquipements === 0 ? 0 : number_format(($equipementsAffectes / $totalEquipements) * 100, 0) }}% du stock total</h6>
                 </div>
             </div>
         </div>
         <div class="col-md-4 stretch-card grid-margin">
-            <div class="card bg-gradient-toolzy-success card-img-holder text-white">
+            <div class="card bg-gradient-toolzy-danger card-img-holder text-white">
                 <div class="card-body">
                     <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Utilisateurs actifs
-                        <i class="mdi mdi-account-multiple mdi-24px float-right"></i>
+                    <h4 class="font-weight-normal mb-3">Unités en panne
+                        <i class="mdi mdi-alert mdi-24px float-right"></i>
                     </h4>
-                    <h2 class="mb-5">33</h2>
-                    <h6 class="card-text">Augmentation de 8% ce mois</h6>
+                    <h2 class="mb-5">{{ $equipementsEnPanne }}</h2>
+                    <h6 class="card-text">{{ $utilisateursActifs }} utilisateur(s) suivis sur la plateforme</h6>
                 </div>
             </div>
         </div>

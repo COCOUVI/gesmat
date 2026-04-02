@@ -40,7 +40,7 @@
         <h4 class="mb-4 fw-bold text-primary">Liste des demandes d’équipement</h4>
 
         <div class="table-responsive">
-            <table class="table table-striped align-middle table-bordered shadow-sm">
+            <table class="table table-striped align-middle table-bordered shadow-sm smart-data-table" data-table-title="les demandes">
                 <thead class="table-primary">
                     <tr>
                         <th>Date</th>

@@ -160,11 +160,35 @@ final class Panne extends Model
 
     /**
      * Quantité qu'il est possible de résoudre maintenant.
-     * On ne résout que ce qui est déjà revenu au stock interne.
+     * La résolution peut concerner une panne encore chez l'employé
+     * ou déjà revenue au stock interne.
      */
     public function getQuantiteResolvable(): int
     {
         return $this->getQuantiteNonResolue();
+    }
+
+    /**
+     * Quantité qu'il est possible de remplacer immédiatement.
+     */
+    public function getQuantiteRemplacable(): int
+    {
+        if ($this->estInterne() || ! $this->affectation) {
+            return 0;
+        }
+
+        return min(
+            $this->getQuantiteEncoreChezEmploye(),
+            $this->equipement?->getQuantiteDisponible() ?? 0
+        );
+    }
+
+    /**
+     * Indique si un remplacement immédiat est possible.
+     */
+    public function peutEtreRemplacee(): bool
+    {
+        return $this->getQuantiteRemplacable() > 0;
     }
 
     /**

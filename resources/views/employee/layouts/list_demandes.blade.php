@@ -39,7 +39,7 @@
         <div class="card dashboard-card shadow-sm p-3">
             @if ($demandes->count())
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle smart-data-table" data-table-title="vos demandes">
                         <thead >
                             <tr>
                                 <th class="text-white">#</th>

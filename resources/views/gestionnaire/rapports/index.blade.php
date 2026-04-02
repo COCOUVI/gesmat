@@ -31,7 +31,7 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0">
+                                <table class="table table-hover mb-0 smart-data-table" data-table-title="les rapports">
                                     <thead class="table-light">
                                         <tr>
                                             <th class="px-4 py-3 fw-semibold text-muted">#</th>

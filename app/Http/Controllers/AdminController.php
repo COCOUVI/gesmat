@@ -20,7 +20,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -42,44 +41,52 @@ final class AdminController extends Controller
 {
     public function ShowHomePage()
     {
-        // Cache global de 5 minutes (300 sec) pour toute la data statistique
-        $cacheKey = 'home_page_stats';
-        $data = Cache::remember($cacheKey, 300, function () {
-            $nbr_equipement = Equipement::count();
-            $nbr_user = User::count();
-            $nbr_affect = Affectation::sum('quantite_affectee');
-            $nbr_panne = Panne::where('statut', '!=', 'resolu')->count();
-            $now = Carbon::now();
-            // processus de recuperation du pourcentage d'augmentation des users
-            $user_this_month = User::whereMonth('created_at', $now->month)
-                ->whereYear('created_at', $now->year)
-                ->count();
-            $user_before_month = User::where('created_at', '<', $now->startOfMonth())->count();
+        $nbr_equipement = (int) Equipement::sum('quantite');
+        $nbr_user = User::count();
+        $nbr_affect = (int) Affectation::with('pannes')
+            ->get()
+            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
+        $nbr_panne = (int) Panne::with(['equipement', 'affectation'])
+            ->where('statut', '!=', 'resolu')
+            ->get()
+            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
 
-            $growth = 0;
-            if ($nbr_user > 0) {
-                $growth = (($user_this_month - $user_before_month) / $nbr_user) * 100;
-            }
+        $now = Carbon::now();
+        $user_this_month = User::whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
+        $user_before_month = User::where('created_at', '<', $now->copy()->startOfMonth())->count();
 
-            // Statistiques par mois
-            $statsParMois = [];
-            for ($i = 1; $i <= 12; $i++) {
-                $debut = Carbon::create(null, $i, 1)->startOfMonth();
-                $fin = Carbon::create(null, $i, 1)->endOfMonth();
+        $growth = 0;
+        if ($nbr_user > 0) {
+            $growth = (($user_this_month - $user_before_month) / $nbr_user) * 100;
+        }
 
-                $statsParMois[$i] = Affectation::whereBetween('created_at', [$debut, $fin])->sum('quantite_affectee');
-            }
+        $statsParMois = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $debut = Carbon::create(null, $i, 1)->startOfMonth();
+            $fin = Carbon::create(null, $i, 1)->endOfMonth();
 
-            // Distribution par catégorie
-            $distribution = Categorie::withCount('equipements')->get()->map(function ($cat) {
-                return ['label' => $cat->nom, 'count' => $cat->equipements_count];
-            });
+            $statsParMois[$i] = (int) Affectation::whereBetween('created_at', [$debut, $fin])
+                ->sum('quantite_affectee');
+        }
 
-            return compact('nbr_equipement', 'nbr_user', 'nbr_affect', 'nbr_panne', 'statsParMois', 'distribution', 'growth');
+        $distribution = Categorie::with('equipements')->get()->map(function (Categorie $categorie): array {
+            return [
+                'label' => $categorie->nom,
+                'count' => (int) $categorie->equipements->sum('quantite'),
+            ];
         });
 
-        // Injecte dans la vue
-        return view('admin.homedash', $data);
+        return view('admin.homedash', compact(
+            'nbr_equipement',
+            'nbr_user',
+            'nbr_affect',
+            'nbr_panne',
+            'statsParMois',
+            'distribution',
+            'growth'
+        ));
     }
 
     public function showusers()
@@ -445,7 +452,7 @@ final class AdminController extends Controller
 
             if ($validated['quantite'] > $equipement->getQuantiteDisponible()) {
                 throw new Exception(sprintf(
-                    "Vous ne pouvez déclarer en panne interne que %d unité(s) pour « %s ».",
+                    'Vous ne pouvez déclarer en panne interne que %d unité(s) pour « %s ».',
                     $equipement->getQuantiteDisponible(),
                     $equipement->nom
                 ));
@@ -807,10 +814,7 @@ final class AdminController extends Controller
                 throw new Exception('Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
             }
 
-            $quantiteRemplacable = min(
-                $panne->getQuantiteEncoreChezEmploye(),
-                $panne->equipement->getQuantiteDisponible()
-            );
+            $quantiteRemplacable = $panne->getQuantiteRemplacable();
 
             if ($quantiteRemplacable <= 0) {
                 throw new Exception('Aucune quantité n’est disponible pour un remplacement immédiat.');
@@ -988,7 +992,7 @@ final class AdminController extends Controller
 
             if ($quantite > $quantiteRestante) {
                 throw new Exception(sprintf(
-                    "La quantité à affecter pour « %s » dépasse le restant à servir (%d).",
+                    'La quantité à affecter pour « %s » dépasse le restant à servir (%d).',
                     $equipement->nom,
                     $quantiteRestante
                 ));

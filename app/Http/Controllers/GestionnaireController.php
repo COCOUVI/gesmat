@@ -70,12 +70,21 @@ final class GestionnaireController extends Controller
      */
     public function dashboard()
     {
-        $totalEquipements = Equipement::count();
-        $equipementsAffectes = Affectation::count();
+        $totalEquipements = (int) Equipement::sum('quantite');
+        $equipementsAffectes = (int) Affectation::with('pannes')
+            ->get()
+            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
+        $equipementsEnPanne = (int) Panne::with(['equipement', 'affectation'])
+            ->where('statut', '!=', 'resolu')
+            ->get()
+            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
+        $utilisateursActifs = User::count();
 
         return view('gestionnaire.homedash', compact(
             'totalEquipements',
-            'equipementsAffectes'
+            'equipementsAffectes',
+            'equipementsEnPanne',
+            'utilisateursActifs'
         ));
     }
 
@@ -120,7 +129,7 @@ final class GestionnaireController extends Controller
             ));
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erreur résolution panne gestionnaire: ' . $e->getMessage());
+            Log::error('Erreur résolution panne gestionnaire: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Erreur lors du traitement. Veuillez réessayer.');
         }

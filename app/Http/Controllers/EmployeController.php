@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Demande;
-use App\Models\Equipement;
 use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
@@ -50,14 +49,20 @@ final class EmployeController extends Controller
             ->where('statut', 'en_attente')
             ->count();
 
-        $nbr_non_resolue = Panne::where('user_id', $user->id)
-            ->where('statut', '!=', 'resolu')
-            ->count();
-
-        $nbr_assign = Affectation::where('user_id', $user->id)->count();
-
-        $affectations = Affectation::with('equipement')
+        $nbr_non_resolue = (int) Panne::with(['equipement', 'affectation'])
             ->where('user_id', $user->id)
+            ->where('statut', '!=', 'resolu')
+            ->get()
+            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
+
+        $nbr_assign = (int) Affectation::with('pannes')
+            ->where('user_id', $user->id)
+            ->get()
+            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
+
+        $affectations = Affectation::with(['equipement', 'equipement.categorie'])
+            ->where('user_id', $user->id)
+            ->active()
             ->orderByDesc('created_at')
             ->take(4)
             ->get();

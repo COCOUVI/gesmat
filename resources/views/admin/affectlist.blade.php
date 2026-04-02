@@ -27,7 +27,7 @@
                 @endif
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle smart-data-table" data-table-title="les affectations">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>

@@ -15,7 +15,7 @@
 
                 @if ($affectations->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped align-middle">
+                        <table class="table table-striped align-middle smart-data-table" data-table-title="vos affectations">
                             <thead class="table-light">
                                 <tr>
                                     <th>Équipement</th>

@@ -17,7 +17,7 @@
 
                 @if ($pannes->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
+                        <table class="table table-striped table-hover align-middle smart-data-table" data-table-title="les pannes">
                             <thead class="table-dark">
                                 <tr>
                                     <th class="text-white">Équipement</th>

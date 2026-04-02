@@ -22,7 +22,7 @@
                     <p class="text-center text-muted">Aucun matériel en retard n'a été trouvé.</p>
                 @else
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
+                        <table class="table table-bordered table-hover align-middle smart-data-table" data-table-title="les retours d'équipements">
                             <thead class="table-light">
                                 <tr>
                                     <th>Matériel</th>

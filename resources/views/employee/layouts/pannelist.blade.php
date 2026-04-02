@@ -14,7 +14,7 @@
                 <div class="card-body">
                     @if ($pannes->count())
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-striped table-hover smart-data-table" data-table-title="vos pannes">
                                 <thead class="table bg-danger">
                                     <tr>
                                         <th scope="col">#</th>

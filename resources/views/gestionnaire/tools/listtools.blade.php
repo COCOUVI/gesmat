@@ -30,7 +30,7 @@
                     <h4 class="card-title mb-4">Liste des équipements</h4>
 
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table smart-data-table" data-table-title="les équipements">
                             <thead>
                                 <tr>
                                     <th>Nom</th>

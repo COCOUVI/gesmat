@@ -618,3 +618,236 @@ test('admin can replace a broken assigned unit and create a new replacement affe
     expect($equipement->getQuantiteDisponible())->toBe(2);
     expect(Bon::where('user_id', $employee->id)->where('statut', 'sortie')->count())->toBeGreaterThan(0);
 });
+
+test('panne list shows replace action only when employee-linked breakdown has replacement stock', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Affichage pannes']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Tablette',
+        'marque' => 'Samsung',
+        'description' => 'Tablette terrain',
+        'quantite' => 5,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectation = Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 2,
+        'quantite_retournee' => 0,
+        'created_by' => 'Admin Test',
+        'statut' => 'active',
+    ]);
+
+    $panne = Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => $affectation->id,
+        'user_id' => $employee->id,
+        'quantite' => 1,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Une unite en panne chez lemploye',
+        'statut' => 'en_attente',
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('equipements.pannes'));
+
+    $response->assertOk();
+    $response->assertSee('Remplacer');
+    $response->assertSee('Stock dispo pour remplacement : 3');
+    $response->assertSee('smart-data-table', false);
+
+    expect($panne->fresh()->getQuantiteRemplacable())->toBe(1);
+});
+
+test('panne list keeps only resolve action for internal breakdowns', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $categorie = Categorie::create(['nom' => 'Affichage pannes internes']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Switch coeur',
+        'marque' => 'Cisco',
+        'description' => 'Switch de datacenter',
+        'quantite' => 6,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $panne = Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => null,
+        'user_id' => $admin->id,
+        'quantite' => 2,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Deux unites en panne au magasin',
+        'statut' => 'en_attente',
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('equipements.pannes'));
+
+    $response->assertOk();
+    $response->assertSee('Résoudre');
+    $response->assertDontSee('replaceModal'.$panne->id, false);
+
+    expect($panne->fresh()->getQuantiteRemplacable())->toBe(0);
+});
+
+test('admin dashboard stats use stock quantities instead of raw row counts', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Stats admin']);
+    $equipementA = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'PC portable',
+        'marque' => 'Dell',
+        'description' => 'Portable',
+        'quantite' => 10,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+    $equipementB = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Imprimante',
+        'marque' => 'HP',
+        'description' => 'Imprimante',
+        'quantite' => 5,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectationActive = Affectation::create([
+        'equipement_id' => $equipementA->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 4,
+        'quantite_retournee' => 1,
+        'created_by' => 'Admin Test',
+        'statut' => 'retour_partiel',
+    ]);
+
+    Affectation::create([
+        'equipement_id' => $equipementB->id,
+        'user_id' => $employee->id,
+        'date_retour' => now(),
+        'quantite_affectee' => 2,
+        'quantite_retournee' => 2,
+        'created_by' => 'Admin Test',
+        'statut' => 'retourné',
+    ]);
+
+    Panne::create([
+        'equipement_id' => $equipementA->id,
+        'affectation_id' => $affectationActive->id,
+        'user_id' => $employee->id,
+        'quantite' => 1,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Une unite en panne chez lemploye',
+        'statut' => 'en_attente',
+    ]);
+
+    Panne::create([
+        'equipement_id' => $equipementB->id,
+        'affectation_id' => null,
+        'user_id' => $admin->id,
+        'quantite' => 2,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Deux unites en panne interne',
+        'statut' => 'en_attente',
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.homedash'));
+
+    $response->assertOk();
+    $response->assertViewHas('nbr_equipement', 15);
+    $response->assertViewHas('nbr_affect', 3);
+    $response->assertViewHas('nbr_panne', 3);
+});
+
+test('employee dashboard stats use active assigned and unresolved quantities', function () {
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Stats employe']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Camera',
+        'marque' => 'Sony',
+        'description' => 'Camera de service',
+        'quantite' => 8,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectationActive = Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 4,
+        'quantite_retournee' => 1,
+        'created_by' => 'Admin Test',
+        'statut' => 'retour_partiel',
+    ]);
+
+    Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => now(),
+        'quantite_affectee' => 2,
+        'quantite_retournee' => 2,
+        'created_by' => 'Admin Test',
+        'statut' => 'retourné',
+    ]);
+
+    Demande::create([
+        'lieu' => 'Agence A',
+        'motif' => 'Demande en attente',
+        'statut' => 'en_attente',
+        'user_id' => $employee->id,
+    ]);
+
+    Demande::create([
+        'lieu' => 'Agence B',
+        'motif' => 'Demande acceptee',
+        'statut' => 'acceptee',
+        'user_id' => $employee->id,
+    ]);
+
+    Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => $affectationActive->id,
+        'user_id' => $employee->id,
+        'quantite' => 2,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 0,
+        'description' => 'Deux unites non resolues',
+        'statut' => 'en_attente',
+    ]);
+
+    Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => $affectationActive->id,
+        'user_id' => $employee->id,
+        'quantite' => 1,
+        'quantite_retournee_stock' => 0,
+        'quantite_resolue' => 1,
+        'description' => 'Une unite resolue',
+        'statut' => 'resolu',
+    ]);
+
+    $response = $this->actingAs($employee)->get(route('dashboard.employee'));
+
+    $response->assertOk();
+    $response->assertViewHas('nbr_assign', 3);
+    $response->assertViewHas('nbr_en_attente', 1);
+    $response->assertViewHas('nbr_accept', 1);
+    $response->assertViewHas('nbr_non_resolue', 2);
+});

@@ -69,6 +69,82 @@
         @stack('scripts')
         <script src="js/dashboard.js"></script>
         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('table.smart-data-table').forEach(function(table) {
+                    if (table.dataset.smartTableReady === '1') {
+                        return;
+                    }
+
+                    table.dataset.smartTableReady = '1';
+
+                    const wrapper = table.closest('.table-responsive') ?? table.parentElement;
+                    const headerLabels = Array.from(table.querySelectorAll('thead th')).map(function(header) {
+                        return header.textContent.trim();
+                    });
+
+                    table.querySelectorAll('tbody tr').forEach(function(row) {
+                        Array.from(row.children).forEach(function(cell, index) {
+                            if (!cell.getAttribute('data-label')) {
+                                cell.setAttribute('data-label', headerLabels[index] ?? 'Valeur');
+                            }
+                        });
+                    });
+
+                    if (!wrapper || !wrapper.parentNode) {
+                        return;
+                    }
+
+                    wrapper.classList.add('smart-table-wrapper');
+
+                    const toolbar = document.createElement('div');
+                    toolbar.className = 'smart-table-toolbar';
+
+                    const hint = document.createElement('span');
+                    hint.className = 'small text-muted';
+                    hint.textContent = 'Recherche rapide';
+
+                    const input = document.createElement('input');
+                    input.type = 'search';
+                    input.className = 'form-control';
+                    input.placeholder = 'Rechercher dans ' + (table.dataset.tableTitle ?? 'ce tableau') + '...';
+
+                    toolbar.appendChild(hint);
+                    toolbar.appendChild(input);
+                    wrapper.parentNode.insertBefore(toolbar, wrapper);
+
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'smart-table-empty-state';
+                    emptyState.textContent = 'Aucun resultat pour cette recherche.';
+                    wrapper.parentNode.insertBefore(emptyState, wrapper.nextSibling);
+
+                    const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+                    input.addEventListener('input', function() {
+                        const query = input.value.toLowerCase().trim();
+                        let visibleRows = 0;
+
+                        rows.forEach(function(row) {
+                            const placeholderRow = row.querySelector('td[colspan]');
+
+                            if (placeholderRow) {
+                                row.style.display = query === '' ? '' : 'none';
+                                return;
+                            }
+
+                            const matches = row.textContent.toLowerCase().includes(query);
+                            row.style.display = matches ? '' : 'none';
+
+                            if (matches) {
+                                visibleRows += 1;
+                            }
+                        });
+
+                        emptyState.style.display = query !== '' && visibleRows === 0 ? 'block' : 'none';
+                    });
+                });
+            });
+        </script>
+        <script>
             // Personnalisation des graphiques pour Toolzy
             document.addEventListener('DOMContentLoaded', function() {
                 if ($("#visit-sale-chart").length) {

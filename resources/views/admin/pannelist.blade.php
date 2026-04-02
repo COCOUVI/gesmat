@@ -29,7 +29,7 @@
             <div class="card-body">
                 @if ($pannes->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
+                        <table class="table table-striped table-hover align-middle smart-data-table" data-table-title="les pannes">
                             <thead class="table-dark">
                                 <tr>
                                     <th class="text-white">Équipement</th>
@@ -47,8 +47,9 @@
                             <tbody>
                                 @foreach ($pannes as $panne)
                                     @php
-                                        $quantiteRemplacable = $panne->affectation
-                                            ? min($panne->getQuantiteEncoreChezEmploye(), $panne->equipement->getQuantiteDisponible())
+                                        $quantiteRemplacable = $panne->getQuantiteRemplacable();
+                                        $stockDisponiblePourRemplacement = $panne->affectation
+                                            ? $panne->equipement->getQuantiteDisponible()
                                             : 0;
                                     @endphp
                                     <tr>
@@ -89,6 +90,12 @@
                                                 @elseif ($panne->affectation && $panne->getQuantiteEncoreChezEmploye() > 0)
                                                     <span class="small text-muted">Pas de stock pour remplacer</span>
                                                 @endif
+
+                                                @if ($panne->affectation)
+                                                    <span class="small text-muted">
+                                                        Stock dispo pour remplacement : {{ $stockDisponiblePourRemplacement }}
+                                                    </span>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -108,9 +115,7 @@
 
     @foreach ($pannes as $panne)
         @php
-            $quantiteRemplacable = $panne->affectation
-                ? min($panne->getQuantiteEncoreChezEmploye(), $panne->equipement->getQuantiteDisponible())
-                : 0;
+            $quantiteRemplacable = $panne->getQuantiteRemplacable();
         @endphp
         @if ($panne->getQuantiteResolvable() > 0)
             <div class="modal fade" id="resolveModal{{ $panne->id }}" tabindex="-1" aria-hidden="true">

@@ -5,7 +5,7 @@
 @section('content')
     <h2>Liste des équipements en panne</h2>
     
-    <table class="table">
+    <table class="table smart-data-table" data-table-title="les pannes">
         <thead>
             <tr>
                 <th>Nom</th>
