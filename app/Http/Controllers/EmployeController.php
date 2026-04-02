@@ -10,6 +10,7 @@ use App\Models\Demande;
 use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
+use App\Services\WorkflowNotificationService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,10 @@ use Throwable;
  */
 final class EmployeController extends Controller
 {
+    public function __construct(
+        private readonly WorkflowNotificationService $workflowNotificationService,
+    ) {}
+
     /**
      * Affiche le tableau de bord principal avec les statistiques
      */
@@ -143,6 +148,10 @@ final class EmployeController extends Controller
 
             DB::commit();
 
+            $this->workflowNotificationService->notifyDemandeSubmitted(
+                $demande->fresh(['user', 'equipements'])
+            );
+
             return back()->with('success', 'Demande envoyé avec succès');
         } catch (Throwable $e) {
             DB::rollBack();
@@ -239,7 +248,7 @@ final class EmployeController extends Controller
             }
 
             // Créer la panne liée à l'affectation concernée
-            Panne::create([
+            $panne = Panne::create([
                 'equipement_id' => $equipement->id,
                 'affectation_id' => $affectation->id,
                 'user_id' => $user->id,
@@ -249,6 +258,10 @@ final class EmployeController extends Controller
             ]);
 
             DB::commit();
+
+            $this->workflowNotificationService->notifyPanneReported(
+                $panne->fresh(['user', 'equipement', 'affectation'])
+            );
 
             return back()->with('success', sprintf(
                 '%d équipement(s) marqué(es) en panne et signalé(e)s avec succès.',
