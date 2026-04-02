@@ -138,10 +138,15 @@ final class EmployeController extends Controller
 
         // Récupérer les affectations actives avec leurs équipements et pannes en cours
         $affectations = Affectation::where('user_id', $user->id)
-            ->whereNull('date_retour')  // Non retournés
-            ->with(['equipement', 'pannes' => function ($query) {
-                $query->where('statut', '!=', 'resolu');
-            }])
+            ->where(function ($query) {
+                $query->whereNull('date_retour')
+                      ->orWhere('date_retour', '>', now());
+            })
+            ->whereDoesntHave('pannes', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->where('statut', '!=', 'resolu');
+            })
+            ->with('equipement')
             ->get();
 
         return view('employee.layouts.panne', compact('user', 'affectations'));
@@ -179,7 +184,6 @@ final class EmployeController extends Controller
             // VÉRIFICATION CRITIQUE: L'employé a-t-il reçu cet équipement?
             $affectations = Affectation::where('user_id', $user->id)
                 ->where('equipement_id', $validated['equipement_id'])
-                ->whereNull('date_retour')  // Non retourné
                 ->get();
 
             if ($affectations->isEmpty()) {
