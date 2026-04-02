@@ -227,7 +227,10 @@ final class AdminController extends Controller
 
     public function ShowAllAsk()
     {
-        $demandes = Demande::with('equipements')->where('statut', '=', 'en_attente')->latest()->paginate(7);
+        $demandes = Demande::with(['equipements', 'affectations'])
+            ->where('statut', '=', 'en_attente')
+            ->latest()
+            ->paginate(7);
 
         return view('admin.asklist', compact('demandes'));
     }
@@ -235,24 +238,40 @@ final class AdminController extends Controller
     /**
      * Accepte une demande et assigne automatiquement les équipements à l'employé
      */
-    public function CheckAsk(Demande $demande)
+    public function CheckAsk(Request $request, Demande $demande)
     {
+        $validated = $request->validate([
+            'quantites_a_affecter' => 'required|array',
+            'quantites_a_affecter.*' => 'nullable|integer|min:0',
+            'dates_retour' => 'nullable|array',
+            'dates_retour.*' => 'nullable|date',
+        ]);
+
         try {
             DB::beginTransaction();
 
             // Assigner automatiquement les équipements
-            $pdfPath = $this->assignEquipmentsFromDemande($demande);
+            $result = $this->assignEquipmentsFromDemande(
+                $demande,
+                $validated['quantites_a_affecter'] ?? [],
+                $validated['dates_retour'] ?? []
+            );
 
-            // Mettre à jour le statut de la demande
-            $demande->update(['statut' => 'acceptee']);
+            $demande->load(['equipements', 'affectations']);
+
+            if ($demande->estEntierementServie()) {
+                $demande->update(['statut' => 'acceptee']);
+                $message = 'La demande a été totalement servie et les équipements ont été affectés.';
+            } else {
+                $message = 'La demande a été partiellement servie. Elle reste en attente pour les quantités restantes.';
+            }
 
             DB::commit();
 
-            $message = 'La demande a été validée et les équipements ont été assignés automatiquement.';
-            if ($pdfPath) {
+            if ($result['pdf_path']) {
                 return redirect()->back()
                     ->with('success', $message)
-                    ->with('pdf', asset('storage/'.$pdfPath));
+                    ->with('pdf', asset('storage/'.$result['pdf_path']));
             }
 
             return redirect()->back()->with('success', $message);
@@ -282,23 +301,29 @@ final class AdminController extends Controller
 
     public function Showaffectation()
     {
-        // Charger les catégories avec UNIQUEMENT les équipements en stock (quantite > 0)
+        // Charger les catégories avec UNIQUEMENT les équipements ayant un stock réellement disponible
         $equipements_groupes = Categorie::with([
             'equipements' => function ($query) {
                 $query->withStock();
             },
         ])->get();
 
-        $employes = User::where('role', '=', 'employé')->get();
+        $employes = User::whereIn('role', ['employe', 'employé', 'employée'])->get();
 
         return view('admin.affectation', compact('equipements_groupes', 'employes'));
     }
 
     public function HandleAffectation(Request $request)
     {
-        $request->validate([
-            'equipements' => 'required',
-            'quantites' => 'required',
+        $validated = $request->validate([
+            'employe_id' => 'required|exists:users,id',
+            'motif' => 'required|string|max:500',
+            'equipements' => 'required|array|min:1',
+            'equipements.*' => 'required|exists:equipements,id',
+            'quantites' => 'required|array|min:1',
+            'quantites.*' => 'required|integer|min:1',
+            'dates_retour' => 'nullable|array',
+            'dates_retour.*' => 'nullable|date',
         ], [
             'equipements.required' => 'le champ equipement est requis',
             'quantites.required' => 'le champ quantité est requis',
@@ -309,14 +334,28 @@ final class AdminController extends Controller
         $user = Auth::user();
 
         try {
+            $employe = User::findOrFail($validated['employe_id']);
+
+            if (! in_array($employe->role, ['employe', 'employé', 'employée'], true)) {
+                throw new Exception("L'utilisateur sélectionné n'est pas un employé.");
+            }
+
+            $lignesAffectation = $this->normalizeDirectAffectationLines(
+                $validated['equipements'],
+                $validated['quantites'],
+                $validated['dates_retour'] ?? []
+            );
+
             // Charger les équipements en bulk
-            $equipementIds = $request->equipements;
+            $equipementIds = array_values(array_unique(array_column($lignesAffectation, 'equipement_id')));
             $equipements = Equipement::whereIn('id', $equipementIds)->get()->keyBy('id');
             $affectationsDetails = [];
+            $quantitesReservees = [];
 
-            foreach ($request->equipements as $index => $equipement_id) {
-                $quantite = (int) ($request->quantites[$index] ?? 1);
-                $rawDate = $request->dates_retour[$index] ?? null;
+            foreach ($lignesAffectation as $ligneAffectation) {
+                $equipement_id = $ligneAffectation['equipement_id'];
+                $quantite = $ligneAffectation['quantite'];
+                $rawDate = $ligneAffectation['date_retour'];
 
                 $equipement = $equipements->get($equipement_id);
 
@@ -325,45 +364,49 @@ final class AdminController extends Controller
                 }
 
                 // Valider la disponibilité
-                $this->validateAffectationAvailability($equipement, $quantite);
+                $this->validateAffectationAvailability(
+                    $equipement,
+                    $quantite,
+                    $quantitesReservees[$equipement_id] ?? 0
+                );
 
                 Affectation::create([
                     'equipement_id' => $equipement_id,
-                    'user_id' => $request->employe_id,
+                    'user_id' => $employe->id,
+                    'demande_id' => null,
                     'date_retour' => $rawDate ?: null,
                     'created_by' => $user->nom.' '.$user->prenom,
                     'quantite_affectee' => $quantite,
+                    'statut' => 'active',
                 ]);
 
-                // Mettre à jour l'équipement
-                $this->updateEquipementAfterAffectation($equipement, $quantite);
+                $quantitesReservees[$equipement_id] = ($quantitesReservees[$equipement_id] ?? 0) + $quantite;
 
                 $affectationsDetails[] = [
                     'nom' => $equipement->nom,
                     'reference' => $equipement->reference ?? '',
                     'quantite' => $quantite,
+                    'date_retour' => $rawDate ?: null,
                 ];
             }
 
-            $pdfName = 'bon_sortie_'.$request->employe_id.'_'.now()->timestamp.'.pdf';
+            $pdfName = 'bon_sortie_'.$employe->id.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_sortie/'.$pdfName;
 
             $bon = Bon::create([
-                'user_id' => $request->employe_id,
-                'motif' => $request->motif,
+                'user_id' => $employe->id,
+                'motif' => $validated['motif'],
                 'statut' => 'sortie',
                 'fichier_pdf' => $pdfPath,
             ]);
 
             DB::commit();
 
-            $employe = User::find($request->employe_id);
-
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
                 'nom' => $employe->nom ?? '',
                 'prenom' => $employe->prenom ?? '',
-                'motif' => $request->motif,
+                'motif' => $validated['motif'],
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
                 'equipements' => $affectationsDetails,
@@ -382,16 +425,67 @@ final class AdminController extends Controller
 
     public function Showpannes()
     {
-        $pannes = Panne::with(['equipement', 'user'])->where('statut', '=', 'en_attente')->latest()->paginate(4);
+        $pannes = Panne::with(['equipement', 'user', 'affectation.user'])
+            ->where('statut', '=', 'en_attente')
+            ->latest()
+            ->paginate(4);
 
-        return view('admin.pannelist', compact('pannes'));
+        $equipementsInternes = Equipement::with('categorie')
+            ->get()
+            ->filter(fn (Equipement $equipement) => $equipement->getQuantiteDisponible() > 0)
+            ->values();
+
+        return view('admin.pannelist', compact('pannes', 'equipementsInternes'));
+    }
+
+    public function StoreInternalPanne(Request $request)
+    {
+        $validated = $request->validate([
+            'equipement_id' => 'required|integer|exists:equipements,id',
+            'quantite' => 'required|integer|min:1',
+            'description' => 'required|string|min:10|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $equipement = Equipement::findOrFail($validated['equipement_id']);
+
+            if ($validated['quantite'] > $equipement->getQuantiteDisponible()) {
+                throw new Exception(sprintf(
+                    "Vous ne pouvez déclarer en panne interne que %d unité(s) pour « %s ».",
+                    $equipement->getQuantiteDisponible(),
+                    $equipement->nom
+                ));
+            }
+
+            Panne::create([
+                'equipement_id' => $equipement->id,
+                'affectation_id' => null,
+                'user_id' => Auth::id(),
+                'quantite' => (int) $validated['quantite'],
+                'quantite_retournee_stock' => 0,
+                'quantite_resolue' => 0,
+                'description' => $validated['description'],
+                'statut' => 'en_attente',
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Panne interne enregistrée avec succès.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création panne interne: '.$e->getMessage());
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function ShowToollost()
     {
-        $equipement_lost = Affectation::with(['equipement', 'user'])
+        $equipement_lost = Affectation::with(['equipement', 'user', 'pannes'])
             ->whereDate('date_retour', '<=', now())    // date de retour dépassée
-            ->whereNull('statut')                      // statut non retourné
+            ->active()                                 // statut non retourné
             ->whereNotNull('date_retour')              // on s'assure que la date de retour est bien définie
             ->paginate(7);
 
@@ -479,37 +573,151 @@ final class AdminController extends Controller
             ->with('pdf', asset('storage/'.$pdfPath));
     }
 
-    public function BackTool(Affectation $affectation)
+    public function BackTool(Request $request, Affectation $affectation)
     {
-        $affectation->update(['statut' => 'retourné']);
-        $equipement = $affectation->equipement;
-        $equipement->update([
-            'quantite' => $equipement->quantite + $affectation->quantite_affectee,
-        ]);
-        $user = $affectation->user;
-
-        $pdfName = 'retour_perdu_'.$equipement->id.'.pdf';
-        $pdfPath = 'retour_perdu/'.$pdfName;
-
-        $pdf = Pdf::loadView('pdf.retour_perdu', [
-            'date' => now(),
-            'nom' => $user->nom,
-            'prenom' => $user->prenom,
-            'equipement' => $equipement->nom,
+        $validated = $request->validate([
+            'quantite_saine_retournee' => 'nullable|integer|min:0',
+            'pannes_retournees' => 'nullable|array',
+            'pannes_retournees.*' => 'nullable|integer|min:0',
         ]);
 
-        Storage::disk('public')->put($pdfPath, $pdf->output());
+        try {
+            DB::beginTransaction();
 
-        return redirect()->back()
-            ->with('success', 'Retour du matériel effectué. Un PDF de confirmation a été généré.')
-            ->with('pdf', asset('storage/'.$pdfPath));
+            $affectation->load(['equipement', 'user', 'pannes' => function ($query) {
+                $query->where('statut', '!=', 'resolu');
+            }]);
+
+            $quantiteSaineRetournee = (int) ($validated['quantite_saine_retournee'] ?? 0);
+            $pannesRetournees = $validated['pannes_retournees'] ?? [];
+            $quantitePanneRetournee = 0;
+
+            if ($quantiteSaineRetournee > $affectation->getQuantiteSaineActive()) {
+                throw new Exception(sprintf(
+                    'Vous ne pouvez retourner que %d unité(s) saine(s) pour cette affectation.',
+                    $affectation->getQuantiteSaineActive()
+                ));
+            }
+
+            foreach ($affectation->pannes as $panne) {
+                $quantiteRetourPanne = (int) ($pannesRetournees[$panne->id] ?? 0);
+
+                if ($quantiteRetourPanne > $panne->getQuantiteEncoreChezEmploye()) {
+                    throw new Exception(sprintf(
+                        'La quantité retournée pour la panne #%d dépasse le maximum autorisé (%d).',
+                        $panne->id,
+                        $panne->getQuantiteEncoreChezEmploye()
+                    ));
+                }
+
+                if ($quantiteRetourPanne > 0) {
+                    $panne->update([
+                        'quantite_retournee_stock' => $panne->getQuantiteRetourneeAuStock() + $quantiteRetourPanne,
+                    ]);
+                }
+
+                $quantitePanneRetournee += $quantiteRetourPanne;
+            }
+
+            $quantiteRetourneeTotale = $quantiteSaineRetournee + $quantitePanneRetournee;
+
+            if ($quantiteRetourneeTotale <= 0) {
+                throw new Exception('Veuillez saisir au moins une quantité à retourner.');
+            }
+
+            if ($quantiteRetourneeTotale > $affectation->getQuantiteActive()) {
+                throw new Exception(sprintf(
+                    'Vous ne pouvez retourner que %d unité(s) au total pour cette affectation.',
+                    $affectation->getQuantiteActive()
+                ));
+            }
+
+            $nouvelleQuantiteRetournee = $affectation->getQuantiteRetournee() + $quantiteRetourneeTotale;
+
+            $affectation->update([
+                'quantite_retournee' => $nouvelleQuantiteRetournee,
+                'statut' => $nouvelleQuantiteRetournee >= $affectation->quantite_affectee ? 'retourné' : 'retour_partiel',
+            ]);
+
+            $equipement = $affectation->equipement;
+            $user = $affectation->user;
+
+            $pdfName = 'retour_perdu_'.$equipement->id.'_'.now()->timestamp.'.pdf';
+            $pdfPath = 'retour_perdu/'.$pdfName;
+
+            $pdf = Pdf::loadView('pdf.retour_perdu', [
+                'date' => now(),
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'equipement' => $equipement->nom,
+                'quantite_retournee' => $quantiteRetourneeTotale,
+                'quantite_saine_retournee' => $quantiteSaineRetournee,
+                'quantite_panne_retournee' => $quantitePanneRetournee,
+            ]);
+
+            Storage::disk('public')->put($pdfPath, $pdf->output());
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Retour du matériel enregistré avec succès. Un PDF de confirmation a été généré.')
+                ->with('pdf', asset('storage/'.$pdfPath));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Erreur lors du retour d'équipement: ".$e->getMessage());
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function Showlistaffectation()
     {
-        $affectations = Affectation::with(['equipement', 'user'])->latest()->paginate(4);
+        $affectations = Affectation::with(['equipement', 'user', 'demande', 'pannes'])
+            ->withCount('pannes')
+            ->latest()
+            ->paginate(4);
 
         return view('admin.affectlist', compact('affectations'));
+    }
+
+    public function CancelAffectation(string $affectationId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $affectation = Affectation::with(['equipement', 'user', 'demande'])
+                ->findOrFail((int) $affectationId);
+
+            $affectation->setAttribute('pannes_count', $affectation->pannes()->count());
+
+            if (! $affectation->peutEtreAnnulee()) {
+                throw new Exception($affectation->getMotifBlocageAnnulation() ?? 'Cette affectation ne peut pas être annulée.');
+            }
+
+            $demande = $affectation->demande;
+            $equipementNom = $affectation->equipement->nom ?? 'Équipement';
+
+            Affectation::whereKey($affectation->id)->delete();
+
+            if ($demande) {
+                $demande->refresh()->load(['equipements', 'affectations']);
+                $demande->update([
+                    'statut' => $demande->estEntierementServie() ? 'acceptee' : 'en_attente',
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', sprintf(
+                'L’affectation de « %s » a été annulée avec succès.',
+                $equipementNom
+            ));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Erreur lors de l'annulation d'affectation: ".$e->getMessage());
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function LoadingAsk(Demande $demande)
@@ -530,31 +738,148 @@ final class AdminController extends Controller
      * Résout une panne en la marquant comme résolue
      * Implique que l'équipement est réparé ou remplacé
      */
-    public function PutPanne(Panne $panne)
+    public function PutPanne(Request $request, Panne $panne)
     {
+        $validated = $request->validate([
+            'quantite_resolue' => 'required|integer|min:1',
+        ]);
+
         try {
             DB::beginTransaction();
 
-            // Marquer la panne comme résolue
-            $panne->update(['statut' => 'resolu']);
+            $panne->load(['equipement', 'affectation']);
+
+            $quantiteResolvable = $panne->getQuantiteResolvable();
+
+            if ($quantiteResolvable <= 0) {
+                throw new Exception('Aucune quantité n’est encore disponible pour résolution sur cette panne.');
+            }
+
+            if ($validated['quantite_resolue'] > $quantiteResolvable) {
+                throw new Exception(sprintf(
+                    'Vous ne pouvez résoudre que %d unité(s) pour cette panne.',
+                    $quantiteResolvable
+                ));
+            }
+
+            $panne->quantite_resolue = $panne->getQuantiteResolue() + (int) $validated['quantite_resolue'];
+            $panne->statut = $panne->getQuantiteNonResolue() === 0 ? 'resolu' : 'en_attente';
+            $panne->save();
 
             // Log de la résolution
             Log::info("Panne {$panne->id} résolue par admin", [
                 'equipement_id' => $panne->equipement_id,
-                'quantite' => $panne->quantite,
+                'quantite_resolue' => $validated['quantite_resolue'],
             ]);
 
             DB::commit();
 
             return redirect()->back()->with('success', sprintf(
                 '%d équipement(s) marqué(s) comme réparé(s).',
-                $panne->quantite
+                $validated['quantite_resolue']
             ));
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Erreur résolution panne admin: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
+        }
+    }
+
+    public function ReplacePanne(Request $request, Panne $panne)
+    {
+        $validated = $request->validate([
+            'quantite_remplacement' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $panne->load(['equipement', 'affectation.user']);
+
+            if ($panne->estInterne() || ! $panne->affectation) {
+                throw new Exception('Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
+            }
+
+            $quantiteRemplacable = min(
+                $panne->getQuantiteEncoreChezEmploye(),
+                $panne->equipement->getQuantiteDisponible()
+            );
+
+            if ($quantiteRemplacable <= 0) {
+                throw new Exception('Aucune quantité n’est disponible pour un remplacement immédiat.');
+            }
+
+            if ($validated['quantite_remplacement'] > $quantiteRemplacable) {
+                throw new Exception(sprintf(
+                    'Vous ne pouvez remplacer que %d unité(s) pour cette panne.',
+                    $quantiteRemplacable
+                ));
+            }
+
+            $quantiteRemplacement = (int) $validated['quantite_remplacement'];
+            $affectationOrigine = $panne->affectation;
+            $utilisateur = $affectationOrigine->user;
+            $user = Auth::user();
+
+            $panne->quantite_retournee_stock = $panne->getQuantiteRetourneeAuStock() + $quantiteRemplacement;
+            $panne->statut = $panne->getQuantiteNonResolue() === 0 ? 'resolu' : 'en_attente';
+            $panne->save();
+
+            $nouvelleQuantiteRetournee = $affectationOrigine->getQuantiteRetournee() + $quantiteRemplacement;
+            $affectationOrigine->update([
+                'quantite_retournee' => $nouvelleQuantiteRetournee,
+                'statut' => $nouvelleQuantiteRetournee >= $affectationOrigine->quantite_affectee ? 'retourné' : 'retour_partiel',
+            ]);
+
+            $affectationRemplacement = Affectation::create([
+                'equipement_id' => $panne->equipement_id,
+                'user_id' => $utilisateur->id,
+                'demande_id' => null,
+                'date_retour' => $affectationOrigine->date_retour,
+                'created_by' => $user->nom.' '.$user->prenom,
+                'quantite_affectee' => $quantiteRemplacement,
+                'quantite_retournee' => 0,
+                'statut' => 'active',
+            ]);
+
+            $pdfName = 'bon_sortie_remplacement_'.$panne->id.'_'.now()->timestamp.'.pdf';
+            $pdfPath = 'bon_sortie/'.$pdfName;
+
+            $bon = Bon::create([
+                'user_id' => $utilisateur->id,
+                'motif' => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
+                'statut' => 'sortie',
+                'fichier_pdf' => $pdfPath,
+            ]);
+
+            $this->generateBonPdf($bon, [
+                'date' => now()->format('d/m/Y'),
+                'nom' => $utilisateur->nom ?? '',
+                'prenom' => $utilisateur->prenom ?? '',
+                'motif' => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
+                'numero_bon' => $bon->id,
+                'type' => $bon->statut,
+                'equipements' => [[
+                    'nom' => $panne->equipement->nom,
+                    'reference' => $panne->equipement->reference ?? '',
+                    'quantite' => $affectationRemplacement->quantite_affectee,
+                    'date_retour' => $affectationRemplacement->date_retour
+                        ? $affectationRemplacement->date_retour->format('Y-m-d')
+                        : null,
+                ]],
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Le remplacement a été enregistré avec succès.')
+                ->with('pdf', asset('storage/'.$pdfPath));
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur remplacement panne admin: '.$e->getMessage());
+
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -617,50 +942,82 @@ final class AdminController extends Controller
      */
     private function updateEquipementAfterAffectation(Equipement $equipement, int $quantite): void
     {
-        $nouvelleQuantite = $equipement->quantite - $quantite;
-        $equipement->update([
-            'quantite' => $nouvelleQuantite,
-        ]);
+        // Le stock total reste inchangé.
+        // Le stock disponible est recalculé dynamiquement via les affectations actives
+        // et les pannes non résolues.
     }
 
     /**
      * Assigne automatiquement les équipements d'une demande à l'employé
      */
-    private function assignEquipmentsFromDemande(Demande $demande): ?string
+    private function assignEquipmentsFromDemande(Demande $demande, array $quantitesAAffecter = [], array $datesRetour = []): array
     {
         $user = Auth::user();
-        $equipementsData = $demande->equipements()->get();
+        $demande->loadMissing(['equipements', 'affectations']);
+        $equipementsData = $demande->equipements;
 
         if ($equipementsData->isEmpty()) {
-            return null; // Pas d'équipements à assigner
+            return ['pdf_path' => null, 'assigned_total' => 0];
         }
 
         $affectationsDetails = [];
         $employe_id = $demande->user_id;
+        $quantitesReservees = [];
+        $assignedTotal = 0;
 
         foreach ($equipementsData as $equipement) {
-            $quantite = $equipement->pivot->nbr_equipement ?? 1; // Récupérer la quantité de la pivot
+            $quantiteDemandee = (int) ($equipement->pivot->nbr_equipement ?? 1);
+            $quantiteRestante = $demande->getQuantiteRestantePourEquipement($equipement->id, $quantiteDemandee);
 
-            // Valider la disponibilité
-            $this->validateAffectationAvailability($equipement, $quantite);
+            if ($quantiteRestante === 0) {
+                continue;
+            }
+
+            $quantite = (int) ($quantitesAAffecter[$equipement->id] ?? 0);
+            $rawDate = $datesRetour[$equipement->id] ?? null;
+
+            if ($quantite === 0) {
+                continue;
+            }
+
+            if ($quantite > $quantiteRestante) {
+                throw new Exception(sprintf(
+                    "La quantité à affecter pour « %s » dépasse le restant à servir (%d).",
+                    $equipement->nom,
+                    $quantiteRestante
+                ));
+            }
+
+            $this->validateAffectationAvailability(
+                $equipement,
+                $quantite,
+                $quantitesReservees[$equipement->id] ?? 0
+            );
 
             // Créer l'affectation
             Affectation::create([
                 'equipement_id' => $equipement->id,
                 'user_id' => $employe_id,
-                'date_retour' => null, // La demande ne spécifie pas de date
+                'demande_id' => $demande->id,
+                'date_retour' => $rawDate ?: null,
                 'created_by' => $user->nom.' '.$user->prenom,
                 'quantite_affectee' => $quantite,
+                'statut' => 'active',
             ]);
 
-            // Mettre à jour l'équipement
-            $this->updateEquipementAfterAffectation($equipement, $quantite);
+            $quantitesReservees[$equipement->id] = ($quantitesReservees[$equipement->id] ?? 0) + $quantite;
+            $assignedTotal += $quantite;
 
             $affectationsDetails[] = [
                 'nom' => $equipement->nom,
                 'reference' => $equipement->reference ?? '',
                 'quantite' => $quantite,
+                'date_retour' => $rawDate ?: null,
             ];
+        }
+
+        if ($assignedTotal === 0) {
+            throw new Exception('Aucune quantité n’a été affectée. Veuillez saisir au moins une quantité à servir.');
         }
 
         // Créer le bon de sortie
@@ -685,21 +1042,70 @@ final class AdminController extends Controller
             'equipements' => $affectationsDetails,
         ]);
 
-        return $pdfPath;
+        return [
+            'pdf_path' => $pdfPath,
+            'assigned_total' => $assignedTotal,
+        ];
     }
 
     /**
      * Valide la disponibilité et la quantité avant affectation
      */
-    private function validateAffectationAvailability(Equipement $equipement, int $quantite): void
+    private function validateAffectationAvailability(Equipement $equipement, int $quantite, int $quantiteReservee = 0): void
     {
-        if (! $equipement->peutAffecter($quantite)) {
+        if ($quantite <= 0) {
+            throw new Exception('La quantité à affecter doit être supérieure à zéro.');
+        }
+
+        $quantiteDisponible = max(0, $equipement->getQuantiteDisponible() - $quantiteReservee);
+
+        if ($quantiteDisponible < $quantite) {
             throw new Exception(sprintf(
                 "Quantité insuffisante pour l'équipement « %s » (disponible : %d, demandée : %d).",
                 $equipement->nom,
-                $equipement->getQuantiteDisponible(),
+                $quantiteDisponible,
                 $quantite
             ));
         }
+    }
+
+    /**
+     * Fusionne les lignes strictement identiques d'une affectation directe.
+     * Même équipement + même date de retour => une seule affectation.
+     * Même équipement + dates différentes => affectations séparées.
+     */
+    private function normalizeDirectAffectationLines(array $equipements, array $quantites, array $datesRetour = []): array
+    {
+        $groupedLines = [];
+        $orderedKeys = [];
+
+        foreach ($equipements as $index => $equipementId) {
+            $equipementId = (int) $equipementId;
+            $quantite = (int) ($quantites[$index] ?? 0);
+            $dateRetour = $datesRetour[$index] ?? null;
+            $dateRetour = $dateRetour !== null && $dateRetour !== '' ? $dateRetour : null;
+
+            if ($equipementId <= 0 || $quantite <= 0) {
+                continue;
+            }
+
+            $groupKey = $equipementId.'|'.($dateRetour ?? 'sans-date');
+
+            if (! array_key_exists($groupKey, $groupedLines)) {
+                $groupedLines[$groupKey] = [
+                    'equipement_id' => $equipementId,
+                    'quantite' => 0,
+                    'date_retour' => $dateRetour,
+                ];
+                $orderedKeys[] = $groupKey;
+            }
+
+            $groupedLines[$groupKey]['quantite'] += $quantite;
+        }
+
+        return array_map(
+            fn (string $key) => $groupedLines[$key],
+            $orderedKeys
+        );
     }
 }

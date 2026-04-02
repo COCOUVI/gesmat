@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - affectation_id: foreignId (affectation où la panne a été signalée, optional)
  * - user_id: foreignId (employé signalant la panne)
  * - quantite: integer (nombre d'unités affectées par la panne)
+ * - quantite_retournee_stock: integer (quantité revenue au stock alors que la panne n'est pas résolue)
+ * - quantite_resolue: integer (quantité réparée/résolue sur cette panne)
  * - description: text (description de la panne)
  * - statut: enum(en_attente, resolu)
  * - created_at, updated_at: timestamps
@@ -26,6 +28,8 @@ final class Panne extends Model
         'affectation_id',
         'user_id',
         'quantite',
+        'quantite_retournee_stock',
+        'quantite_resolue',
         'description',
         'statut',
     ];
@@ -76,5 +80,98 @@ final class Panne extends Model
     public function scopeResolues($query)
     {
         return $query->where('statut', 'resolu');
+    }
+
+    /**
+     * Quantité de cette panne déjà revenue au stock.
+     */
+    public function getQuantiteRetourneeAuStock(): int
+    {
+        if ($this->affectation_id === null) {
+            return 0;
+        }
+
+        $quantiteRetourneeAuStock = (int) $this->quantite_retournee_stock;
+
+        if ($quantiteRetourneeAuStock === 0 && $this->affectation?->estCompletementRetournee()) {
+            return (int) $this->quantite;
+        }
+
+        return max(0, $quantiteRetourneeAuStock);
+    }
+
+    /**
+     * Quantité encore physiquement chez l'employé pour cette panne.
+     */
+    public function getQuantiteEncoreChezEmploye(): int
+    {
+        if ($this->statut === 'resolu') {
+            return 0;
+        }
+
+        return max(0, $this->quantite - $this->getQuantiteRetourneeAuStock());
+    }
+
+    /**
+     * Quantité déjà résolue sur cette panne.
+     */
+    public function getQuantiteResolue(): int
+    {
+        if ($this->statut === 'resolu') {
+            return (int) $this->quantite;
+        }
+
+        return max(0, (int) $this->quantite_resolue);
+    }
+
+    /**
+     * Quantité encore en panne dans le stock interne.
+     */
+    public function getQuantiteInterneNonResolue(): int
+    {
+        if ($this->statut === 'resolu') {
+            return 0;
+        }
+
+        if ($this->affectation_id === null) {
+            return max(0, $this->quantite - $this->getQuantiteResolue());
+        }
+
+        return max(0, $this->getQuantiteRetourneeAuStock() - $this->getQuantiteResolue());
+    }
+
+    /**
+     * Quantité totale encore non résolue sur cette panne.
+     */
+    public function getQuantiteNonResolue(): int
+    {
+        return $this->getQuantiteEncoreChezEmploye() + $this->getQuantiteInterneNonResolue();
+    }
+
+    /**
+     * Quantité qu'il est possible de résoudre maintenant.
+     * On ne résout que ce qui est déjà revenu au stock interne.
+     */
+    public function getQuantiteResolvable(): int
+    {
+        return $this->getQuantiteInterneNonResolue();
+    }
+
+    /**
+     * Indique si la panne correspond à du stock interne.
+     */
+    public function estInterne(): bool
+    {
+        return $this->affectation_id === null;
+    }
+
+    /**
+     * Libellé métier de l'origine de la panne.
+     */
+    public function getOrigineLibelle(): string
+    {
+        return $this->estInterne()
+            ? 'Stock interne'
+            : 'Affectation #'.$this->affectation_id;
     }
 }

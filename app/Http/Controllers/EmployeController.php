@@ -99,30 +99,48 @@ final class EmployeController extends Controller
 
     public function SubmitAsk(Request $request)
     {
-        // Validation via Form Request
+        $validated = $request->validate([
+            'lieu' => 'required|string|max:255',
+            'motif' => 'required|string|min:3|max:2000',
+            'equipements' => 'required|array|min:1',
+            'equipements.*' => 'required|integer|exists:equipements,id',
+            'quantites' => 'required|array|min:1',
+            'quantites.*' => 'required|integer|min:1',
+        ], [
+            'equipements.required' => 'Veuillez sélectionner au moins un équipement.',
+            'quantites.required' => 'Veuillez indiquer la quantité demandée.',
+        ]);
+
         try {
             DB::beginTransaction();
             $user = Auth::user();
-            $demande = new Demande();
-            $demande->lieu = $request->lieu;
-            $demande->motif = $request->motif;
-            $demande->user_id = $user->id;
-            $demande->statut = 'en_attente';
-            $demande->save();
-            $equipements = $request->equipements;
-            $quantity = $request->quantites;
-            foreach ($equipements as $index => $equipement_id) {
-                $qte = $quantity[$index];
+            $demande = Demande::create([
+                'lieu' => $validated['lieu'],
+                'motif' => $validated['motif'],
+                'user_id' => $user->id,
+                'statut' => 'en_attente',
+            ]);
+
+            $quantitesParEquipement = [];
+
+            foreach ($validated['equipements'] as $index => $equipementId) {
+                $quantite = (int) ($validated['quantites'][$index] ?? 0);
+                $quantitesParEquipement[$equipementId] = ($quantitesParEquipement[$equipementId] ?? 0) + $quantite;
+            }
+
+            foreach ($quantitesParEquipement as $equipementId => $quantite) {
                 $equipements_ask = new EquipementDemandé();
                 $equipements_ask->demande_id = $demande->id;
-                $equipements_ask->equipement_id = $equipement_id;
-                $equipements_ask->nbr_equipement = $qte;
+                $equipements_ask->equipement_id = $equipementId;
+                $equipements_ask->nbr_equipement = $quantite;
                 $equipements_ask->save();
             }
-            DB::Commit();
+
+            DB::commit();
 
             return back()->with('success', 'Demande envoyé avec succès');
         } catch (Throwable $e) {
+            DB::rollBack();
             Log::error('Erreur lors de la soumission de la demande : '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de l’envoi de la demande.');
@@ -136,18 +154,20 @@ final class EmployeController extends Controller
     {
         $user = Auth::user();
 
-        // Récupérer les affectations actives avec leurs équipements et pannes en cours
+        // Récupérer les affectations actives avec leurs équipements et pannes non résolues
         $affectations = Affectation::where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->whereNull('date_retour')
-                      ->orWhere('date_retour', '>', now());
-            })
-            ->whereDoesntHave('pannes', function ($query) use ($user) {
-                $query->where('user_id', $user->id)
-                      ->where('statut', '!=', 'resolu');
-            })
-            ->with('equipement')
+            ->active()
+            ->with([
+                'equipement',
+                'pannes' => function ($query) {
+                    $query->where('statut', '!=', 'resolu');
+                },
+            ])
             ->get();
+
+        $affectations = $affectations
+            ->filter(fn (Affectation $affectation) => $affectation->getQuantiteDisponiblePourPanne() > 0)
+            ->values();
 
         return view('employee.layouts.panne', compact('user', 'affectations'));
     }
@@ -162,12 +182,12 @@ final class EmployeController extends Controller
     public function HandlePanne(Request $request)
     {
         $validated = $request->validate([
-            'equipement_id' => 'required|integer|exists:equipements,id',
+            'affectation_id' => 'required|integer|exists:affectations,id',
             'quantite' => 'required|integer|min:1',
             'description' => 'required|string|min:10|max:1000',
         ], [
-            'equipement_id.required' => 'Équipement requis',
-            'equipement_id.exists' => 'Équipement inexistant',
+            'affectation_id.required' => 'Affectation requise',
+            'affectation_id.exists' => 'Affectation inexistante',
             'quantite.required' => 'Quantité requise',
             'quantite.min' => 'Quantité minimale : 1',
             'quantite.integer' => 'La quantité doit être un nombre',
@@ -179,28 +199,22 @@ final class EmployeController extends Controller
         try {
             DB::beginTransaction();
             $user = Auth::user();
-            $equipement = Equipement::findOrFail($validated['equipement_id']);
+            $affectation = Affectation::with('equipement')
+                ->active()
+                ->findOrFail($validated['affectation_id']);
 
-            // VÉRIFICATION CRITIQUE: L'employé a-t-il reçu cet équipement?
-            $affectations = Affectation::where('user_id', $user->id)
-                ->where('equipement_id', $validated['equipement_id'])
-                ->get();
-
-            if ($affectations->isEmpty()) {
+            if ($affectation->user_id !== $user->id) {
                 DB::rollBack();
 
                 return back()->withErrors([
-                    'equipement_id' => 'Vous n\'avez pas reçu cet équipement.',
+                    'affectation_id' => 'Vous ne pouvez signaler une panne que sur vos propres affectations.',
                 ])->withInput();
             }
 
-            // Calculer la quantité affectée total à cet employé
-            $quantiteAffectee = $affectations->sum('quantite_affectee');
-
-            // Calculer la quantité déjà signalée en panne pour cet équipement
-            $quantiteEnPanneSignalee = Panne::where('user_id', $user->id)
-                ->where('equipement_id', $validated['equipement_id'])
-                ->where('statut', '!=', 'resolu')  // Non résolues
+            $equipement = $affectation->equipement;
+            $quantiteAffectee = $affectation->quantite_affectee;
+            $quantiteEnPanneSignalee = $affectation->pannes()
+                ->where('statut', '!=', 'resolu')
                 ->sum('quantite');
 
             // Vérifier que la quantité à signaler ne dépasse pas ce qui reste
@@ -211,7 +225,7 @@ final class EmployeController extends Controller
 
                 return back()->withErrors([
                     'quantite' => sprintf(
-                        'Vous ne pouvez signaler que %d équipement(s) en panne (affecté: %d, déjà signalé: %d).',
+                        'Vous ne pouvez signaler que %d équipement(s) en panne pour cette affectation (affecté: %d, déjà signalé: %d).',
                         $quantiteRestante,
                         $quantiteAffectee,
                         $quantiteEnPanneSignalee
@@ -219,10 +233,10 @@ final class EmployeController extends Controller
                 ])->withInput();
             }
 
-            // Créer la panne liée à la première affectation
+            // Créer la panne liée à l'affectation concernée
             Panne::create([
-                'equipement_id' => $validated['equipement_id'],
-                'affectation_id' => $affectations->first()->id,
+                'equipement_id' => $equipement->id,
+                'affectation_id' => $affectation->id,
                 'user_id' => $user->id,
                 'quantite' => $validated['quantite'],
                 'description' => $validated['description'],
@@ -251,11 +265,18 @@ final class EmployeController extends Controller
     public function equipementsAssignes()
     {
         $user = Auth::user();
-        $affectation = Affectation::with('equipement')
+        $affectations = Affectation::with([
+            'equipement',
+            'demande',
+            'pannes' => function ($query) {
+                $query->where('statut', '!=', 'resolu');
+            },
+        ])
             ->where('user_id', $user->id)
+            ->latest()
             ->paginate(4);
 
-        return view('employee.layouts.assign', compact('user', 'affectation'));
+        return view('employee.layouts.assign', compact('user', 'affectations'));
     }
 
     /**
@@ -373,7 +394,8 @@ final class EmployeController extends Controller
     public function ShowDemandes()
     {
         $user = Auth::user();
-        $demandes = Demande::where('user_id', $user->id)
+        $demandes = Demande::with(['equipements', 'affectations'])
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->paginate(5);
 

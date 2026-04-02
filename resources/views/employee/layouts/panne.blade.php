@@ -45,23 +45,24 @@
                                 @csrf
 
                                 <div class="mb-3">
-                                    <label for="equipement_id" class="form-label">Équipement concerné</label>
-                                    <select name="equipement_id" id="equipement_id" 
-                                            class="form-select @error('equipement_id') is-invalid @enderror" 
+                                    <label for="affectation_id" class="form-label">Affectation concernée</label>
+                                    <select name="affectation_id" id="affectation_id"
+                                            class="form-select @error('affectation_id') is-invalid @enderror"
                                             required onchange="updateQuantiteMax()">
-                                        <option value="">-- Sélectionnez un équipement --</option>
+                                        <option value="">-- Sélectionnez une affectation --</option>
                                         @foreach($affectations as $affectation)
-                                            <option value="{{ $affectation->equipement->id }}" 
+                                            <option value="{{ $affectation->id }}"
                                                     data-quantite-affectee="{{ $affectation->quantite_affectee }}"
-                                                    data-quantite-en-panne="{{ $affectation->pannes->sum('quantite') }}"
-                                                    {{ old('equipement_id') == $affectation->equipement->id ? 'selected' : '' }}>
+                                                    data-quantite-en-panne="{{ $affectation->getQuantitePannesNonResolues() }}"
+                                                    data-quantite-disponible-panne="{{ $affectation->getQuantiteDisponiblePourPanne() }}"
+                                                    {{ old('affectation_id') == $affectation->id ? 'selected' : '' }}>
                                                 {{ $affectation->equipement->nom }}
-                                                <em>(Affecté: {{ $affectation->quantite_affectee }}, 
-                                                    Disponible: {{ $affectation->quantite_affectee - $affectation->pannes->sum('quantite') }})</em>
+                                                <em>(Affectation #{{ $affectation->id }}, affecté: {{ $affectation->quantite_affectee }},
+                                                    restant pour panne: {{ $affectation->getQuantiteDisponiblePourPanne() }})</em>
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('equipement_id')
+                                    @error('affectation_id')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -99,7 +100,7 @@
                                 </div>
 
                                 <div class="d-grid d-sm-flex justify-content-sm-end gap-2">
-                                    <a href="" class="btn btn-outline-secondary">
+                                    <a href="{{ route('dashboard.employee') }}" class="btn btn-outline-secondary">
                                         <i class="mdi mdi-arrow-left me-1"></i> Retour
                                     </a>
                                     <button type="submit" class="btn btn-danger">
@@ -111,7 +112,7 @@
                             <script>
                                 // Mettre à jour les infos et le max quantité au changement d'équipement
                                 function updateQuantiteMax() {
-                                    const select = document.getElementById('equipement_id');
+                                    const select = document.getElementById('affectation_id');
                                     const option = select.options[select.selectedIndex];
                                     
                                     if (option.value === '') {
@@ -123,7 +124,7 @@
 
                                     const quantiteAffectee = parseInt(option.dataset.quantiteAffectee) || 0;
                                     const quantiteEnPanne = parseInt(option.dataset.quantiteEnPanne) || 0;
-                                    const quantiteDisponible = quantiteAffectee - quantiteEnPanne;
+                                    const quantiteDisponible = parseInt(option.dataset.quantiteDisponiblePanne) || 0;
 
                                     document.getElementById('quantite-affectee').textContent = quantiteAffectee;
                                     document.getElementById('quantite-en-panne').textContent = quantiteEnPanne;
@@ -145,4 +146,3 @@
         </div>
     </div>
 @endsection
-

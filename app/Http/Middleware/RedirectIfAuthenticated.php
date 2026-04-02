@@ -17,7 +17,7 @@ final class RedirectIfAuthenticated
 
             return match ($role) {
                 'admin','gestionnaire' => redirect('/dashboard'),
-                'employé' => redirect('/dashboard/employe'),
+                'employe', 'employé', 'employée' => redirect('/dashboard/employe'),
             };
         }
 

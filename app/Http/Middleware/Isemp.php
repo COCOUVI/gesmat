@@ -18,7 +18,7 @@ final class Isemp
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->role === 'employé') {
+        if (Auth::check() && in_array(Auth::user()->role, ['employe', 'employé', 'employée'], true)) {
             return $next($request);
         }
 

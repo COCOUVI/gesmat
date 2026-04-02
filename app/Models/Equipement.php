@@ -21,10 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * - image_path: string
  * - categorie_id: foreignId
  *
- * Note: L'état de l'équipement est géré via la table "pannes"
- * - Pas de panne = disponible
- * - Panne(s) non résolue(s) = en panne
- * - Panne(s) résolue(s) = réparé
+ * Note: le stock disponible est dérivé des affectations et des pannes.
+ * - quantite = stock physique total
+ * - les pannes sur affectations actives sont déjà incluses dans la quantité affectée
+ * - seules les pannes internes/non affectées ou revenues au stock bloquent à nouveau le disponible
  */
 final class Equipement extends Model
 {
@@ -74,37 +74,65 @@ final class Equipement extends Model
     }
 
     /**
-     * Calcule la quantité affectée (assignée et non retournée)
-     * Formule: SUM(affectations.quantite_affectee WHERE date_retour IS NULL)
+     * Calcule la quantité affectée active (sortie réelle non encore retournée).
      */
     public function getQuantiteAffectee(): int
     {
-        return (int) $this->affectations()
-            ->whereNull('date_retour')
-            ->sum('quantite_affectee');
+        $affectations = $this->relationLoaded('affectations')
+            ? $this->affectations
+            : $this->affectations()->get();
+
+        return (int) $affectations->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
     }
 
     /**
-     * Calcule la quantité en panne (non résolue)
-     * Formule: SUM(pannes.quantite WHERE statut != 'resolu')
+     * Calcule la quantité en panne sur des affectations encore actives.
+     * Cette quantité ne doit pas être soustraite une seconde fois du disponible.
+     */
+    public function getQuantiteEnPanneAffectee(): int
+    {
+        $pannes = $this->relationLoaded('pannes')
+            ? $this->pannes
+            : $this->pannes()->with('affectation')->get();
+
+        return (int) $pannes
+            ->filter(fn (Panne $panne) => $panne->statut !== 'resolu' && $panne->affectation?->getQuantiteActive() > 0)
+            ->sum(fn (Panne $panne) => $panne->getQuantiteEncoreChezEmploye());
+    }
+
+    /**
+     * Calcule la quantité en panne revenue au stock ou non affectée.
+     * Cette quantité bloque réellement le stock disponible.
+     */
+    public function getQuantiteEnPanneInterne(): int
+    {
+        $pannes = $this->relationLoaded('pannes')
+            ? $this->pannes
+            : $this->pannes()->with('affectation')->get();
+
+        return (int) $pannes
+            ->filter(fn (Panne $panne) => $panne->statut !== 'resolu')
+            ->sum(fn (Panne $panne) => $panne->getQuantiteInterneNonResolue());
+    }
+
+    /**
+     * Calcule la quantité totale en panne (non résolue), tous contextes confondus.
      */
     public function getQuantiteEnPanne(): int
     {
-        return (int) $this->pannes()
-            ->where('statut', '!=', 'resolu')
-            ->sum('quantite');
+        return $this->getQuantiteEnPanneAffectee() + $this->getQuantiteEnPanneInterne();
     }
 
     /**
      * Calcule la quantité disponible pour affectation
-     * Formule: quantite_total - quantite_affectee - quantite_en_panne
+     * Formule: quantite_totale - quantite_affectee_active - quantite_en_panne_interne
      */
     public function getQuantiteDisponible(): int
     {
         $affectee = $this->getQuantiteAffectee();
-        $enPanne = $this->getQuantiteEnPanne();
+        $enPanneInterne = $this->getQuantiteEnPanneInterne();
 
-        return max(0, $this->quantite - $affectee - $enPanne);
+        return max(0, $this->quantite - $affectee - $enPanneInterne);
     }
 
     /**
@@ -121,20 +149,13 @@ final class Equipement extends Model
     public function getEtat(): string
     {
         $enPanne = $this->getQuantiteEnPanne();
+        $disponible = $this->getQuantiteDisponible();
 
         if ($enPanne === 0) {
-            return 'disponible';
+            return $disponible > 0 ? 'disponible' : 'non disponible';
         }
 
-        $affectee = $this->getQuantiteAffectee();
-        $affecteeEnPanne = $this->affectations()
-            ->whereNull('date_retour')
-            ->whereHas('pannes', function ($q) {
-                $q->where('statut', '!=', 'resolu');
-            })
-            ->sum('quantite_affectee');
-
-        if ($affecteeEnPanne === $affectee && $affectee > 0) {
+        if ($disponible === 0) {
             return 'en panne';
         }
 
@@ -147,6 +168,40 @@ final class Equipement extends Model
      */
     public function scopeWithStock($query)
     {
-        return $query->where('quantite', '>', 0);
+        return $query->whereRaw(
+            "equipements.quantite
+            - COALESCE((
+                SELECT SUM(
+                    CASE
+                        WHEN affectations.statut = ? THEN 0
+                        WHEN affectations.quantite_affectee > COALESCE(affectations.quantite_retournee, 0)
+                            THEN affectations.quantite_affectee - COALESCE(affectations.quantite_retournee, 0)
+                        ELSE 0
+                    END
+                )
+                FROM affectations
+                WHERE affectations.equipement_id = equipements.id
+            ), 0)
+            - COALESCE((
+                SELECT SUM(
+                    CASE
+                        WHEN pannes.affectation_id IS NULL
+                            AND pannes.quantite > COALESCE(pannes.quantite_resolue, 0)
+                            THEN pannes.quantite - COALESCE(pannes.quantite_resolue, 0)
+                        WHEN COALESCE(pannes.quantite_retournee_stock, 0) > COALESCE(pannes.quantite_resolue, 0)
+                            THEN COALESCE(pannes.quantite_retournee_stock, 0) - COALESCE(pannes.quantite_resolue, 0)
+                        WHEN affectations.statut = ?
+                            AND pannes.quantite > COALESCE(pannes.quantite_resolue, 0)
+                            THEN pannes.quantite - COALESCE(pannes.quantite_resolue, 0)
+                        ELSE 0
+                    END
+                )
+                FROM pannes
+                LEFT JOIN affectations ON affectations.id = pannes.affectation_id
+                WHERE pannes.equipement_id = equipements.id
+                  AND pannes.statut != ?
+            ), 0) >= 1",
+            ['retourné', 'retourné', 'resolu']
+        );
     }
 }

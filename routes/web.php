@@ -56,7 +56,7 @@ Route::get('/redirect-by-role', function () {
 
     return match ($role) {
         'admin','gestionnaire' => redirect('/dashboard'),
-        'employé' => redirect('/dashboard/employe'),
+        'employe', 'employé', 'employée' => redirect('/dashboard/employe'),
 
     };
 })->middleware(['auth'])->name('verifylogin');
@@ -97,8 +97,12 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('page.listeAffectations');
     Route::get('/equipement-pannes', [AdminController::class, 'Showpannes'])
         ->name('equipements.pannes');
+    Route::post('/equipement-pannes', [AdminController::class, 'StoreInternalPanne'])
+        ->name('pannes.store-interne');
     Route::put('/pannes_modify/{panne}', [AdminController::class, 'PutPanne'])
         ->name('pannes.resolu');
+    Route::post('/pannes_replace/{panne}', [AdminController::class, 'ReplacePanne'])
+        ->name('pannes.remplacer');
     Route::get('/list_tools_lost', [AdminController::class, 'ShowToollost'])
         ->name('tools.lost');
     Route::get('/add-collaborateur-page', [AdminController::class, 'CollaboratorsPage'])
@@ -117,6 +121,8 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('HandleBon');
     Route::post('/back_tool/{affectation}', [AdminController::class, 'BackTool'])
         ->name('affectation.retourner');
+    Route::delete('/affectations/{affectation}', [AdminController::class, 'CancelAffectation'])
+        ->name('affectation.annuler');
 
 });
 Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function () {
