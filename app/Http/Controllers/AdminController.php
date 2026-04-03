@@ -320,10 +320,10 @@ final class AdminController extends Controller
 
     public function Showaffectation()
     {
-        // Charger les catégories avec UNIQUEMENT les équipements ayant un stock réellement disponible
         $equipements_groupes = Categorie::with([
             'equipements' => function ($query) {
-                $query->withStock();
+                $query->withStock()
+                    ->with(['pannes', 'affectations']);
             },
         ])->get();
 
