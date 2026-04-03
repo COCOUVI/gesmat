@@ -561,9 +561,14 @@ final class AdminController extends Controller
 
     public function CreateBon()
     {
-        $collaborateurs = CollaborateurExterne::all();
+        $collaborateurs = CollaborateurExterne::orderBy('nom')->orderBy('prenom')->get();
+        $equipements_groupes = Categorie::with([
+            'equipements' => function ($query) {
+                $query->with(['affectations', 'pannes.affectation']);
+            },
+        ])->get();
 
-        return view('admin.bon_external_collaborator', compact('collaborateurs'));
+        return view('admin.bon_external_collaborator', compact('collaborateurs', 'equipements_groupes'));
     }
 
     public function HandleBon(\App\Http\Requests\StoreBonRequest $request)
@@ -577,6 +582,15 @@ final class AdminController extends Controller
             'statut' => $validated['type'],
             'fichier_pdf' => $pdfPath,
         ]);
+
+        // Attach equipements to bon for legacy compatibility
+        $bonEquipements = collect($validated['equipements'])->mapWithKeys(fn ($equipementId, $index) => [
+            $equipementId => ['quantite' => (int) ($validated['quantites'][$index] ?? 0)],
+        ])->filter(fn ($item) => $item['quantite'] > 0)->all();
+
+        if (! empty($bonEquipements)) {
+            $bon->equipements()->attach($bonEquipements);
+        }
 
         // Create affectations for outgoing bons (new centralized approach)
         if ($validated['type'] === 'sortie') {
@@ -594,6 +608,11 @@ final class AdminController extends Controller
             }
         }
 
+        $equipementsInfo = collect($validated['equipements'])->map(fn ($equipementId, $index) => [
+            'nom' => Equipement::find($equipementId)?->nom ?? 'Inconnu',
+            'quantite' => (int) ($validated['quantites'][$index] ?? 0),
+        ])->filter(fn ($item) => $item['quantite'] > 0)->values()->all();
+
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
             'nom' => $collaborateur->nom ?? 'Admin',
@@ -601,12 +620,13 @@ final class AdminController extends Controller
             'motif' => $validated['motif'],
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
+            'equipements' => $equipementsInfo,
         ]);
         $pdf->setPaper('A5', 'portrait');
         Storage::disk('public')->put($pdfPath, $pdf->output());
 
         return redirect()->back()
-            ->with('success', 'Bon attribueé aux collaborateurs externe avec succès.')
+            ->with('success', 'Bon généré avec succès pour le collaborateur externe.')
             ->with('pdf', asset('storage/'.$pdfPath));
     }
 

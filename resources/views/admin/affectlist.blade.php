@@ -65,7 +65,13 @@
                                     <td class="text-nowrap">{{ $affectation->getQuantiteActive() }}</td>
                                     <td class="text-nowrap">{{ $affectation->getQuantiteSaineActive() }}</td>
                                     <td class="text-nowrap">{{ $affectation->getQuantitePannesNonResolues() }}</td>
-                                    <td class="text-nowrap">{{ $affectation->user->nom }} {{ $affectation->user->prenom }}
+                                    <td class="text-nowrap">
+                                        @if ($affectation->estPourCollaborateur())
+                                            <span class="badge bg-info">Collaborateur externe</span>
+                                            {{ $affectation->getNomDestinataire() }}
+                                        @else
+                                            {{ $affectation->user->nom ?? 'Inconnu' }} {{ $affectation->user->prenom ?? '' }}
+                                        @endif
                                     </td>
                                     @if (auth()->user()->role == 'admin')
                                         <td class="text-nowrap">{{ $affectation->created_by ?? 'Admin' }}</td>
