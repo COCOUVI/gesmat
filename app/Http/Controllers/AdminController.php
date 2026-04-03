@@ -577,6 +577,23 @@ final class AdminController extends Controller
             'statut' => $validated['type'],
             'fichier_pdf' => $pdfPath,
         ]);
+
+        // Create affectations for outgoing bons (new centralized approach)
+        if ($validated['type'] === 'sortie') {
+            foreach ($validated['equipements'] as $index => $equipementId) {
+                $quantite = (int) ($validated['quantites'][$index] ?? 0);
+                if ($quantite > 0) {
+                    Affectation::create([
+                        'equipement_id' => (int) $equipementId,
+                        'collaborateur_externe_id' => $collaborateur->id,
+                        'quantite_affectee' => $quantite,
+                        'statut' => 'active',
+                        'motif' => $validated['motif'],
+                    ]);
+                }
+            }
+        }
+
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
             'nom' => $collaborateur->nom ?? 'Admin',
@@ -654,10 +671,17 @@ final class AdminController extends Controller
 
             $nouvelleQuantiteRetournee = $affectation->getQuantiteRetournee() + $quantiteRetourneeTotale;
 
-            $affectation->update([
+            $updateData = [
                 'quantite_retournee' => $nouvelleQuantiteRetournee,
                 'statut' => $nouvelleQuantiteRetournee >= $affectation->quantite_affectee ? 'retourné' : 'retour_partiel',
-            ]);
+            ];
+
+            // Record actual return timestamp for audit trail
+            if ($nouvelleQuantiteRetournee >= $affectation->quantite_affectee) {
+                $updateData['returned_at'] = now();
+            }
+
+            $affectation->update($updateData);
 
             $equipement = $affectation->equipement;
             $user = $affectation->user;

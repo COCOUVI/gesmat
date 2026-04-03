@@ -84,6 +84,16 @@ final class Equipement extends Model
     }
 
     /**
+     * Relation avec les bons des collaborateurs externes portant sur cet équipement.
+     */
+    public function bonsCollaborateurs(): BelongsToMany
+    {
+        return $this->belongsToMany(Bon::class, 'bon_equipement')
+            ->withPivot('quantite')
+            ->withTimestamps();
+    }
+
+    /**
      * Calcule la quantité affectée active (sortie réelle non encore retournée).
      */
     public function getQuantiteAffectee(): int
@@ -136,15 +146,44 @@ final class Equipement extends Model
     }
 
     /**
+     * Calcule la quantité actuellement sortie chez les collaborateurs externes.
+     * Combine les données des bons (rétrocompatibilité) + les affectations (nouveau système).
+     */
+    public function getQuantiteAffecteeExterne(): int
+    {
+        // Ancien système: bons de collaborateurs (rétrocompatibilité)
+        $quantiteBons = Bon::query()
+            ->join('bon_equipement', 'bon_equipement.bon_id', '=', 'bons.id')
+            ->whereNotNull('bons.collaborateur_externe_id')
+            ->where('bon_equipement.equipement_id', $this->id)
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN bons.statut = 'sortie' THEN bon_equipement.quantite WHEN bons.statut = 'entrée' THEN -bon_equipement.quantite ELSE 0 END), 0) as quantite"
+            )
+            ->value('quantite');
+
+        // Nouveau système: affectations centralisées
+        $affectations = $this->relationLoaded('affectations')
+            ? $this->affectations
+            : $this->affectations()->get();
+
+        $quantiteAffectations = (int) $affectations
+            ->filter(fn (Affectation $aff) => $aff->estPourCollaborateur())
+            ->sum(fn (Affectation $aff) => $aff->getQuantiteActive());
+
+        return max(0, (int) $quantiteBons) + $quantiteAffectations;
+    }
+
+    /**
      * Calcule la quantité disponible pour affectation
-     * Formule: quantite_totale - quantite_affectee_active - quantite_en_panne_interne
+     * Formule: quantite_totale - quantite_affectee_active - quantite_en_panne_interne - quantite_affectee_externe
      */
     public function getQuantiteDisponible(): int
     {
         $affectee = $this->getQuantiteAffectee();
         $enPanneInterne = $this->getQuantiteEnPanneInterne();
+        $affecteeExterne = $this->getQuantiteAffecteeExterne();
 
-        return max(0, $this->quantite - $affectee - $enPanneInterne);
+        return max(0, $this->quantite - $affectee - $enPanneInterne - $affecteeExterne);
     }
 
     /**
@@ -201,6 +240,21 @@ final class Equipement extends Model
                 )
                 FROM affectations
                 WHERE affectations.equipement_id = equipements.id
+                  AND affectations.user_id IS NOT NULL
+                  AND affectations.collaborateur_externe_id IS NULL
+            ), 0)
+            - COALESCE((
+                SELECT SUM(
+                    CASE
+                        WHEN bons.statut = ? THEN bon_equipement.quantite
+                        WHEN bons.statut = ? THEN -bon_equipement.quantite
+                        ELSE 0
+                    END
+                )
+                FROM bon_equipement
+                INNER JOIN bons ON bons.id = bon_equipement.bon_id
+                WHERE bon_equipement.equipement_id = equipements.id
+                  AND bons.collaborateur_externe_id IS NOT NULL
             ), 0)
             - COALESCE((
                 SELECT SUM(
@@ -221,7 +275,7 @@ final class Equipement extends Model
                 WHERE pannes.equipement_id = equipements.id
                   AND pannes.statut != ?
             ), 0) >= 1',
-            ['retourné', 'retourné', 'resolu']
+            ['retourné', 'sortie', 'entrée', 'retourné', 'resolu']
         );
     }
 }

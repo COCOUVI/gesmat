@@ -18,7 +18,11 @@ final class StoreBonRequest extends FormRequest
         return [
             'collaborateur_id' => 'required|exists:collaborateur_externes,id',
             'motif' => 'required|string|max:1000',
-            'type' => 'required|in:entrée,sortie,autre',
+            'type' => 'required|in:entrée,sortie',
+            'equipements' => 'required|array|min:1',
+            'equipements.*' => 'required|exists:equipements,id',
+            'quantites' => 'required|array|min:1',
+            'quantites.*' => 'required|integer|min:1',
         ];
     }
 
@@ -31,7 +35,16 @@ final class StoreBonRequest extends FormRequest
             'motif.string' => 'Le motif doit être une chaîne de caractères.',
             'motif.max' => 'Le motif ne doit pas dépasser 1000 caractères.',
             'type.required' => 'Le type est requis.',
-            'type.in' => 'Le type doit être entrée, sortie ou autre.',
+            'type.in' => 'Le type doit être entrée ou sortie.',
+            'equipements.required' => 'Au moins un équipement est requis.',
+            'equipements.array' => 'La liste des équipements est invalide.',
+            'equipements.*.required' => 'Chaque ligne doit contenir un équipement.',
+            'equipements.*.exists' => 'Un des équipements sélectionnés est invalide.',
+            'quantites.required' => 'Au moins une quantité est requise.',
+            'quantites.array' => 'La liste des quantités est invalide.',
+            'quantites.*.required' => 'Chaque ligne doit contenir une quantité.',
+            'quantites.*.integer' => 'Chaque quantité doit être un nombre entier.',
+            'quantites.*.min' => 'Chaque quantité doit être supérieure ou égale à 1.',
         ];
     }
 }
