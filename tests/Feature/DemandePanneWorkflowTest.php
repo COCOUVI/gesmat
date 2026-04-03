@@ -926,3 +926,33 @@ test('employee demande list now returns a full collection for datatables', funct
     expect($demandes)->toBeInstanceOf(EloquentCollection::class);
     expect($demandes)->toHaveCount(6);
 });
+
+test('employee panne list disables fixed header on datatable to avoid duplicated table heads', function () {
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Vue pannes employe']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Imprimante mobile',
+        'marque' => 'Canon',
+        'description' => 'Imprimante mobile',
+        'quantite' => 3,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    Panne::create([
+        'equipement_id' => $equipement->id,
+        'affectation_id' => null,
+        'user_id' => $employee->id,
+        'quantite' => 1,
+        'description' => 'Panne visible dans la liste employé',
+        'statut' => 'en_attente',
+    ]);
+
+    $response = $this->actingAs($employee)->get(route('historique.pannes'));
+
+    $response->assertOk();
+    $response->assertSee('data-fixed-header="false"', false);
+    $response->assertSee('data-scroll-x="false"', false);
+});
