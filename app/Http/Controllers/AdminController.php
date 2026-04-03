@@ -186,7 +186,11 @@ final class AdminController extends Controller
 
     public function ShowToolpage()
     {
-        $equipements = Equipement::with('categorie')->get();
+        $equipements = Equipement::with([
+            'categorie',
+            'affectations',
+            'pannes.affectation', // sous-relation affectation dans chaque panne
+        ])->get();
 
         return view('admin.listtools', compact('equipements'));
     }

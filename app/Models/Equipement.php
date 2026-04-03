@@ -90,9 +90,11 @@ final class Equipement extends Model
     {
         $affectations = $this->relationLoaded('affectations')
             ? $this->affectations
-            : $this->affectations()->get();
+            : $this->affectations()->get(); // ✅ fallback propre
 
-        return (int) $affectations->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
+        return (int) $affectations->sum(
+            fn (Affectation $affectation) => $affectation->getQuantiteActive()
+        );
     }
 
     /**
