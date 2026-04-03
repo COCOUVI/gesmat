@@ -573,6 +573,7 @@ final class AdminController extends Controller
 
     public function HandleBon(\App\Http\Requests\StoreBonRequest $request)
     {
+        $user = Auth::user();
         $validated = $request->validated();
         $collaborateur = CollaborateurExterne::findOrFail($validated['collaborateur_id']);
         $pdfPath = 'bon_collaborateurs/bon_collab_'.time().'.pdf';
@@ -602,6 +603,7 @@ final class AdminController extends Controller
                         'collaborateur_externe_id' => $collaborateur->id,
                         'quantite_affectee' => $quantite,
                         'statut' => 'active',
+                        'created_by' => $user->nom.' '.$user->prenom,
                     ]);
                 }
             }
@@ -764,7 +766,7 @@ final class AdminController extends Controller
 
     public function Showlistaffectation()
     {
-        $affectations = Affectation::with(['equipement', 'user', 'demande', 'pannes'])
+        $affectations = Affectation::with(['equipement', 'user', 'collaborateurExterne', 'demande', 'pannes'])
             ->withCount('pannes')
             ->latest()
             ->get();

@@ -52,11 +52,11 @@ test('employee equipment request sends confirmation to employee and notification
 
     Mail::assertSent(WorkflowActionMail::class, 3);
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($employee->email)
-        && $mail->envelope()->subject === 'Votre demande d’équipement a bien été enregistrée');
+        && $mail->envelope()->subject === "Votre demande d'équipement a bien été enregistrée");
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email)
-        && $mail->envelope()->subject === 'Nouvelle demande d’équipement à traiter');
+        && $mail->envelope()->subject === "Nouvelle demande d'équipement à traiter");
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($manager->email)
-        && $mail->envelope()->subject === 'Nouvelle demande d’équipement à traiter');
+        && $mail->envelope()->subject === "Nouvelle demande d'équipement à traiter");
 });
 
 test('employee breakdown report sends confirmation to employee and notifications to admins and managers', function () {
@@ -155,7 +155,7 @@ test('serving a demande sends the output slip by email only to the employee', fu
 
     Mail::assertSent(WorkflowActionMail::class, 1);
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($employee->email)
-        && $mail->envelope()->subject === 'Votre demande d’équipement a été traitée'
+        && $mail->envelope()->subject === "Votre demande d'équipement a été traitée"
         && count($mail->attachments()) === 1);
     Mail::assertNotSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email));
 });
@@ -197,7 +197,7 @@ test('direct affectation sends the output slip by email only to the employee', f
 
     Mail::assertSent(WorkflowActionMail::class, 1);
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($employee->email)
-        && $mail->envelope()->subject === 'Une affectation d’équipement a été réalisée à votre nom'
+        && $mail->envelope()->subject === "Une affectation d'équipement a été réalisée à votre nom"
         && count($mail->attachments()) === 1);
     Mail::assertNotSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email));
 });
@@ -244,7 +244,7 @@ test('equipment return sends the entry slip by email only to the employee', func
 
     Mail::assertSent(WorkflowActionMail::class, 1);
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($employee->email)
-        && $mail->envelope()->subject === 'Votre retour d’équipement a été enregistré'
+        && $mail->envelope()->subject === "Votre retour d'équipement a été enregistré"
         && count($mail->attachments()) === 1);
     Mail::assertNotSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email));
 });

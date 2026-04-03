@@ -31,6 +31,10 @@ final class IdentifiantsEnvoyes extends Mailable
     public function build()
     {
         return $this->subject('Vos identifiants de connexion')
-            ->view('emails.identifiants');
+            ->view('emails.identifiants')
+            ->with([
+                'loginUrl' => route('login'),
+                'logoPath' => public_path('images/jaspe_logo_noir_web.png'),
+            ]);
     }
 }
