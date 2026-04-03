@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * - description: longText
  * - date_acquisition: date
  * - quantite: integer (stock total)
+ * - seuil_critique: integer (seuil d'alerte de stock disponible)
  * - image_path: string
  * - categorie_id: foreignId
  *
@@ -28,7 +29,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 final class Equipement extends Model
 {
-    protected $fillable = ['nom', 'marque', 'description', 'date_acquisition', 'image_path', 'categorie_id', 'quantite'];
+    protected $fillable = ['nom', 'marque', 'description', 'date_acquisition', 'image_path', 'categorie_id', 'quantite', 'seuil_critique'];
+
+    protected function casts(): array
+    {
+        return [
+            'date_acquisition' => 'date',
+            'quantite' => 'integer',
+            'seuil_critique' => 'integer',
+        ];
+    }
 
     /**
      * Relation avec la catégorie
@@ -136,6 +146,14 @@ final class Equipement extends Model
     }
 
     /**
+     * Indique si le stock disponible a atteint le seuil critique configuré.
+     */
+    public function estEnStockCritique(): bool
+    {
+        return $this->getQuantiteDisponible() <= max(0, (int) $this->seuil_critique);
+    }
+
+    /**
      * Vérifie si la quantité demandée est disponible
      */
     public function peutAffecter(int $quantiteDemandee): bool
@@ -169,7 +187,7 @@ final class Equipement extends Model
     public function scopeWithStock($query)
     {
         return $query->whereRaw(
-            "equipements.quantite
+            'equipements.quantite
             - COALESCE((
                 SELECT SUM(
                     CASE
@@ -200,7 +218,7 @@ final class Equipement extends Model
                 LEFT JOIN affectations ON affectations.id = pannes.affectation_id
                 WHERE pannes.equipement_id = equipements.id
                   AND pannes.statut != ?
-            ), 0) >= 1",
+            ), 0) >= 1',
             ['retourné', 'retourné', 'resolu']
         );
     }

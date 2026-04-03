@@ -106,6 +106,15 @@
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="col-md-6">
+                                    <label for="criticalThreshold" class="form-label required-label">Seuil critique</label>
+                                    <input type="number" min="0" class="form-control" name="seuil_critique"
+                                        id="criticalThreshold" required placeholder="Ex: 1" value="{{ old('seuil_critique', 1) }}">
+                                    @error('seuil_critique')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="row mt-4">

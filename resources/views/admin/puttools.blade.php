@@ -120,8 +120,21 @@
                                 <div class="mb-3">
                                     <label for="equipmentQuantity" class="form-label required-label">Quantité disponible</label>
                                     <input type="number" class="form-control" id="equipmentQuantity"
-                                        name="quantite" min="1" required placeholder="Ex : 10" value="{{ $equipement->quantite }}">
+                                        name="quantite" min="1" required placeholder="Ex : 10"
+                                        value="{{ old('quantite', $equipement->quantite) }}">
                                     @error('quantite')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="criticalThreshold" class="form-label required-label">Seuil critique</label>
+                                    <input type="number" class="form-control" id="criticalThreshold"
+                                        name="seuil_critique" min="0" required placeholder="Ex : 1"
+                                        value="{{ old('seuil_critique', $equipement->seuil_critique ?? 1) }}">
+                                    @error('seuil_critique')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>

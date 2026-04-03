@@ -405,3 +405,89 @@ test('upcoming return reminder command notifies the employee only once per day',
     Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($employee->email)
         && $mail->envelope()->subject === 'Rappel : une date de retour approche');
 });
+
+test('critical stock alert is sent to admins and managers when a direct affectation reaches the threshold', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create([
+        'role' => 'admin',
+        'email' => 'admin-critical@example.com',
+    ]);
+    $manager = User::factory()->create([
+        'role' => 'gestionnaire',
+        'email' => 'manager-critical@example.com',
+    ]);
+    $employee = User::factory()->create([
+        'role' => 'employe',
+        'email' => 'employee-critical@example.com',
+    ]);
+
+    $categorie = Categorie::create(['nom' => 'Stock critique affectation']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Routeur',
+        'marque' => 'Cisco',
+        'description' => 'Routeur agence',
+        'quantite' => 3,
+        'seuil_critique' => 1,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $response = $this->actingAs($admin)->post(route('handle.affectation'), [
+        'employe_id' => $employee->id,
+        'motif' => 'Dotation terrain',
+        'equipements' => [$equipement->id],
+        'quantites' => [2],
+        'dates_retour' => [now()->addDays(10)->toDateString()],
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email)
+        && $mail->envelope()->subject === 'Alerte stock critique : Routeur');
+    Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($manager->email)
+        && $mail->envelope()->subject === 'Alerte stock critique : Routeur');
+    expect($equipement->fresh()->getQuantiteDisponible())->toBe(1);
+});
+
+test('critical stock alert is sent to admins and managers when an internal breakdown reaches the threshold', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create([
+        'role' => 'admin',
+        'email' => 'admin-critical-panne@example.com',
+    ]);
+    $manager = User::factory()->create([
+        'role' => 'gestionnaire',
+        'email' => 'manager-critical-panne@example.com',
+    ]);
+
+    $categorie = Categorie::create(['nom' => 'Stock critique panne']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Serveur',
+        'marque' => 'HP',
+        'description' => 'Serveur principal',
+        'quantite' => 4,
+        'seuil_critique' => 1,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $response = $this->actingAs($admin)->post(route('pannes.store-interne'), [
+        'equipement_id' => $equipement->id,
+        'quantite' => 3,
+        'description' => 'Trois unités détectées en panne au magasin central',
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($admin->email)
+        && $mail->envelope()->subject === 'Alerte stock critique : Serveur');
+    Mail::assertSent(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->hasTo($manager->email)
+        && $mail->envelope()->subject === 'Alerte stock critique : Serveur');
+    expect($equipement->fresh()->getQuantiteDisponible())->toBe(1);
+});

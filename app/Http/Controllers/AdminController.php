@@ -155,6 +155,7 @@ final class AdminController extends Controller
             'description' => $validated['description'],
             'date_acquisition' => $validated['date_acquisition'],
             'quantite' => $validated['quantite'],
+            'seuil_critique' => $validated['seuil_critique'],
             'image_path' => $imagePath,
             'categorie_id' => $validated['categorie_id'],
         ]);
@@ -177,6 +178,7 @@ final class AdminController extends Controller
             'type' => $bon->statut,
         ]);
         Storage::disk('public')->put($pdfPath, $pdf->output());
+        $this->notifyCriticalStockForEquipementIds([$equipement->id], []);
 
         return redirect()->back() // ou ->back()
             ->with('success', 'Équipement ajouté avec succès et un Bon d \'entrée est genéré.')
@@ -201,7 +203,8 @@ final class AdminController extends Controller
     {
         try {
             Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : ".json_encode($request->all()));
-            $data = $request->only(['nom', 'etat', 'marque', 'categorie_id', 'description', 'date_acquisition', 'quantite']);
+            $beforeStockState = $this->captureEquipementStockState([$equipement]);
+            $data = $request->only(['nom', 'etat', 'marque', 'categorie_id', 'description', 'date_acquisition', 'quantite', 'seuil_critique']);
             Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : ".json_encode($data));
 
             if ($request->hasFile('image_path')) {
@@ -209,6 +212,7 @@ final class AdminController extends Controller
             }
 
             $equipement->update($data);
+            $this->notifyCriticalStockForEquipementIds([$equipement->id], $beforeStockState);
 
             return redirect()->back()->with('success', 'Équipement mis à jour avec succès.');
         } catch (Exception $e) {
@@ -251,6 +255,11 @@ final class AdminController extends Controller
         ]);
 
         try {
+            $equipementIds = $demande->equipements()->pluck('equipements.id')->all();
+            $beforeStockState = $this->captureEquipementStockState(
+                Equipement::query()->whereIn('id', $equipementIds)->get()
+            );
+
             DB::beginTransaction();
 
             // Assigner automatiquement les équipements
@@ -276,6 +285,7 @@ final class AdminController extends Controller
                 $result['affectations_details'] ?? [],
                 $result['bon'] ?? null
             );
+            $this->notifyCriticalStockForEquipementIds($equipementIds, $beforeStockState);
 
             if ($result['pdf_path']) {
                 return redirect()->back()
@@ -358,6 +368,7 @@ final class AdminController extends Controller
             // Charger les équipements en bulk
             $equipementIds = array_values(array_unique(array_column($lignesAffectation, 'equipement_id')));
             $equipements = Equipement::whereIn('id', $equipementIds)->get()->keyBy('id');
+            $beforeStockState = $this->captureEquipementStockState($equipements->values());
             $affectationsDetails = [];
             $quantitesReservees = [];
 
@@ -427,6 +438,7 @@ final class AdminController extends Controller
                 $affectationsDetails,
                 $bon
             );
+            $this->notifyCriticalStockForEquipementIds($equipementIds, $beforeStockState);
 
             return redirect()->back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
@@ -466,6 +478,7 @@ final class AdminController extends Controller
             DB::beginTransaction();
 
             $equipement = Equipement::findOrFail($validated['equipement_id']);
+            $beforeStockState = $this->captureEquipementStockState([$equipement]);
 
             if ($validated['quantite'] > $equipement->getQuantiteDisponible()) {
                 throw new Exception(sprintf(
@@ -487,6 +500,7 @@ final class AdminController extends Controller
             ]);
 
             DB::commit();
+            $this->notifyCriticalStockForEquipementIds([$equipement->id], $beforeStockState);
 
             return redirect()->back()->with('success', 'Panne interne enregistrée avec succès.');
         } catch (Exception $e) {
@@ -602,6 +616,7 @@ final class AdminController extends Controller
             $affectation->load(['equipement', 'user', 'pannes' => function ($query) {
                 $query->where('statut', '!=', 'resolu');
             }]);
+            $beforeStockState = $this->captureEquipementStockState([$affectation->equipement]);
 
             $quantiteSaineRetournee = (int) ($validated['quantite_saine_retournee'] ?? 0);
             $pannesRetournees = $validated['pannes_retournees'] ?? [];
@@ -694,6 +709,7 @@ final class AdminController extends Controller
                 $quantitePanneRetournee,
                 $bon
             );
+            $this->notifyCriticalStockForEquipementIds([$equipement->id], $beforeStockState);
 
             return redirect()->back()
                 ->with('success', 'Retour du matériel enregistré avec succès. Un bon d’entrée a été généré.')
@@ -732,6 +748,8 @@ final class AdminController extends Controller
 
             $demande = $affectation->demande;
             $equipementNom = $affectation->equipement->nom ?? 'Équipement';
+            $beforeStockState = $this->captureEquipementStockState([$affectation->equipement]);
+            $equipementId = $affectation->equipement_id;
 
             Affectation::whereKey($affectation->id)->delete();
 
@@ -743,6 +761,7 @@ final class AdminController extends Controller
             }
 
             DB::commit();
+            $this->notifyCriticalStockForEquipementIds([$equipementId], $beforeStockState);
 
             return redirect()->back()->with('success', sprintf(
                 'L’affectation de « %s » a été annulée avec succès.',
@@ -784,6 +803,7 @@ final class AdminController extends Controller
             DB::beginTransaction();
 
             $panne->load(['equipement', 'affectation']);
+            $beforeStockState = $this->captureEquipementStockState([$panne->equipement]);
 
             $quantiteResolvable = $panne->getQuantiteResolvable();
 
@@ -814,6 +834,7 @@ final class AdminController extends Controller
                 $panne->fresh(['equipement', 'affectation.user', 'user']),
                 (int) $validated['quantite_resolue']
             );
+            $this->notifyCriticalStockForEquipementIds([$panne->equipement_id], $beforeStockState);
 
             return redirect()->back()->with('success', sprintf(
                 '%d équipement(s) marqué(s) comme réparé(s).',
@@ -837,6 +858,7 @@ final class AdminController extends Controller
             DB::beginTransaction();
 
             $panne->load(['equipement', 'affectation.user']);
+            $beforeStockState = $this->captureEquipementStockState([$panne->equipement]);
 
             if ($panne->estInterne() || ! $panne->affectation) {
                 throw new Exception('Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
@@ -915,6 +937,7 @@ final class AdminController extends Controller
                 $quantiteRemplacement,
                 $bon
             );
+            $this->notifyCriticalStockForEquipementIds([$panne->equipement_id], $beforeStockState);
 
             return redirect()->back()
                 ->with('success', 'Le remplacement a été enregistré avec succès.')
@@ -1158,5 +1181,55 @@ final class AdminController extends Controller
             fn (string $key) => $groupedLines[$key],
             $orderedKeys
         );
+    }
+
+    /**
+     * @param  iterable<int, Equipement|null>  $equipements
+     * @return array<int, array{available: int, threshold: int}>
+     */
+    private function captureEquipementStockState(iterable $equipements): array
+    {
+        $states = [];
+
+        foreach ($equipements as $equipement) {
+            if (! $equipement instanceof Equipement) {
+                continue;
+            }
+
+            $states[$equipement->id] = [
+                'available' => $equipement->getQuantiteDisponible(),
+                'threshold' => max(0, (int) $equipement->seuil_critique),
+            ];
+        }
+
+        return $states;
+    }
+
+    /**
+     * @param  array<int, int|string>  $equipementIds
+     * @param  array<int, array{available: int, threshold: int}>  $previousStates
+     */
+    private function notifyCriticalStockForEquipementIds(array $equipementIds, array $previousStates): void
+    {
+        $ids = array_values(array_unique(array_map('intval', $equipementIds)));
+
+        if ($ids === []) {
+            return;
+        }
+
+        $equipements = Equipement::query()
+            ->with('categorie')
+            ->whereIn('id', $ids)
+            ->get();
+
+        foreach ($equipements as $equipement) {
+            $previousState = $previousStates[$equipement->id] ?? null;
+
+            $this->workflowNotificationService->notifyCriticalStockAlertIfNeeded(
+                $equipement,
+                $previousState['available'] ?? null,
+                $previousState['threshold'] ?? null
+            );
+        }
     }
 }

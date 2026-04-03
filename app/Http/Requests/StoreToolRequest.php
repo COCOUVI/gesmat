@@ -23,6 +23,7 @@ final class StoreToolRequest extends FormRequest
             'date_acquisition' => 'required|date',
             'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'quantite' => 'required|integer|min:1',
+            'seuil_critique' => 'required|integer|min:0',
         ];
     }
 
@@ -46,6 +47,9 @@ final class StoreToolRequest extends FormRequest
             'quantite.required' => 'La quantité est requise.',
             'quantite.integer' => 'La quantité doit être un nombre entier.',
             'quantite.min' => 'La quantité minimale est 1.',
+            'seuil_critique.required' => 'Le seuil critique est requis.',
+            'seuil_critique.integer' => 'Le seuil critique doit être un nombre entier.',
+            'seuil_critique.min' => 'Le seuil critique ne peut pas être négatif.',
         ];
     }
 }

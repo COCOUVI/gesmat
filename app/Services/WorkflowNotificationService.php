@@ -8,6 +8,7 @@ use App\Mail\WorkflowActionMail;
 use App\Models\Affectation;
 use App\Models\Bon;
 use App\Models\Demande;
+use App\Models\Equipement;
 use App\Models\Panne;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -342,6 +343,57 @@ final class WorkflowNotificationService
                 'Si un retour partiel ou un incident doit être déclaré, merci de contacter l’administration du parc.'
             )
         );
+    }
+
+    public function notifyCriticalStockAlertIfNeeded(Equipement $equipement, ?int $previousAvailable = null, ?int $previousThreshold = null): void
+    {
+        $equipement->loadMissing('categorie');
+
+        $currentAvailable = $equipement->getQuantiteDisponible();
+        $currentThreshold = max(0, (int) $equipement->seuil_critique);
+
+        if ($currentAvailable > $currentThreshold) {
+            return;
+        }
+
+        if ($previousAvailable !== null && $previousThreshold !== null && $previousAvailable <= $previousThreshold) {
+            return;
+        }
+
+        $details = [
+            ['label' => 'Équipement', 'value' => (string) $equipement->nom],
+            ['label' => 'Catégorie', 'value' => (string) $equipement->categorie?->nom],
+            ['label' => 'Stock total', 'value' => (string) $equipement->quantite],
+            ['label' => 'Stock disponible', 'value' => (string) $currentAvailable],
+            ['label' => 'Seuil critique', 'value' => (string) $currentThreshold],
+            ['label' => 'Date', 'value' => now()->format('d/m/Y H:i')],
+        ];
+
+        $highlights = [
+            sprintf('Quantité affectée active : %d', $equipement->getQuantiteAffectee()),
+            sprintf('Quantité en panne interne : %d', $equipement->getQuantiteEnPanneInterne()),
+            sprintf('État actuel : %s', $equipement->getEtat()),
+        ];
+
+        foreach ($this->adminAndManagers() as $recipient) {
+            $this->safeSend(
+                $recipient,
+                new WorkflowActionMail(
+                    'Alerte stock critique : '.$equipement->nom,
+                    'Seuil critique atteint',
+                    $this->fullName($recipient),
+                    sprintf(
+                        'Le stock disponible de « %s » a atteint ou franchi son seuil critique. Une vérification ou un réapprovisionnement est recommandé.',
+                        $equipement->nom
+                    ),
+                    $details,
+                    $highlights,
+                    null,
+                    null,
+                    'Consultez la plateforme pour suivre les mouvements de stock liés à cet équipement.'
+                )
+            );
+        }
     }
 
     private function adminAndManagers(): Collection
