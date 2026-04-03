@@ -23,6 +23,7 @@ final class Bon extends Model
 
     protected $fillable = [
         'user_id',
+        'collaborateur_externe_id',
         'motif',
         'statut',
         'fichier_pdf',
