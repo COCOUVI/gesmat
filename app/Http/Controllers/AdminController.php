@@ -602,7 +602,6 @@ final class AdminController extends Controller
                         'collaborateur_externe_id' => $collaborateur->id,
                         'quantite_affectee' => $quantite,
                         'statut' => 'active',
-                        'motif' => $validated['motif'],
                     ]);
                 }
             }
