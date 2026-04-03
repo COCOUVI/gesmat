@@ -37,6 +37,11 @@ final class Affectation extends Model
     {
         return [
             'date_retour' => 'datetime',
+            'equipement_id' => 'integer',
+            'user_id' => 'integer',
+            'demande_id' => 'integer',
+            'quantite_affectee' => 'integer',
+            'quantite_retournee' => 'integer',
         ];
     }
 
@@ -191,7 +196,7 @@ final class Affectation extends Model
     public function getMotifBlocageAnnulation(): ?string
     {
         if ($this->getQuantiteRetournee() > 0) {
-            return "Une partie de cette affectation a déjà été retournée.";
+            return 'Une partie de cette affectation a déjà été retournée.';
         }
 
         if ($this->getNombrePannes() > 0) {

@@ -327,6 +327,41 @@ test('employee can report breakdowns by affectation and quantity remaining', fun
     expect(Panne::where('affectation_id', $affectation2->id)->sum('quantite'))->toBe(1);
 });
 
+test('employee can report a breakdown from string form values without crashing stock monitoring', function () {
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Pannes formulaire']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Imprimante',
+        'marque' => 'Brother',
+        'description' => 'Imprimante bureau',
+        'quantite' => 4,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $affectation = Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => null,
+        'quantite_affectee' => 2,
+        'created_by' => 'Admin Test',
+        'statut' => 'active',
+    ]);
+
+    $response = $this->actingAs($employee)->post(route('post.HandlePanne'), [
+        'affectation_id' => (string) $affectation->id,
+        'quantite' => '1',
+        'description' => 'Signalement envoyé depuis un formulaire HTML classique',
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    expect(Panne::where('affectation_id', $affectation->id)->count())->toBe(1);
+});
+
 test('partial healthy return increases available stock and keeps affectation active', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);

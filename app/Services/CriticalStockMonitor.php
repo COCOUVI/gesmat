@@ -38,7 +38,7 @@ final class CriticalStockMonitor
     {
         $this->dispatchForAffectation(
             $affectation,
-            $this->getAffectationActiveQuantity($affectation->quantite_affectee, $affectation->quantite_retournee, $affectation->statut),
+            $this->getAffectationActiveQuantity((int) $affectation->quantite_affectee, (int) $affectation->quantite_retournee, $affectation->statut),
             0
         );
     }
@@ -47,7 +47,7 @@ final class CriticalStockMonitor
     {
         $this->dispatchForAffectation(
             $affectation,
-            $this->getAffectationActiveQuantity($affectation->quantite_affectee, $affectation->quantite_retournee, $affectation->statut),
+            $this->getAffectationActiveQuantity((int) $affectation->quantite_affectee, (int) $affectation->quantite_retournee, $affectation->statut),
             $this->getAffectationActiveQuantity(
                 (int) $affectation->getOriginal('quantite_affectee'),
                 (int) $affectation->getOriginal('quantite_retournee'),
@@ -74,10 +74,10 @@ final class CriticalStockMonitor
         $this->dispatchForPanne(
             $panne,
             $this->getPanneInternalQuantity(
-                $panne->affectation_id,
-                $panne->quantite,
-                $panne->quantite_retournee_stock,
-                $panne->quantite_resolue,
+                $panne->affectation_id !== null ? (int) $panne->affectation_id : null,
+                (int) $panne->quantite,
+                (int) $panne->quantite_retournee_stock,
+                (int) $panne->quantite_resolue,
                 $panne->statut
             ),
             0
@@ -89,10 +89,10 @@ final class CriticalStockMonitor
         $this->dispatchForPanne(
             $panne,
             $this->getPanneInternalQuantity(
-                $panne->affectation_id,
-                $panne->quantite,
-                $panne->quantite_retournee_stock,
-                $panne->quantite_resolue,
+                $panne->affectation_id !== null ? (int) $panne->affectation_id : null,
+                (int) $panne->quantite,
+                (int) $panne->quantite_retournee_stock,
+                (int) $panne->quantite_resolue,
                 $panne->statut
             ),
             $this->getPanneInternalQuantity(

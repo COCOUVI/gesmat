@@ -34,6 +34,18 @@ final class Panne extends Model
         'statut',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'equipement_id' => 'integer',
+            'affectation_id' => 'integer',
+            'user_id' => 'integer',
+            'quantite' => 'integer',
+            'quantite_retournee_stock' => 'integer',
+            'quantite_resolue' => 'integer',
+        ];
+    }
+
     /**
      * Relation avec l'équipement en panne
      */
