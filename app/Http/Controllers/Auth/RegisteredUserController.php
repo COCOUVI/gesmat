@@ -1,21 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\IdentifiantsEnvoyes;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\View\View;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\IdentifiantsEnvoyes;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 
-class RegisteredUserController extends Controller
+final class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
@@ -30,7 +29,6 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -59,6 +57,6 @@ class RegisteredUserController extends Controller
         // Envoyer un email avec les identifiants
         Mail::to($user->email)->send(new IdentifiantsEnvoyes($user, $randomPassword));
 
-        return redirect()->back()->with("success", "Utilisateur ajouté avec succès. Un email contenant les identifiants a été envoyé.");
+        return redirect()->back()->with('success', 'Utilisateur ajouté avec succès. Un email contenant les identifiants a été envoyé.');
     }
 }

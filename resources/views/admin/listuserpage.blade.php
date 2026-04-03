@@ -25,7 +25,7 @@
                         Utilisez les boutons pour <code>éditer</code> ou <code>supprimer</code> un utilisateur.
                     </p>
                     <div class="table-responsive">
-                        <table class="table table-striped align-middle">
+                        <table class="table table-striped align-middle smart-data-table" data-table-title="les utilisateurs">
                             <thead>
                                 <tr>
                                     <th>Nom</th>
@@ -56,9 +56,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $users->links() }}
                     </div>
                 </div>
             </div>

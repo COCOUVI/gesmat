@@ -48,11 +48,6 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <x-equipement-etat-select name="etat" label="" :model="isset($equipement) ? $equipement : null" />
-                                </div>
-                            </div>
                         </div>
 
                         <div class="row mb-4">

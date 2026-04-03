@@ -92,6 +92,9 @@
 
             <p>
                 <strong>Désignation du matériel :</strong> {{ $equipement }}<br>
+                <strong>Quantité totale retournée :</strong> {{ $quantite_retournee ?? 0 }}<br>
+                <strong>Quantité saine retournée :</strong> {{ $quantite_saine_retournee ?? 0 }}<br>
+                <strong>Quantité en panne retournée :</strong> {{ $quantite_panne_retournee ?? 0 }}<br>
                 <strong>Date et heure de retour :</strong> {{ \Carbon\Carbon::parse($date)->format('d/m/Y à H\hi') }}
             </p>
 

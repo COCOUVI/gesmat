@@ -14,6 +14,7 @@
     <!-- inject:css -->
     <link rel="stylesheet" href="/css1/style.css">
     <!-- endinject -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
     <link rel="shortcut icon" href="/images1/favicon.png" />
     <style>
       :root {
@@ -61,6 +62,24 @@
         color: var(--primary) !important;
         font-weight: 600;
       }
+
+      .dataTables_wrapper .dataTables_filter input,
+      .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+      }
+
+      .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px !important;
+        margin: 0 2px;
+      }
+
+      .dataTables_wrapper .dataTables_info,
+      .dataTables_wrapper .dataTables_length,
+      .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 12px;
+      }
     </style>
     @stack('styles')
   </head>
@@ -82,6 +101,9 @@
     <!-- base:js -->
     @yield('scripts')
     <script src="/vendors1/base/vendor.bundle.base.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
     <!-- endinject -->
     <!-- Plugin js for this page-->
     <!-- End plugin js for this page-->
@@ -100,6 +122,47 @@
     <script src="/js1/jquery.cookie.js" type="text/javascript"></script>
     <!-- Custom js for this page-->
     <script src="/js1/dashboard.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        $('table.smart-data-table').each(function() {
+          const table = $(this);
+          const hasPlaceholderRow = table.find('tbody td[colspan]').length > 0;
+          const rowCount = table.find('tbody tr').length;
+
+          if (hasPlaceholderRow || rowCount === 0) {
+            return;
+          }
+
+          const headers = table.find('thead th').map(function() {
+            return $(this).text().trim().toLowerCase();
+          }).get();
+
+          const nonSortableTargets = headers.reduce(function(targets, header, index) {
+            if (['action', 'actions', 'photo', 'téléchargement', 'telechargement'].includes(header)) {
+              targets.push(index);
+            }
+
+            return targets;
+          }, []);
+
+          table.DataTable({
+            fixedHeader: table.data('fixed-header') !== false,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [],
+            autoWidth: false,
+            scrollX: table.data('scroll-x') !== false,
+            columnDefs: nonSortableTargets.length > 0 ? [{
+              orderable: false,
+              targets: nonSortableTargets,
+            }] : [],
+            language: {
+              url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+            },
+          });
+        });
+      });
+    </script>
     <!-- End custom js for this page-->
   </body>
 </html>

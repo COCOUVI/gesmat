@@ -120,7 +120,7 @@
                     <div class="stat-card stat-primary shadow-sm">
                         <i class="mdi mdi-desktop-mac stat-icon"></i>
                         <div>
-                            <h5>Équipements assignés</h5>
+                            <h5>Unités assignées</h5>
                             <h3>{{$nbr_assign}}</h3>
                         </div>
                     </div>
@@ -147,7 +147,7 @@
                     <div class="stat-card stat-danger shadow-sm">
                         <i class="mdi mdi-bug stat-icon"></i>
                         <div>
-                            <h5>Pannes non résolues</h5>
+                            <h5>Unités en panne</h5>
                             <h3>{{$nbr_non_resolue}}</h3>
                         </div>
                     </div>

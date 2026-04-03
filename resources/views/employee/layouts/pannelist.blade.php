@@ -14,10 +14,13 @@
                 <div class="card-body">
                     @if ($pannes->count())
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="table bg-danger">
+                            <table class="table table-striped table-hover smart-data-table"
+                                data-table-title="vos pannes"
+                                data-fixed-header="false"
+                                data-scroll-x="false">
+                                <thead class="table-danger">
                                     <tr>
-                                        <th scope="col">#</th>
+                                        <th scope="col" class="text-white">#</th>
                                         <th scope="col" class="text-white">
                                             <i class="mdi mdi-desktop-tower me-1"></i>
                                             Équipement
@@ -38,12 +41,9 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($pannes as $index => $panne)
-                                        <tr
-                                            class="
-                                        bg
-                                    ">
+                                        <tr>
                                             <td class="fw-bold">
-                                                {{ $loop->iteration + ($pannes->currentPage() - 1) * $pannes->perPage() }}
+                                                {{ $loop->iteration }}
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -82,11 +82,6 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        <!-- Pagination simple -->
-                        <div class="d-flex justify-content-center mt-4">
-                            {{ $pannes->links('pagination::bootstrap-5') }}
                         </div>
                     @else
                         <!-- Message vide avec contexte de panne -->

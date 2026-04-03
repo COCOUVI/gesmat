@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Demande;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class GestionnaireDemandeController extends Controller
+final class GestionnaireDemandeController extends Controller
 {
     // Afficher la liste des demandes en attente
     public function index()

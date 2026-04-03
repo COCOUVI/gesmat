@@ -9,6 +9,23 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
                 @endif
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <strong>Veuillez corriger les erreurs suivantes :</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                @endif
 
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white d-flex align-items-center">
@@ -27,20 +44,16 @@
                                 <div class="col-md-6">
                                     <label for="equipmentName" class="form-label required-label">Nom de l'équipement</label>
                                     <input type="text" class="form-control" name="nom" id="equipmentName" required
-                                        placeholder="Ex: Ordinateur HP">
+                                        placeholder="Ex: Ordinateur HP" value="{{ old('nom') }}">
                                     @error('nom')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <x-equipement-etat-select name="etat" label="État" />
-                                </div>
-
-                                <div class="col-md-6">
                                     <label for="equipmentBrand" class="form-label">Marque</label>
                                     <input type="text" class="form-control" name="marque" id="equipmentBrand"
-                                        placeholder="Ex: Dell, HP, Lenovo" required>
+                                        placeholder="Ex: Dell, HP, Lenovo" required value="{{ old('marque') }}">
                                     @error('marque')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
@@ -51,7 +64,7 @@
                                     <select class="form-select" name="categorie_id" id="equipmentCategory" required>
                                         <option value="" selected disabled>Choisissez une catégorie</option>
                                         @foreach ($categories as $cat)
-                                            <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
+                                            <option value="{{ $cat->id }}" @selected((string) old('categorie_id') === (string) $cat->id)>{{ $cat->nom }}</option>
                                         @endforeach
                                     </select>
                                     @error('categorie_id')
@@ -62,7 +75,7 @@
                                 <div class="col-md-12">
                                     <label for="equipmentDescription" class="form-label">Description</label>
                                     <textarea class="form-control" name="description" id="equipmentDescription" rows="3"
-                                        placeholder="Ex: Ordinateur portable Core i5, 8Go RAM, SSD 256Go" required></textarea>
+                                        placeholder="Ex: Ordinateur portable Core i5, 8Go RAM, SSD 256Go" required>{{ old('description') }}</textarea>
                                     @error('description')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
@@ -70,16 +83,16 @@
 
                                 <div class="col-md-6">
                                     <label for="acquisitionDate" class="form-label">Date d'acquisition</label>
-                                    <input type="date" class="form-control" name="date_acquisition" id="acquisitionDate" required>
+                                    <input type="date" class="form-control" name="date_acquisition" id="acquisitionDate" required value="{{ old('date_acquisition') }}">
                                     @error('date_acquisition')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="equipmentImage" class="form-label">Image</label>
+                                    <label for="equipmentImage" class="form-label required-label">Image</label>
                                     <input type="file" class="form-control" name="image_path" id="equipmentImage"
-                                        accept="image/*">
+                                        accept="image/*" required>
                                     @error('image_path')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
@@ -88,8 +101,17 @@
                                 <div class="col-md-6">
                                     <label for="equipmentQuantity" class="form-label required-label">Quantité</label>
                                     <input type="number" min="1" class="form-control" name="quantite"
-                                        id="equipmentQuantity" required placeholder="Ex: 5">
+                                        id="equipmentQuantity" required placeholder="Ex: 5" value="{{ old('quantite') }}">
                                     @error('quantite')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="criticalThreshold" class="form-label required-label">Seuil critique</label>
+                                    <input type="number" min="0" class="form-control" name="seuil_critique"
+                                        id="criticalThreshold" required placeholder="Ex: 1" value="{{ old('seuil_critique', 1) }}">
+                                    @error('seuil_critique')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -127,4 +149,3 @@
         </script>
     @endif
 @endpush
-

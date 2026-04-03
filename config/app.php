@@ -1,6 +1,6 @@
 <?php
 
-use Barryvdh\DomPDF\Facade\Pdf;
+declare(strict_types=1);
 
 return [
 
@@ -16,7 +16,6 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-
 
     /*
     |--------------------------------------------------------------------------
@@ -126,6 +125,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
     'locale' => 'fr',
-   
 
 ];

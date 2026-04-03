@@ -36,7 +36,7 @@
     @endif
     <h4 class="mb-4">Liste des Bons</h4>
     <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
+        <table class="table table-striped table-hover align-middle smart-data-table" data-table-title="les bons">
             <thead>
                 <tr>
                     <th>Numéro</th>
@@ -70,5 +70,4 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-2">{{ $bons->links() }}</div>
 @endsection

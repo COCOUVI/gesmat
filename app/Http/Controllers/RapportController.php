@@ -1,17 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-
-use Illuminate\Support\Facades\Auth;
 use App\Models\Rapport;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Response;
 
-
-class RapportController extends Controller
+final class RapportController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -24,6 +22,7 @@ class RapportController extends Controller
         return view('gestionnaire.rapports.index', compact('rapports'));
 
     }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -48,8 +47,8 @@ class RapportController extends Controller
         $pdf = Pdf::loadView('gestionnaire.rapports.pdf', compact('contenu', 'user'));
 
         // Enregistrer le PDF dans le dossier public/storage/rapports/
-        $filename = 'rapport_' . now()->format('Ymd_His') . '.pdf';
-        $path = 'rapports/' . $filename;
+        $filename = 'rapport_'.now()->format('Ymd_His').'.pdf';
+        $path = 'rapports/'.$filename;
 
         Storage::disk('public')->put($path, $pdf->output());
 
@@ -59,6 +58,7 @@ class RapportController extends Controller
             'user_id' => $user->id,
             'file_path' => $path,
         ]);
+
         // return redirect()->back()->with('success', value: 'Rapport généré et soumis avec succès.');
         return redirect()->route('gestionnaire.rapports.index')->with('success', 'Le rapport a bien été généré.');
     }
@@ -66,50 +66,46 @@ class RapportController extends Controller
     public function show($id)
     {
         $rapport = Rapport::with('user')->findOrFail($id);
+
         return view('gestionnaire.rapports.show', compact('rapport'));
     }
 
+    //     public function download($id)
+    // {
+    //     $rapport = Rapport::with('user')->findOrFail($id); // on récupère aussi l'utilisateur lié
+    //     $user = $rapport->user; // on récupère l'utilisateur
 
+    //     $pdf = Pdf::loadView('gestionnaire.rapports.pdf', [
+    //         'contenu' => $rapport->contenu,
+    //         'user' => $user, // on passe bien $user à la vue
+    //     ]);
 
+    //     return $pdf->download('rapport_'.$rapport->id.'.pdf');
+    // }
 
-//     public function download($id)
-// {
-//     $rapport = Rapport::with('user')->findOrFail($id); // on récupère aussi l'utilisateur lié
-//     $user = $rapport->user; // on récupère l'utilisateur
+    public function download($id)
+    {
+        $rapport = Rapport::with('user')->findOrFail($id);
+        $user = $rapport->user;
 
-//     $pdf = Pdf::loadView('gestionnaire.rapports.pdf', [
-//         'contenu' => $rapport->contenu,
-//         'user' => $user, // on passe bien $user à la vue
-//     ]);
+        $pdf = Pdf::loadView('gestionnaire.rapports.pdf', [
+            'contenu' => $rapport->contenu, // 🔥 ajout ici
+            'user' => $user,
+        ]);
 
-//     return $pdf->download('rapport_'.$rapport->id.'.pdf');
-// }
+        // return $pdf->download('rapport_'.$rapport->id.'.pdf');
+        return $pdf->stream('rapport_'.$rapport->id.'.pdf'); // Forcer le téléchargement dans le navigateur
 
-
-        public function download($id)
-        {
-            $rapport = Rapport::with('user')->findOrFail($id);
-            $user = $rapport->user;
-
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gestionnaire.rapports.pdf', [
-                'contenu' => $rapport->contenu, // 🔥 ajout ici
-                'user' => $user
-            ]);
-
-            // return $pdf->download('rapport_'.$rapport->id.'.pdf');
-            return $pdf->stream('rapport_'.$rapport->id.'.pdf');//Forcer le téléchargement dans le navigateur
-
-        }
-
+    }
 
     public function destroy($id)
     {
         $rapport = Rapport::findOrFail($id);
 
-    // Si tu as un fichier à supprimer, supprime-le aussi ici, par exemple :
+        // Si tu as un fichier à supprimer, supprime-le aussi ici, par exemple :
         if ($rapport->chemin_fichier && Storage::exists($rapport->chemin_fichier)) {
             Storage::delete($rapport->chemin_fichier);
-        }   
+        }
 
         $rapport->delete();
 

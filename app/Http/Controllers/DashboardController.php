@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Affectation;
 use App\Models\Equipement;
 use App\Models\User;
-use App\Models\Affectation;
-class DashboardController extends Controller
+
+final class DashboardController extends Controller
 {
     //     public function dashboard()
     // {
@@ -20,13 +22,12 @@ class DashboardController extends Controller
     //         'utilisateursActifs'
     //     ));
     // }
-        public function index()
-        {
-            $totalEquipements = Equipement::count(); // ou ta logique ici
+    public function index()
+    {
+        $totalEquipements = Equipement::count(); // ou ta logique ici
 
-            return view('gestionnaire.homedash', [
-                'totalEquipements' => $totalEquipements
-            ]);
-        }
-
+        return view('gestionnaire.homedash', [
+            'totalEquipements' => $totalEquipements,
+        ]);
+    }
 }

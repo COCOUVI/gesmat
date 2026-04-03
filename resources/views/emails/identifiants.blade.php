@@ -68,9 +68,20 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    @php
+        $logoDataUri = null;
+        if (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
+        }
+    @endphp
+
     <div class="email-container">
         <div class="email-header">
-            <i class="fas fa-tools"></i> <strong>J-Tools</strong>
+            @if ($logoDataUri)
+                <img src="{{ $logoDataUri }}" alt="J-Tools Logo" style="max-width: 150px; height: auto; margin-bottom: 15px; display: block;">
+            @else
+                <i class="fas fa-tools"></i> <strong>J-Tools</strong>
+            @endif
         </div>
 
         <div class="email-body">
@@ -88,6 +99,12 @@
             </div>
 
             <p>Merci de vous connecter dès que possible.</p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ $loginUrl ?? route('login') }}" style="display: inline-block; background-color: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                    Se connecter
+                </a>
+            </div>
 
             <p>Cordialement,<br>L'équipe J-Tools</p>
         </div>

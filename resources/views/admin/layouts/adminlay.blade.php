@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <!-- endinject -->
     <!-- inject:css -->
     <link rel="stylesheet" href="css/style.css">
@@ -57,6 +58,9 @@
         <!-- plugins:js -->
         <script src="vendors/js/vendor.bundle.base.js"></script>
         <script src="vendors/js/vendor.bundle.addons.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
         <!-- endinject -->
         <!-- Plugin js for this page-->
         <!-- End plugin js for this page-->
@@ -68,6 +72,47 @@
         <!-- Custom js for this page-->
         @stack('scripts')
         <script src="js/dashboard.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                $('table.smart-data-table').each(function() {
+                    const table = $(this);
+                    const hasPlaceholderRow = table.find('tbody td[colspan]').length > 0;
+                    const rowCount = table.find('tbody tr').length;
+
+                    if (hasPlaceholderRow || rowCount === 0) {
+                        return;
+                    }
+
+                    const headers = table.find('thead th').map(function() {
+                        return $(this).text().trim().toLowerCase();
+                    }).get();
+
+                    const nonSortableTargets = headers.reduce(function(targets, header, index) {
+                        if (['action', 'actions', 'photo', 'téléchargement', 'telechargement'].includes(header)) {
+                            targets.push(index);
+                        }
+
+                        return targets;
+                    }, []);
+
+                    table.DataTable({
+                        fixedHeader: true,
+                        pageLength: 10,
+                        lengthMenu: [10, 25, 50, 100],
+                        order: [],
+                        autoWidth: false,
+                        scrollX: true,
+                        columnDefs: nonSortableTargets.length > 0 ? [{
+                            orderable: false,
+                            targets: nonSortableTargets,
+                        }] : [],
+                        language: {
+                            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+                        },
+                    });
+                });
+            });
+        </script>
         <script>
             // Personnalisation des graphiques pour Toolzy
             document.addEventListener('DOMContentLoaded', function() {

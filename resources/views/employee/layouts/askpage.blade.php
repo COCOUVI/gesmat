@@ -25,14 +25,14 @@
                             <div class="row g-3">
                                 <div class="form-group col-12 col-md-6">
                                     <label for="lieu">Lieu</label>
-                                    <input type="text" name="lieu" class="form-control" required>
+                                    <input type="text" name="lieu" class="form-control" value="{{ old('lieu') }}" required>
                                     @error('lieu')
                                         <span class="text-danger mt-2">{{ $message }}</span>
                                     @enderror
                                 </div>
                                 <div class="form-group col-12 col-md-6">
                                     <label for="motif">Usage</label>
-                                    <textarea name="motif" class="form-control" rows="3" required></textarea>
+                                    <textarea name="motif" class="form-control" rows="3" required>{{ old('motif') }}</textarea>
                                     @error('motif')
                                         <span class="text-danger mt-2">{{ $message }}</span>
                                     @enderror
@@ -45,13 +45,16 @@
                                 <div class="equipement-item row gy-2 mb-3">
                                     <div class="col-12 col-md-6">
                                         <label>Équipement</label>
-                                        <select name="equipements[]" class="form-control" required>
+                                        <select name="equipements[]" class="form-control equipement-select" required>
                                             <option value="">-- Sélectionner un équipement --</option>
                                             @foreach ($equipements_par_categorie as $categorie)
                                               @if ($categorie->equipements->count())
                                                 <optgroup label="{{ $categorie->nom }}">
                                                     @foreach ($categorie->equipements as $equipement)
-                                                        <option value="{{ $equipement->id }}">{{ $equipement->nom }}
+                                                        <option value="{{ $equipement->id }}"
+                                                            data-stock-disponible="{{ $equipement->getQuantiteDisponible() }}"
+                                                            {{ old('equipements.0') == $equipement->id ? 'selected' : '' }}>
+                                                            {{ $equipement->nom }} (Stock disponible: {{ $equipement->getQuantiteDisponible() }})
                                                         </option>
                                                     @endforeach
                                                 </optgroup>
@@ -66,7 +69,8 @@
                                     <div class="col-12 col-md-4">
                                         <label>Quantité</label>
                                         <input type="number" name="quantites[]" class="form-control" min="1"
-                                            required>
+                                            value="{{ old('quantites.0') }}" required>
+                                        <small class="text-muted stock-help">Stock disponible actuellement : --</small>
                                         @error('quantites')
                                             <span class="text-danger">{{ $message }}</span>
                                         @enderror
@@ -109,12 +113,12 @@
             newField.innerHTML = `
                 <div class="col-md-6">
                     <label>Équipement</label>
-                    <select name="equipements[]" class="form-control" required>
+                    <select name="equipements[]" class="form-control equipement-select" required>
                         <option value="">-- Sélectionner un équipement --</option>
                         @foreach ($equipements_par_categorie as $categorie)
                             <optgroup label="{{ $categorie->nom }}">
                                 @foreach ($categorie->equipements as $equipement)
-                                    <option value="{{ $equipement->id }}">{{ $equipement->nom }}</option>
+                                    <option value="{{ $equipement->id }}" data-stock-disponible="{{ $equipement->getQuantiteDisponible() }}">{{ $equipement->nom }} (Stock disponible: {{ $equipement->getQuantiteDisponible() }})</option>
                                 @endforeach
                             </optgroup>
                         @endforeach
@@ -123,6 +127,7 @@
                 <div class="col-md-4">
                     <label>Quantité</label>
                     <input type="number" name="quantites[]" class="form-control" min="1" required>
+                    <small class="text-muted stock-help">Stock disponible actuellement : --</small>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="button" class="btn btn-danger btn-sm remove-btn w-100">Supprimer</button>
@@ -136,6 +141,23 @@
             if (e.target && e.target.classList.contains('remove-btn')) {
                 e.target.closest('.equipement-item').remove();
             }
+        });
+
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('equipement-select')) {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const stockDisponible = selectedOption.dataset.stockDisponible ?? '--';
+                const container = e.target.closest('.equipement-item');
+                const stockHelp = container.querySelector('.stock-help');
+
+                if (stockHelp) {
+                    stockHelp.textContent = `Stock disponible actuellement : ${stockDisponible}`;
+                }
+            }
+        });
+
+        document.querySelectorAll('.equipement-select').forEach(function(select) {
+            select.dispatchEvent(new Event('change'));
         });
     </script>
 @endsection

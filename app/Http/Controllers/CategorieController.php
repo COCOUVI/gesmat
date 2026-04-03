@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Categorie;
 use App\Models\Equipement;
+use Illuminate\Http\Request;
 
-
-class CategorieController extends Controller
+final class CategorieController extends Controller
 {
     public function index()
     {
         $categories = Categorie::all();
+
         return view('gestionnaire.categories.index', compact('categories'));
     }
 
@@ -23,32 +25,33 @@ class CategorieController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255'
+            'nom' => 'required|string|max:255',
         ]);
 
         Categorie::create($validated);
 
         return redirect()->route('gestionnaire.categories.list')
-                         ->with('success', 'Catégorie ajoutée avec succès.');
+            ->with('success', 'Catégorie ajoutée avec succès.');
     }
 
     public function edit($id)
     {
         $categorie = Categorie::findOrFail($id);
+
         return view('gestionnaire.categories.edit', compact('categorie'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255'
+            'nom' => 'required|string|max:255',
         ]);
 
         $categorie = Categorie::findOrFail($id);
         $categorie->update($validated);
 
         return redirect()->route('gestionnaire.categories.list')
-                         ->with('success', 'Catégorie mise à jour avec succès.');
+            ->with('success', 'Catégorie mise à jour avec succès.');
     }
 
     public function destroy($id)
@@ -57,8 +60,9 @@ class CategorieController extends Controller
         $categorie->delete();
 
         return redirect()->route('gestionnaire.categories.list')
-                         ->with('success', 'Catégorie supprimée.');
-        }
+            ->with('success', 'Catégorie supprimée.');
+    }
+
     public function equipements()
     {
         return $this->hasMany(Equipement::class);

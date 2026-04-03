@@ -11,7 +11,7 @@
             <div class="alert alert-info">Aucun rapport disponible.</div>
         @else
             <div class="table-responsive">
-                <table class="table table-bordered table-hover shadow-sm align-middle">
+                <table class="table table-bordered table-hover shadow-sm align-middle smart-data-table" data-table-title="les rapports">
                     <thead class="table-primary">
                         <tr>
                             <th>Date de création</th>
@@ -34,7 +34,6 @@
                     </tbody>
                 </table>
             </div>
-           <div class="mt-2">{{ $rapports->links() }}</div>
         @endif
     </div>
 @endsection

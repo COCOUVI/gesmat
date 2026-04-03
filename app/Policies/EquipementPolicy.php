@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\Equipement;
 use App\Models\User;
 
-class EquipementPolicy
+final class EquipementPolicy
 {
     public function create(User $user): bool
     {

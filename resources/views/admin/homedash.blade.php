@@ -21,7 +21,7 @@
             <div class="card bg-gradient-toolzy-primary card-img-holder text-white">
                 <div class="card-body">
                     <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Total Équipements
+                    <h4 class="font-weight-normal mb-3">Stock total
                         <i class="mdi mdi-laptop mdi-24px float-right"></i>
                     </h4>
                     <h2 class="mb-5">{{ $nbr_equipement }}</h2>
@@ -33,11 +33,11 @@
             <div class="card bg-gradient-toolzy-secondary card-img-holder text-white">
                 <div class="card-body">
                     <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Équipements affectés
+                    <h4 class="font-weight-normal mb-3">Unités affectées
                         <i class="mdi mdi-account-check mdi-24px float-right"></i>
                     </h4>
                     <h2 class="mb-5"> {{$nbr_affect}}</h2>
-                     <h6 class="card-text"> {{$nbr_affect===0?0:number_format(($nbr_affect/$nbr_equipement)*100,0) }}% du total des équipements</h6>
+                     <h6 class="card-text"> {{ $nbr_equipement === 0 ? 0 : number_format(($nbr_affect / $nbr_equipement) * 100, 0) }}% du stock total</h6>
                 </div>
             </div>
         </div>
@@ -59,11 +59,11 @@
                 <div class="card bg-gradient-toolzy-danger card-img-holder text-white">
                     <div class="card-body">
                         <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Équipements en panne
+                        <h4 class="font-weight-normal mb-3">Unités en panne
                             <i class="mdi mdi-alert mdi-24px float-right"></i>
                         </h4>
                         <h2 class="mb-5">{{ $nbr_panne}}</h2>
-                        <h6 class="card-text">Résolu</h6>
+                        <h6 class="card-text">Quantité non résolue actuellement</h6>
                     </div>
                 </div>
             </div>

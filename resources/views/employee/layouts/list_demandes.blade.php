@@ -39,7 +39,7 @@
         <div class="card dashboard-card shadow-sm p-3">
             @if ($demandes->count())
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle smart-data-table" data-table-title="vos demandes">
                         <thead >
                             <tr>
                                 <th class="text-white">#</th>
@@ -51,32 +51,49 @@
                         </thead>
                         <tbody>
                             @foreach ($demandes as $index => $demande)
+                                @php $statutAffichage = $demande->getStatutAffichage(); @endphp
                                 <tr>
-                                    <td>{{ $loop->iteration + ($demandes->currentPage() - 1) * $demandes->perPage() }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ Str::limit($demande->motif, 60) }}</td>
                                     <td>{{ $demande->lieu }}</td>
                                     <td>{{ $demande->created_at->format('d/m/Y') }}</td>
                                     <td>
                                         <span class="badge-status 
-                                            @if($demande->statut === 'acceptee') bg-success
-                                            @elseif($demande->statut === 'refusee') bg-danger
+                                            @if($statutAffichage === 'acceptee') bg-success
+                                            @elseif($statutAffichage === 'rejetee') bg-danger
+                                            @elseif($statutAffichage === 'partiellement_servie') bg-info text-dark
                                             @else bg-warning text-dark @endif">
                                             <i class="mdi 
-                                                @if($demande->statut === 'acceptee') mdi-check-circle-outline
-                                                @elseif($demande->statut === 'refusee') mdi-close-circle-outline
+                                                @if($statutAffichage === 'acceptee') mdi-check-circle-outline
+                                                @elseif($statutAffichage === 'rejetee') mdi-close-circle-outline
+                                                @elseif($statutAffichage === 'partiellement_servie') mdi-progress-check
                                                 @else mdi-timer-sand @endif">
                                             </i>
-                                            {{ ucfirst($demande->statut) }}
+                                            {{ str_replace('_', ' ', ucfirst($statutAffichage)) }}
                                         </span>
+                                        <div class="mt-2 small text-muted">
+                                            Servi : {{ $demande->getQuantiteTotaleServie() }} / {{ $demande->getQuantiteTotaleDemandee() }}
+                                        </div>
+                                        <div class="mt-2 small">
+                                            @foreach ($demande->equipements as $equipement)
+                                                @php
+                                                    $quantiteDemandee = (int) $equipement->pivot->nbr_equipement;
+                                                    $quantiteServie = $demande->getQuantiteServiePourEquipement($equipement->id);
+                                                    $quantiteRestante = $demande->getQuantiteRestantePourEquipement($equipement->id, $quantiteDemandee);
+                                                @endphp
+                                                <div>
+                                                    {{ $equipement->nom }} :
+                                                    demandé {{ $quantiteDemandee }},
+                                                    servi {{ $quantiteServie }},
+                                                    restant {{ $quantiteRestante }}
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
-                </div>
-
-                <div class="mt-3 d-flex justify-content-center">
-                    {{ $demandes->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <div class="no-data text-center">

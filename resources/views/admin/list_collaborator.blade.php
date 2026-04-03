@@ -20,7 +20,7 @@
                     <p class="text-center text-muted">Aucun collaborateur externe trouvé.</p>
                 @else
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
+                        <table class="table table-bordered table-hover align-middle smart-data-table" data-table-title="les collaborateurs">
                             <thead class="table-light">
                                 <tr>
                                     <th>Nom</th>
@@ -58,7 +58,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-2">{{ $collaborateurs->links() }}</div>
                 @endif
             </div>
         </div>

@@ -30,7 +30,7 @@
                     <h4 class="card-title mb-4">Liste des équipements</h4>
 
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table smart-data-table" data-table-title="les équipements">
                             <thead>
                                 <tr>
                                     <th>Nom</th>
@@ -54,8 +54,20 @@
                                         <td>{{ $equip->description }}</td>
                                         <td>{{ $equip->categorie->nom }}</td>
                                         <td>
-                                            <span class="badge bg-{{ \App\Helpers\EquipementEtatHelper::badgeColor($equip->etat) }}">
-                                                {{ \App\Helpers\EquipementEtatHelper::label($equip->etat) }}
+                                            @php
+                                                $disponible = $equip->getQuantiteDisponible();
+                                                $enPanne = $equip->getQuantiteEnPanne();
+                                                
+                                                if ($disponible > 0 && $enPanne == 0) {
+                                                    $etatBadge = ['Disponible', 'success'];
+                                                } elseif ($disponible > 0 && $enPanne > 0) {
+                                                    $etatBadge = ['Partiellement en panne', 'warning'];
+                                                } else {
+                                                    $etatBadge = ['Non disponible', 'danger'];
+                                                }
+                                            @endphp
+                                            <span class="badge bg-{{ $etatBadge[1] }}">
+                                                {{ $etatBadge[0] }}
                                             </span>
                                         </td>
                                         <td>
@@ -82,17 +94,6 @@
                             </tbody>
                         </table>
                     </div>
-                    @if ($equipements->count())
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="text-muted">
-                                Affichage de {{ $equipements->firstItem() }} à
-                                {{ $equipements->lastItem() }} sur {{ $equipements->total() }} équipements
-                            </div>
-                            <div>
-                                {{ $equipements->links() }}
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
