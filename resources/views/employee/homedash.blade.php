@@ -146,12 +146,12 @@
           }, []);
 
           table.DataTable({
-            fixedHeader: true,
+            fixedHeader: table.data('fixed-header') !== false,
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
             order: [],
             autoWidth: false,
-            scrollX: true,
+            scrollX: table.data('scroll-x') !== false,
             columnDefs: nonSortableTargets.length > 0 ? [{
               orderable: false,
               targets: nonSortableTargets,

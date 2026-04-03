@@ -268,6 +268,7 @@ test('breakdown resolution notifies the employee linked to the affectation', fun
         'marque' => 'Yealink',
         'description' => 'Telephone IP',
         'quantite' => 2,
+        'seuil_critique' => 0,
         'date_acquisition' => now(),
         'image_path' => 'test.jpg',
     ]);
