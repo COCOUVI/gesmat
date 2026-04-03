@@ -217,6 +217,12 @@ final class WorkflowNotificationService
     public function notifyEquipmentReturned(Affectation $affectation, int $healthyReturned, int $brokenReturned, ?Bon $bon = null): void
     {
         $affectation->loadMissing(['user', 'equipement']);
+
+        // Skip notifications for external collaborators (no email in system)
+        if ($affectation->estPourCollaborateur()) {
+            return;
+        }
+
         $employee = $affectation->user;
 
         if (! $employee instanceof User) {

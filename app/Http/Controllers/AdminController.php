@@ -641,7 +641,7 @@ final class AdminController extends Controller
         try {
             DB::beginTransaction();
 
-            $affectation->load(['equipement', 'user', 'pannes' => function ($query) {
+            $affectation->load(['equipement', 'user', 'collaborateurExterne', 'pannes' => function ($query) {
                 $query->where('statut', '!=', 'resolu');
             }]);
 
@@ -704,13 +704,13 @@ final class AdminController extends Controller
             $affectation->update($updateData);
 
             $equipement = $affectation->equipement;
-            $user = $affectation->user;
+            $destinataireName = $affectation->getNomDestinataire();
 
             $pdfName = 'bon_entree_retour_'.$affectation->id.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_entree/'.$pdfName;
 
-            $bon = Bon::create([
-                'user_id' => $user->id,
+            // Create return entry bon with appropriate recipient type
+            $bonData = [
                 'motif' => sprintf(
                     'Retour de matériel : %s (total: %d, sain: %d, en panne: %d)',
                     $equipement->nom,
@@ -720,12 +720,20 @@ final class AdminController extends Controller
                 ),
                 'statut' => 'entrée',
                 'fichier_pdf' => $pdfPath,
-            ]);
+            ];
+
+            if ($affectation->estPourCollaborateur()) {
+                $bonData['collaborateur_externe_id'] = $affectation->collaborateur_externe_id;
+            } else {
+                $bonData['user_id'] = $affectation->user_id;
+            }
+
+            $bon = Bon::create($bonData);
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
+                'nom' => $destinataireName,
+                'prenom' => '', // Name is already complete
                 'motif' => $bon->motif,
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
@@ -738,7 +746,7 @@ final class AdminController extends Controller
             DB::commit();
 
             $this->workflowNotificationService->notifyEquipmentReturned(
-                $affectation->fresh(['user', 'equipement', 'pannes']),
+                $affectation->fresh(['user', 'collaborateurExterne', 'equipement', 'pannes']),
                 $quantiteSaineRetournee,
                 $quantitePanneRetournee,
                 $bon
