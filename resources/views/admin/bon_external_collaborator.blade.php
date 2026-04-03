@@ -17,17 +17,20 @@
 
         <div class="card shadow-lg">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Générer un bon pour un collaborateur externe</h4>
-                <p class="mb-0 small mt-2">Le bon peut enregistrer une sortie d'équipement vers le collaborateur ou un retour vers le stock.</p>
+                <h4 class="mb-0">Assigner des équipements à un collaborateur externe</h4>
+                <p class="mb-0 small mt-2">Créez une affectation d'équipements pour le collaborateur. Les retours seront gérés depuis la liste d'affectations.</p>
             </div>
             <div class="card-body">
                 <div class="alert alert-info">
-                    <strong>À savoir:</strong> Une <strong>sortie</strong> crée une affectation et réduit le stock disponible. 
-                    Un <strong>retour</strong> enregistre le matériel revendu au collaborateur.
+                    <strong>À savoir:</strong> Une affectation génère un bon de <strong>sortie</strong>. 
+                    Les<strong>retours</strong> sont gérés depuis la liste d'affectations avec le bouton <strong>Retour</strong>.
                 </div>
 
                 <form action="{{ route('HandleBon') }}" method="POST">
                     @csrf
+
+                    {{-- Type de bon hidden (toujours sortie) --}}
+                    <input type="hidden" name="type" value="sortie">
 
                     {{-- Sélection collaborateur --}}
                     <div class="mb-3">
@@ -53,19 +56,6 @@
                             class="form-control @error('motif') is-invalid @enderror" required
                             placeholder="Décrivez le motif du bon...">{{ old('motif') }}</textarea>
                         @error('motif')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    {{-- Type de bon --}}
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Type de bon <span class="text-danger">*</span></label>
-                        <select class="form-select @error('type') is-invalid @enderror" name="type" id="type" required>
-                            <option value="">-- Sélectionnez un type --</option>
-                            <option value="sortie" @selected(old('type', 'sortie') == 'sortie')>Sortie (matériel sortant)</option>
-                            <option value="entrée" @selected(old('type') == 'entrée')>Entrée (matériel retournant)</option>
-                        </select>
-                        @error('type')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
