@@ -7,6 +7,28 @@ use App\Models\Bon;
 use App\Models\CollaborateurExterne;
 use App\Models\Equipement;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+
+it('can create an external collaborator with identity card', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->actingAs($admin);
+
+    $response = $this->post(route('HandleCollaborator'), [
+        'nom' => 'Kouassi',
+        'prenom' => 'Brice',
+        'chemin_carte' => UploadedFile::fake()->image('carte.png'),
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    $collaborateur = CollaborateurExterne::where('nom', 'Kouassi')
+        ->where('prenom', 'Brice')
+        ->first();
+
+    expect($collaborateur)->not->toBeNull();
+    expect($collaborateur->carte_chemin)->not->toBeNull();
+});
 
 it('can create affectation for external collaborator with sortie bon', function () {
     $admin = User::factory()->create(['role' => 'admin']);

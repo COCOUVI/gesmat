@@ -6,6 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\ReportPanneAction;
 use App\Actions\SubmitDemandeAction;
+use App\Http\Requests\StoreDemandeRequest;
+use App\Http\Requests\StoreHelpRequest;
+use App\Http\Requests\StorePanneRequest;
 use App\Mail\HelpRequestMail;
 use App\Models\Affectation;
 use App\Models\Categorie;
@@ -13,7 +16,6 @@ use App\Models\Demande;
 use App\Models\Panne;
 use App\Models\User;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -109,19 +111,9 @@ final class EmployeController extends Controller
         return view('employee.layouts.askpage', compact('user', 'equipements_par_categorie'));
     }
 
-    public function SubmitAsk(Request $request)
+    public function SubmitAsk(StoreDemandeRequest $request)
     {
-        $validated = $request->validate([
-            'lieu' => 'required|string|max:255',
-            'motif' => 'required|string|min:3|max:2000',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|integer|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
-        ], [
-            'equipements.required' => 'Veuillez sélectionner au moins un équipement.',
-            'quantites.required' => 'Veuillez indiquer la quantité demandée.',
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->submitDemandeAction->handle(Auth::user(), $validated);
@@ -166,22 +158,9 @@ final class EmployeController extends Controller
      * Signale une panne d'équipement
      * Valide d'abord que l'employé a reçu cet équipement et pas déjà signalé tout
      */
-    public function HandlePanne(Request $request)
+    public function HandlePanne(StorePanneRequest $request)
     {
-        $validated = $request->validate([
-            'affectation_id' => 'required|integer|exists:affectations,id',
-            'quantite' => 'required|integer|min:1',
-            'description' => 'required|string|min:10|max:1000',
-        ], [
-            'affectation_id.required' => 'Affectation requise',
-            'affectation_id.exists' => 'Affectation inexistante',
-            'quantite.required' => 'Quantité requise',
-            'quantite.min' => 'Quantité minimale : 1',
-            'quantite.integer' => 'La quantité doit être un nombre',
-            'description.required' => 'Description requise',
-            'description.min' => 'Description minimum 10 caractères',
-            'description.max' => 'Description maximum 1000 caractères',
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->reportPanneAction->handle(Auth::user(), $validated);
@@ -234,14 +213,9 @@ final class EmployeController extends Controller
     /**
      * Traite la soumission d'une demande d'aide
      */
-    public function HandleHelp(Request $request)
+    public function HandleHelp(StoreHelpRequest $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string|min:10|max:2000',
-        ], [
-            'message.required' => 'Le message est requis',
-            'message.min' => 'Le message doit contenir au moins 10 caractères',
-        ]);
+        $validated = $request->validated();
 
         try {
             $adminEmail = config('mail.from.address', 'admin@gesmat.local');

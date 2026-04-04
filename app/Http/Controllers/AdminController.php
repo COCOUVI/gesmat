@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\CancelAffectationAction;
 use App\Actions\CreateDirectAffectationAction;
+use App\Actions\CreateEquipementAction;
+use App\Actions\CreateExternalCollaboratorAction;
 use App\Actions\CreateExternalCollaboratorBonAction;
 use App\Actions\RegisterEquipmentReturnAction;
 use App\Actions\ReplacePanneEquipmentAction;
@@ -18,6 +20,12 @@ use App\Events\EquipmentReturned;
 use App\Events\PanneReplacementCompleted;
 use App\Events\PanneResolved;
 use App\Http\Requests\EditRequest;
+use App\Http\Requests\RegisterEquipmentReturnRequest;
+use App\Http\Requests\ReplacePanneEquipmentRequest;
+use App\Http\Requests\ResolvePanneRequest;
+use App\Http\Requests\ServeDemandeRequest;
+use App\Http\Requests\StoreDirectAffectationRequest;
+use App\Http\Requests\StoreInternalPanneRequest;
 use App\Http\Requests\UpdateEquipementRequest;
 use App\Models\Affectation;
 use App\Models\Bon;
@@ -31,7 +39,6 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +61,8 @@ final class AdminController extends Controller
     public function __construct(
         private readonly ServeDemandeAction $serveDemandeAction,
         private readonly CreateDirectAffectationAction $createDirectAffectationAction,
+        private readonly CreateEquipementAction $createEquipementAction,
+        private readonly CreateExternalCollaboratorAction $createExternalCollaboratorAction,
         private readonly StoreInternalPanneAction $storeInternalPanneAction,
         private readonly RegisterEquipmentReturnAction $registerEquipmentReturnAction,
         private readonly ResolvePanneAction $resolvePanneAction,
@@ -157,40 +166,19 @@ final class AdminController extends Controller
     public function addTool(\App\Http\Requests\StoreToolRequest $request)
     {
         $validated = $request->validated();
-        $imagePath = null;
+        $result = $this->createEquipementAction->handle(
+            Auth::user(),
+            $validated,
+            $request->file('image_path')
+        );
+        $equipement = $result['equipement'];
+        $bon = $result['bon'];
+        $pdfPath = $result['pdf_path'];
 
-        if ($request->hasFile('image_path')) {
-            $file = $request->file('image_path');
-            $nomNettoye = preg_replace('/[^a-zA-Z0-9-_]/', '', mb_strtolower(str_replace(' ', '-', $validated['nom'])));
-            $imageName = time().'_'.$nomNettoye.'.'.$file->getClientOriginalExtension();
-            $file->move(public_path('pictures/equipements'), $imageName);
-            $imagePath = 'pictures/equipements/'.$imageName;
-        }
-
-        $equipement = Equipement::create([
-            'nom' => $validated['nom'],
-            'marque' => $validated['marque'],
-            'description' => $validated['description'],
-            'date_acquisition' => $validated['date_acquisition'],
-            'quantite' => $validated['quantite'],
-            'seuil_critique' => $validated['seuil_critique'],
-            'image_path' => $imagePath,
-            'categorie_id' => $validated['categorie_id'],
-        ]);
-
-        $user = Auth::user();
-        $bon = new Bon();
-        $bon->motif = 'Ajout de nouvel équipement : '.$equipement->nom;
-        $bon->user_id = $user->id;
-        $bon->statut = 'entrée';
-        $pdfName = 'bon_entree_'.$equipement->id.'.pdf';
-        $pdfPath = 'bon_entree/'.$pdfName;
-        $bon->fichier_pdf = $pdfPath;
-        $bon->save();
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
-            'nom' => $user->nom ?? 'Admin',
-            'prenom' => $user->prenom ?? '',
+            'nom' => Auth::user()->nom ?? 'Admin',
+            'prenom' => Auth::user()->prenom ?? '',
             'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
@@ -264,14 +252,9 @@ final class AdminController extends Controller
     /**
      * Accepte une demande et assigne automatiquement les équipements à l'employé
      */
-    public function CheckAsk(Request $request, Demande $demande)
+    public function CheckAsk(ServeDemandeRequest $request, Demande $demande)
     {
-        $validated = $request->validate([
-            'quantites_a_affecter' => 'required|array',
-            'quantites_a_affecter.*' => 'nullable|integer|min:0',
-            'dates_retour' => 'nullable|array',
-            'dates_retour.*' => 'nullable|date',
-        ]);
+        $validated = $request->validated();
 
         try {
             $result = $this->serveDemandeAction->handle(
@@ -350,21 +333,9 @@ final class AdminController extends Controller
         return view('admin.affectation', compact('equipements_groupes', 'employes'));
     }
 
-    public function HandleAffectation(Request $request)
+    public function HandleAffectation(StoreDirectAffectationRequest $request)
     {
-        $validated = $request->validate([
-            'employe_id' => 'required|exists:users,id',
-            'motif' => 'required|string|max:500',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
-            'dates_retour' => 'nullable|array',
-            'dates_retour.*' => 'nullable|date',
-        ], [
-            'equipements.required' => 'le champ equipement est requis',
-            'quantites.required' => 'le champ quantité est requis',
-        ]);
+        $validated = $request->validated();
 
         set_time_limit(120);
 
@@ -417,13 +388,9 @@ final class AdminController extends Controller
         return view('admin.pannelist', compact('pannes', 'equipementsInternes'));
     }
 
-    public function StoreInternalPanne(Request $request)
+    public function StoreInternalPanne(StoreInternalPanneRequest $request)
     {
-        $validated = $request->validate([
-            'equipement_id' => 'required|integer|exists:equipements,id',
-            'quantite' => 'required|integer|min:1',
-            'description' => 'required|string|min:10|max:1000',
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->storeInternalPanneAction->handle(Auth::user(), $validated);
@@ -456,18 +423,10 @@ final class AdminController extends Controller
     public function HandleCollaborator(\App\Http\Requests\StoreCollaboratorRequest $request)
     {
         $validated = $request->validated();
-        $cartePath = null;
-        if ($request->hasFile('chemin_carte')) {
-            $file = $request->file('chemin_carte');
-            $filename = 'carte_'.time().'_'.preg_replace('/\s+/', '_', $validated['nom']).'.'.$file->getClientOriginalExtension();
-            $file->move(public_path('collaborateurs/cartes'), $filename);
-            $cartePath = 'collaborateurs/cartes/'.$filename;
-        }
-        CollaborateurExterne::create([
-            'nom' => $validated['nom'],
-            'prenom' => $validated['prenom'],
-            'carte_chemin' => $cartePath,
-        ]);
+        $this->createExternalCollaboratorAction->handle(
+            $validated,
+            $request->file('chemin_carte')
+        );
 
         return redirect()->back()->with('success', 'Collaborateur ajouté avec succès.');
     }
@@ -528,13 +487,9 @@ final class AdminController extends Controller
             ->with('pdf', asset('storage/'.$result['pdf_path']));
     }
 
-    public function BackTool(Request $request, Affectation $affectation)
+    public function BackTool(RegisterEquipmentReturnRequest $request, Affectation $affectation)
     {
-        $validated = $request->validate([
-            'quantite_saine_retournee' => 'nullable|integer|min:0',
-            'pannes_retournees' => 'nullable|array',
-            'pannes_retournees.*' => 'nullable|integer|min:0',
-        ]);
+        $validated = $request->validated();
 
         try {
             $result = $this->registerEquipmentReturnAction->handle($affectation, $validated);
@@ -616,11 +571,9 @@ final class AdminController extends Controller
      * Résout une panne en la marquant comme résolue
      * Implique que l'équipement est réparé ou remplacé
      */
-    public function PutPanne(Request $request, Panne $panne)
+    public function PutPanne(ResolvePanneRequest $request, Panne $panne)
     {
-        $validated = $request->validate([
-            'quantite_resolue' => 'required|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         try {
             $result = $this->resolvePanneAction->handle($panne, (int) $validated['quantite_resolue']);
@@ -647,11 +600,9 @@ final class AdminController extends Controller
         }
     }
 
-    public function ReplacePanne(Request $request, Panne $panne)
+    public function ReplacePanne(ReplacePanneEquipmentRequest $request, Panne $panne)
     {
-        $validated = $request->validate([
-            'quantite_remplacement' => 'required|integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         try {
             $result = $this->replacePanneEquipmentAction->handle(
@@ -705,7 +656,7 @@ final class AdminController extends Controller
     /**
      * Stocke l'image de l'équipement localement
      */
-    private function storeEquipementImage(Request $request): string
+    private function storeEquipementImage(\Illuminate\Http\Request $request): string
     {
         $file = $request->file('image_path');
         $nomNettoye = preg_replace('/[^a-zA-Z0-9-_]/', '', mb_strtolower(str_replace(' ', '-', $request->nom)));
@@ -714,33 +665,6 @@ final class AdminController extends Controller
         $file->move(public_path('pictures/equipements'), $imageName);
 
         return 'pictures/equipements/'.$imageName;
-    }
-
-    /**
-     * Crée un bon d'entrée pour un équipement
-     */
-    private function createBonEntree(Equipement $equipement): Bon
-    {
-        $user = Auth::user();
-        $bon = new Bon();
-        $bon->motif = 'Ajout de nouvel équipement : '.$equipement->nom;
-        $bon->user_id = $user->id;
-        $bon->statut = 'entrée';
-        $pdfName = 'bon_entree_'.$equipement->id.'.pdf';
-        $pdfPath = 'bon_entree/'.$pdfName;
-        $bon->fichier_pdf = $pdfPath;
-        $bon->save();
-
-        $this->generateBonPdf($bon, [
-            'date' => now()->format('d/m/Y'),
-            'nom' => $user->nom ?? 'Admin',
-            'prenom' => $user->prenom ?? '',
-            'motif' => $bon->motif,
-            'numero_bon' => $bon->id,
-            'type' => $bon->statut,
-        ]);
-
-        return $bon;
     }
 
     /**
