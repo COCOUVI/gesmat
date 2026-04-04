@@ -15,6 +15,7 @@ use App\Models\Categorie;
 use App\Models\Demande;
 use App\Models\Panne;
 use App\Models\User;
+use App\Services\DashboardMetricsService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +36,7 @@ final class EmployeController extends Controller
     public function __construct(
         private readonly SubmitDemandeAction $submitDemandeAction,
         private readonly ReportPanneAction $reportPanneAction,
+        private readonly DashboardMetricsService $dashboardMetricsService,
     ) {}
 
     /**
@@ -43,31 +45,11 @@ final class EmployeController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // Récupération optimisée des statistiques
+        $metrics = $this->dashboardMetricsService->getEmployeeMetrics((int) $user->id);
         $demandes = Demande::where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->take(3)
             ->get();
-
-        $nbr_accept = Demande::where('user_id', $user->id)
-            ->where('statut', 'acceptee')
-            ->count();
-
-        $nbr_en_attente = Demande::where('user_id', $user->id)
-            ->where('statut', 'en_attente')
-            ->count();
-
-        $nbr_non_resolue = (int) Panne::with(['equipement', 'affectation'])
-            ->where('user_id', $user->id)
-            ->where('statut', '!=', 'resolu')
-            ->get()
-            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
-
-        $nbr_assign = (int) Affectation::with('pannes')
-            ->where('user_id', $user->id)
-            ->get()
-            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
 
         $affectations = Affectation::with(['equipement', 'equipement.categorie'])
             ->where('user_id', $user->id)
@@ -81,6 +63,11 @@ final class EmployeController extends Controller
             ->orderByDesc('created_at')
             ->take(2)
             ->get();
+
+        $nbr_accept = $metrics['nbr_accept'];
+        $nbr_en_attente = $metrics['nbr_en_attente'];
+        $nbr_non_resolue = $metrics['nbr_non_resolue'];
+        $nbr_assign = $metrics['nbr_assign'];
 
         return view('employee.layouts.main', compact(
             'user',
@@ -291,7 +278,7 @@ final class EmployeController extends Controller
     public function ShowPannes()
     {
         $user = Auth::user();
-        $pannes = Panne::with('equipement')
+        $pannes = Panne::with('equipement:id,nom')
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
@@ -305,7 +292,10 @@ final class EmployeController extends Controller
     public function ShowDemandes()
     {
         $user = Auth::user();
-        $demandes = Demande::with(['equipements', 'affectations'])
+        $demandes = Demande::with([
+            'equipements:id,nom',
+            'affectations:id,demande_id,equipement_id,quantite_affectee',
+        ])
             ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();

@@ -36,8 +36,8 @@ use App\Models\Equipement;
 use App\Models\Panne;
 use App\Models\Rapport;
 use App\Models\User;
+use App\Services\DashboardMetricsService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -69,46 +69,19 @@ final class AdminController extends Controller
         private readonly ReplacePanneEquipmentAction $replacePanneEquipmentAction,
         private readonly CancelAffectationAction $cancelAffectationAction,
         private readonly CreateExternalCollaboratorBonAction $createExternalCollaboratorBonAction,
+        private readonly DashboardMetricsService $dashboardMetricsService,
     ) {}
 
     public function ShowHomePage()
     {
-        $nbr_equipement = (int) Equipement::sum('quantite');
-        $nbr_user = User::count();
-        $nbr_affect = (int) Affectation::with('pannes')
-            ->get()
-            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
-        $nbr_panne = (int) Panne::with(['equipement', 'affectation'])
-            ->where('statut', '!=', 'resolu')
-            ->get()
-            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
-
-        $now = Carbon::now();
-        $user_this_month = User::whereMonth('created_at', $now->month)
-            ->whereYear('created_at', $now->year)
-            ->count();
-        $user_before_month = User::where('created_at', '<', $now->copy()->startOfMonth())->count();
-
-        $growth = 0;
-        if ($nbr_user > 0) {
-            $growth = (($user_this_month - $user_before_month) / $nbr_user) * 100;
-        }
-
-        $statsParMois = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $debut = Carbon::create(null, $i, 1)->startOfMonth();
-            $fin = Carbon::create(null, $i, 1)->endOfMonth();
-
-            $statsParMois[$i] = (int) Affectation::whereBetween('created_at', [$debut, $fin])
-                ->sum('quantite_affectee');
-        }
-
-        $distribution = Categorie::with('equipements')->get()->map(function (Categorie $categorie): array {
-            return [
-                'label' => $categorie->nom,
-                'count' => (int) $categorie->equipements->sum('quantite'),
-            ];
-        });
+        $metrics = $this->dashboardMetricsService->getAdminMetrics();
+        $nbr_equipement = $metrics['nbr_equipement'];
+        $nbr_user = $metrics['nbr_user'];
+        $nbr_affect = $metrics['nbr_affect'];
+        $nbr_panne = $metrics['nbr_panne'];
+        $statsParMois = $metrics['statsParMois'];
+        $distribution = $metrics['distribution'];
+        $growth = $metrics['growth'];
 
         return view('admin.homedash', compact(
             'nbr_equipement',
@@ -192,11 +165,15 @@ final class AdminController extends Controller
 
     public function ShowToolpage()
     {
-        $equipements = Equipement::with([
-            'categorie',
-            'affectations',
-            'pannes.affectation', // sous-relation affectation dans chaque panne
-        ])->get();
+        $equipements = Equipement::query()
+            ->select(['id', 'nom', 'description', 'categorie_id', 'quantite', 'image_path'])
+            ->with([
+                'categorie:id,nom',
+                'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
+                'pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+                'pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
+            ])
+            ->get();
 
         return view('admin.listtools', compact('equipements'));
     }
@@ -241,7 +218,17 @@ final class AdminController extends Controller
 
     public function ShowAllAsk()
     {
-        $demandes = Demande::with(['equipements', 'affectations'])
+        $demandes = Demande::with([
+            'affectations:id,demande_id,equipement_id,quantite_affectee',
+            'equipements' => function ($query) {
+                $query->select(['equipements.id', 'equipements.nom', 'equipements.reference'])
+                    ->with([
+                        'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
+                        'pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+                        'pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
+                    ]);
+            },
+        ])
             ->where('statut', '=', 'en_attente')
             ->latest()
             ->get();
@@ -323,8 +310,11 @@ final class AdminController extends Controller
     {
         $equipements_groupes = Categorie::with([
             'equipements' => function ($query) {
-                $query->withStock()
-                    ->with(['pannes', 'affectations']);
+                $query->select(['equipements.id', 'equipements.nom', 'equipements.categorie_id', 'equipements.quantite'])
+                    ->with(['pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+                        'pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
+                        'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut'])
+                    ->withStock();
             },
         ])->get();
 
@@ -375,12 +365,25 @@ final class AdminController extends Controller
 
     public function Showpannes()
     {
-        $pannes = Panne::with(['equipement', 'user', 'affectation.user'])
+        $pannes = Panne::with([
+            'user:id,nom,prenom',
+            'affectation:id,user_id,quantite_affectee,quantite_retournee,statut',
+            'affectation.user:id,nom,prenom',
+            'equipement:id,nom,reference,quantite',
+            'equipement.affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
+            'equipement.pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+            'equipement.pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
+        ])
             ->where('statut', '=', 'en_attente')
             ->latest()
             ->get();
 
-        $equipementsInternes = Equipement::with('categorie')
+        $equipementsInternes = Equipement::with([
+            'categorie:id,nom',
+            'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
+            'pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+            'pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
+        ])
             ->get()
             ->filter(fn (Equipement $equipement) => $equipement->getQuantiteDisponible() > 0)
             ->values();
@@ -529,7 +532,13 @@ final class AdminController extends Controller
 
     public function Showlistaffectation()
     {
-        $affectations = Affectation::with(['equipement', 'user', 'collaborateurExterne', 'demande', 'pannes'])
+        $affectations = Affectation::with([
+            'equipement:id,nom',
+            'user:id,nom,prenom,email',
+            'collaborateurExterne:id,nom,prenom',
+            'demande:id',
+            'pannes:id,affectation_id,equipement_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
+        ])
             ->withCount('pannes')
             ->latest()
             ->get();

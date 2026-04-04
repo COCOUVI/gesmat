@@ -103,6 +103,10 @@ final class Affectation extends Model
      */
     public function aPannesNonResolues(): bool
     {
+        if ($this->relationLoaded('pannes')) {
+            return $this->pannes->contains(fn (Panne $panne) => $panne->statut !== 'resolu');
+        }
+
         return $this->pannes()
             ->where('statut', '!=', 'resolu')
             ->exists();
@@ -113,6 +117,12 @@ final class Affectation extends Model
      */
     public function getQuantitePannesNonResolues(): int
     {
+        if ($this->relationLoaded('pannes')) {
+            return (int) $this->pannes
+                ->where('statut', '!=', 'resolu')
+                ->sum(fn (Panne $panne) => $panne->getQuantiteEncoreChezEmploye());
+        }
+
         return (int) $this->pannes()
             ->where('statut', '!=', 'resolu')
             ->get()
@@ -239,6 +249,10 @@ final class Affectation extends Model
     {
         if (array_key_exists('pannes_count', $this->attributes)) {
             return (int) $this->attributes['pannes_count'];
+        }
+
+        if ($this->relationLoaded('pannes')) {
+            return $this->pannes->count();
         }
 
         return $this->pannes()->count();
