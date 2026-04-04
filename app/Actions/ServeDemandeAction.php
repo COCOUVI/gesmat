@@ -22,7 +22,7 @@ final readonly class ServeDemandeAction
      *     bon: Bon,
      *     pdf_path: string,
      *     assigned_total: int,
-     *     affectations_details: array<int, array{nom: string, reference: string, quantite: int, date_retour: string|null}>,
+     *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>,
      *     is_fully_served: bool
      * }
      */
@@ -33,7 +33,7 @@ final readonly class ServeDemandeAction
          *     bon: Bon,
          *     pdf_path: string,
          *     assigned_total: int,
-         *     affectations_details: array<int, array{nom: string, reference: string, quantite: int, date_retour: string|null}>,
+         *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>,
          *     is_fully_served: bool
          * } $result
          */
@@ -93,7 +93,6 @@ final readonly class ServeDemandeAction
 
                 $affectationsDetails[] = [
                     'nom' => $equipement->nom,
-                    'reference' => $equipement->reference ?? '',
                     'quantite' => $quantite,
                     'date_retour' => $rawDate ?: null,
                 ];

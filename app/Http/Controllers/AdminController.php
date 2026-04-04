@@ -221,7 +221,7 @@ final class AdminController extends Controller
         $demandes = Demande::with([
             'affectations:id,demande_id,equipement_id,quantite_affectee',
             'equipements' => function ($query) {
-                $query->select(['equipements.id', 'equipements.nom', 'equipements.reference'])
+                $query->select(['equipements.id', 'equipements.nom', 'equipements.quantite'])
                     ->with([
                         'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
                         'pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
@@ -369,7 +369,7 @@ final class AdminController extends Controller
             'user:id,nom,prenom',
             'affectation:id,user_id,quantite_affectee,quantite_retournee,statut',
             'affectation.user:id,nom,prenom',
-            'equipement:id,nom,reference,quantite',
+            'equipement:id,nom,quantite',
             'equipement.affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
             'equipement.pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
             'equipement.pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
@@ -409,9 +409,9 @@ final class AdminController extends Controller
     public function ShowToollost()
     {
         $equipement_lost = Affectation::with(['equipement', 'user', 'pannes'])
-            ->whereDate('date_retour', '<=', now())    // date de retour dépassée
-            ->active()                                 // statut non retourné
-            ->whereNotNull('date_retour')              // on s'assure que la date de retour est bien définie
+            ->active()
+            ->whereNotNull('date_retour')
+            ->orderBy('date_retour')
             ->get();
 
         return view('admin.lost_tools', compact('equipement_lost'));
@@ -634,7 +634,6 @@ final class AdminController extends Controller
                 'type' => $bon->statut,
                 'equipements' => [[
                     'nom' => $panne->equipement->nom,
-                    'reference' => $panne->equipement->reference ?? '',
                     'quantite' => $affectationRemplacement->quantite_affectee,
                     'date_retour' => $affectationRemplacement->date_retour
                         ? $affectationRemplacement->date_retour->format('Y-m-d')

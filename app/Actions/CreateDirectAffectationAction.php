@@ -26,7 +26,7 @@ final readonly class CreateDirectAffectationAction
      *     bon: Bon,
      *     pdf_path: string,
      *     motif: string,
-     *     affectations_details: array<int, array{nom: string, reference: string, quantite: int, date_retour: string|null}>
+     *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>
      * }
      */
     public function handle(User $actor, array $validated): array
@@ -36,7 +36,7 @@ final readonly class CreateDirectAffectationAction
          *     bon: Bon,
          *     pdf_path: string,
          *     motif: string,
-         *     affectations_details: array<int, array{nom: string, reference: string, quantite: int, date_retour: string|null}>
+         *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>
          * } $result
          */
         $result = DB::transaction(function () use ($actor, $validated): array {
@@ -87,7 +87,6 @@ final readonly class CreateDirectAffectationAction
 
                 $affectationsDetails[] = [
                     'nom' => $equipement->nom,
-                    'reference' => $equipement->reference ?? '',
                     'quantite' => $quantite,
                     'date_retour' => $rawDate ?: null,
                 ];

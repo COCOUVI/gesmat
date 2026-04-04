@@ -695,7 +695,7 @@ test('panne list shows replace action only when employee-linked breakdown has re
 
     $response->assertOk();
     $response->assertSee('Remplacer');
-    $response->assertSee('Stock dispo pour remplacement : 3');
+    $response->assertDontSee('Stock dispo pour remplacement');
     $response->assertSee('smart-data-table', false);
 
     expect($panne->fresh()->getQuantiteRemplacable())->toBe(1);
@@ -936,6 +936,69 @@ test('admin panne list now returns a full collection for datatables', function (
 
     expect($pannes)->toBeInstanceOf(EloquentCollection::class);
     expect($pannes)->toHaveCount(6);
+});
+
+test('admin demande list loads pending requests without requiring a reference column on equipements', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Demandes admin']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Scanner réseau',
+        'marque' => 'Brother',
+        'description' => 'Scanner du service',
+        'quantite' => 4,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    $demande = Demande::create([
+        'lieu' => 'Direction',
+        'motif' => 'Besoin de numérisation',
+        'statut' => 'en_attente',
+        'user_id' => $employee->id,
+    ]);
+
+    $demande->equipements()->attach($equipement->id, ['nbr_equipement' => 2]);
+
+    $response = $this->actingAs($admin)->get(route('liste.demandes'));
+
+    $response->assertOk();
+    $response->assertSee('Scanner réseau');
+    $response->assertSee('Stock disponible : 4');
+});
+
+test('non returned tools page shows future dated active affectations', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $employee = User::factory()->create(['role' => 'employe']);
+
+    $categorie = Categorie::create(['nom' => 'Retours planifiés']);
+    $equipement = Equipement::create([
+        'categorie_id' => $categorie->id,
+        'nom' => 'Onduleur',
+        'marque' => 'APC',
+        'description' => 'Onduleur de bureau',
+        'quantite' => 2,
+        'date_acquisition' => now(),
+        'image_path' => 'test.jpg',
+    ]);
+
+    Affectation::create([
+        'equipement_id' => $equipement->id,
+        'user_id' => $employee->id,
+        'date_retour' => now()->addDays(5),
+        'quantite_affectee' => 1,
+        'quantite_retournee' => 0,
+        'created_by' => 'Admin Test',
+        'statut' => 'active',
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('tools.lost'));
+
+    $response->assertOk();
+    $response->assertSee('Onduleur');
+    $response->assertSee('À venir');
 });
 
 test('employee demande list now returns a full collection for datatables', function () {

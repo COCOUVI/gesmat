@@ -20,13 +20,14 @@ final readonly class CreateExternalCollaboratorBonAction
      *     motif: string,
      *     type: string,
      *     equipements: array<int, int|string>,
-     *     quantites: array<int, int|string>
+     *     quantites: array<int, int|string>,
+     *     dates_retour?: array<int, string|null>
      * }  $validated
      * @return array{
      *     bon: Bon,
      *     collaborateur: CollaborateurExterne,
      *     pdf_path: string,
-     *     equipements_info: array<int, array{nom: string, quantite: int}>
+     *     equipements_info: array<int, array{nom: string, quantite: int, date_retour: string|null}>
      * }
      */
     public function handle(User $actor, array $validated): array
@@ -35,7 +36,7 @@ final readonly class CreateExternalCollaboratorBonAction
          *     bon: Bon,
          *     collaborateur: CollaborateurExterne,
          *     pdf_path: string,
-         *     equipements_info: array<int, array{nom: string, quantite: int}>
+         *     equipements_info: array<int, array{nom: string, quantite: int, date_retour: string|null}>
          * } $result
          */
         $result = DB::transaction(function () use ($actor, $validated): array {
@@ -49,7 +50,11 @@ final readonly class CreateExternalCollaboratorBonAction
                 'fichier_pdf' => $pdfPath,
             ]);
 
-            $lignes = $this->buildLines($validated['equipements'], $validated['quantites']);
+            $lignes = $this->buildLines(
+                $validated['equipements'],
+                $validated['quantites'],
+                $validated['dates_retour'] ?? []
+            );
 
             $bonEquipements = $lignes
                 ->mapWithKeys(fn (array $line): array => [
@@ -66,6 +71,7 @@ final readonly class CreateExternalCollaboratorBonAction
                     Affectation::create([
                         'equipement_id' => $line['equipement_id'],
                         'collaborateur_externe_id' => $collaborateur->id,
+                        'date_retour' => $line['date_retour'],
                         'quantite_affectee' => $line['quantite'],
                         'statut' => 'active',
                         'created_by' => $actor->nom.' '.$actor->prenom,
@@ -84,6 +90,7 @@ final readonly class CreateExternalCollaboratorBonAction
                 return [
                     'nom' => $equipement?->nom ?? 'Inconnu',
                     'quantite' => $line['quantite'],
+                    'date_retour' => $line['date_retour'],
                 ];
             })->values()->all();
 
@@ -101,26 +108,40 @@ final readonly class CreateExternalCollaboratorBonAction
     /**
      * @param  array<int, int|string>  $equipements
      * @param  array<int, int|string>  $quantites
-     * @return Collection<int, array{equipement_id: int, quantite: int}>
+     * @param  array<int, string|null>  $datesRetour
+     * @return Collection<int, array{equipement_id: int, quantite: int, date_retour: string|null}>
      */
-    private function buildLines(array $equipements, array $quantites): Collection
+    private function buildLines(array $equipements, array $quantites, array $datesRetour = []): Collection
     {
-        $lines = collect();
+        $groupedLines = [];
+        $orderedKeys = [];
 
         foreach ($equipements as $index => $equipementId) {
             $quantite = (int) ($quantites[$index] ?? 0);
             $equipementId = (int) $equipementId;
+            $dateRetour = $datesRetour[$index] ?? null;
+            $dateRetour = $dateRetour !== null && $dateRetour !== '' ? $dateRetour : null;
 
             if ($equipementId <= 0 || $quantite <= 0) {
                 continue;
             }
 
-            $lines->push([
-                'equipement_id' => $equipementId,
-                'quantite' => $quantite,
-            ]);
+            $groupKey = $equipementId.'|'.($dateRetour ?? 'sans-date');
+
+            if (! array_key_exists($groupKey, $groupedLines)) {
+                $groupedLines[$groupKey] = [
+                    'equipement_id' => $equipementId,
+                    'quantite' => 0,
+                    'date_retour' => $dateRetour,
+                ];
+                $orderedKeys[] = $groupKey;
+            }
+
+            $groupedLines[$groupKey]['quantite'] += $quantite;
         }
 
-        return $lines;
+        return collect($orderedKeys)->map(
+            fn (string $key): array => $groupedLines[$key]
+        );
     }
 }

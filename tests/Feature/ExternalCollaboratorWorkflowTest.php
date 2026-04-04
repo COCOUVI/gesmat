@@ -46,6 +46,7 @@ it('can create affectation for external collaborator with sortie bon', function 
         'type' => 'sortie',
         'equipements' => [$equipement->id],
         'quantites' => [10],
+        'dates_retour' => [now()->addDays(10)->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -68,6 +69,7 @@ it('can create affectation for external collaborator with sortie bon', function 
     expect($affectation->quantite_affectee)->toBe(10);
     expect($affectation->statut)->toBe('active');
     expect($affectation->estPourCollaborateur())->toBeTrue();
+    expect($affectation->date_retour?->toDateString())->toBe(now()->addDays(10)->toDateString());
 
     // Verify stock decreased
     $equipement->refresh();
