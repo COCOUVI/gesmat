@@ -561,13 +561,19 @@ final class AdminController extends Controller
 
     public function CreateBon()
     {
-        $collaborateurs = CollaborateurExterne::all();
+        $collaborateurs = CollaborateurExterne::orderBy('nom')->orderBy('prenom')->get();
+        $equipements_groupes = Categorie::with([
+            'equipements' => function ($query) {
+                $query->with(['affectations', 'pannes.affectation']);
+            },
+        ])->get();
 
-        return view('admin.bon_external_collaborator', compact('collaborateurs'));
+        return view('admin.bon_external_collaborator', compact('collaborateurs', 'equipements_groupes'));
     }
 
     public function HandleBon(\App\Http\Requests\StoreBonRequest $request)
     {
+        $user = Auth::user();
         $validated = $request->validated();
         $collaborateur = CollaborateurExterne::findOrFail($validated['collaborateur_id']);
         $pdfPath = 'bon_collaborateurs/bon_collab_'.time().'.pdf';
@@ -577,6 +583,37 @@ final class AdminController extends Controller
             'statut' => $validated['type'],
             'fichier_pdf' => $pdfPath,
         ]);
+
+        // Attach equipements to bon for legacy compatibility
+        $bonEquipements = collect($validated['equipements'])->mapWithKeys(fn ($equipementId, $index) => [
+            $equipementId => ['quantite' => (int) ($validated['quantites'][$index] ?? 0)],
+        ])->filter(fn ($item) => $item['quantite'] > 0)->all();
+
+        if (! empty($bonEquipements)) {
+            $bon->equipements()->attach($bonEquipements);
+        }
+
+        // Create affectations for outgoing bons (new centralized approach)
+        if ($validated['type'] === 'sortie') {
+            foreach ($validated['equipements'] as $index => $equipementId) {
+                $quantite = (int) ($validated['quantites'][$index] ?? 0);
+                if ($quantite > 0) {
+                    Affectation::create([
+                        'equipement_id' => (int) $equipementId,
+                        'collaborateur_externe_id' => $collaborateur->id,
+                        'quantite_affectee' => $quantite,
+                        'statut' => 'active',
+                        'created_by' => $user->nom.' '.$user->prenom,
+                    ]);
+                }
+            }
+        }
+
+        $equipementsInfo = collect($validated['equipements'])->map(fn ($equipementId, $index) => [
+            'nom' => Equipement::find($equipementId)?->nom ?? 'Inconnu',
+            'quantite' => (int) ($validated['quantites'][$index] ?? 0),
+        ])->filter(fn ($item) => $item['quantite'] > 0)->values()->all();
+
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
             'nom' => $collaborateur->nom ?? 'Admin',
@@ -584,12 +621,13 @@ final class AdminController extends Controller
             'motif' => $validated['motif'],
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
+            'equipements' => $equipementsInfo,
         ]);
         $pdf->setPaper('A5', 'portrait');
         Storage::disk('public')->put($pdfPath, $pdf->output());
 
         return redirect()->back()
-            ->with('success', 'Bon attribueé aux collaborateurs externe avec succès.')
+            ->with('success', 'Bon généré avec succès pour le collaborateur externe.')
             ->with('pdf', asset('storage/'.$pdfPath));
     }
 
@@ -604,7 +642,7 @@ final class AdminController extends Controller
         try {
             DB::beginTransaction();
 
-            $affectation->load(['equipement', 'user', 'pannes' => function ($query) {
+            $affectation->load(['equipement', 'user', 'collaborateurExterne', 'pannes' => function ($query) {
                 $query->where('statut', '!=', 'resolu');
             }]);
 
@@ -654,19 +692,26 @@ final class AdminController extends Controller
 
             $nouvelleQuantiteRetournee = $affectation->getQuantiteRetournee() + $quantiteRetourneeTotale;
 
-            $affectation->update([
+            $updateData = [
                 'quantite_retournee' => $nouvelleQuantiteRetournee,
                 'statut' => $nouvelleQuantiteRetournee >= $affectation->quantite_affectee ? 'retourné' : 'retour_partiel',
-            ]);
+            ];
+
+            // Record actual return timestamp for audit trail
+            if ($nouvelleQuantiteRetournee >= $affectation->quantite_affectee) {
+                $updateData['returned_at'] = now();
+            }
+
+            $affectation->update($updateData);
 
             $equipement = $affectation->equipement;
-            $user = $affectation->user;
+            $destinataireName = $affectation->getNomDestinataire();
 
             $pdfName = 'bon_entree_retour_'.$affectation->id.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_entree/'.$pdfName;
 
-            $bon = Bon::create([
-                'user_id' => $user->id,
+            // Create return entry bon with appropriate recipient type
+            $bonData = [
                 'motif' => sprintf(
                     'Retour de matériel : %s (total: %d, sain: %d, en panne: %d)',
                     $equipement->nom,
@@ -676,12 +721,20 @@ final class AdminController extends Controller
                 ),
                 'statut' => 'entrée',
                 'fichier_pdf' => $pdfPath,
-            ]);
+            ];
+
+            if ($affectation->estPourCollaborateur()) {
+                $bonData['collaborateur_externe_id'] = $affectation->collaborateur_externe_id;
+            } else {
+                $bonData['user_id'] = $affectation->user_id;
+            }
+
+            $bon = Bon::create($bonData);
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $user->nom,
-                'prenom' => $user->prenom,
+                'nom' => $destinataireName,
+                'prenom' => '', // Name is already complete
                 'motif' => $bon->motif,
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
@@ -694,7 +747,7 @@ final class AdminController extends Controller
             DB::commit();
 
             $this->workflowNotificationService->notifyEquipmentReturned(
-                $affectation->fresh(['user', 'equipement', 'pannes']),
+                $affectation->fresh(['user', 'collaborateurExterne', 'equipement', 'pannes']),
                 $quantiteSaineRetournee,
                 $quantitePanneRetournee,
                 $bon
@@ -713,7 +766,7 @@ final class AdminController extends Controller
 
     public function Showlistaffectation()
     {
-        $affectations = Affectation::with(['equipement', 'user', 'demande', 'pannes'])
+        $affectations = Affectation::with(['equipement', 'user', 'collaborateurExterne', 'demande', 'pannes'])
             ->withCount('pannes')
             ->latest()
             ->get();

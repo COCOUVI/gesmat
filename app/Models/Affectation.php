@@ -25,11 +25,14 @@ final class Affectation extends Model
     protected $fillable = [
         'equipement_id',
         'user_id',
+        'collaborateur_externe_id',
         'demande_id',
         'date_retour',
+        'returned_at',
         'quantite_affectee',
         'quantite_retournee',
         'created_by',
+        'motif',
         'statut',
     ];
 
@@ -37,8 +40,10 @@ final class Affectation extends Model
     {
         return [
             'date_retour' => 'datetime',
+            'returned_at' => 'datetime',
             'equipement_id' => 'integer',
             'user_id' => 'integer',
+            'collaborateur_externe_id' => 'integer',
             'demande_id' => 'integer',
             'quantite_affectee' => 'integer',
             'quantite_retournee' => 'integer',
@@ -62,7 +67,15 @@ final class Affectation extends Model
     }
 
     /**
-     * Relation avec la demande d'origine, si l'affectation découle d'une demande.
+     * Relation avec le collaborateur externe ayant l'affectation (polymorphe)
+     */
+    public function collaborateurExterne(): BelongsTo
+    {
+        return $this->belongsTo(CollaborateurExterne::class);
+    }
+
+    /**
+     * Demande d'origine, si l'affectation découle d'une demande.
      */
     public function demande(): BelongsTo
     {
@@ -147,8 +160,57 @@ final class Affectation extends Model
     /**
      * Libellé métier de l'origine de l'affectation.
      */
+    public function estPourCollaborateur(): bool
+    {
+        return $this->collaborateur_externe_id !== null;
+    }
+
+    public function estPourEmploye(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    /**
+     * Récupère le destinataire (User ou CollaborateurExterne) de l'affectation.
+     */
+    public function getDestinataire(): User|CollaborateurExterne|null
+    {
+        return $this->estPourCollaborateur()
+            ? $this->collaborateurExterne
+            : $this->user;
+    }
+
+    /**
+     * Récupère le nom complet du destinataire de l'affectation.
+     */
+    public function getNomDestinataire(): string
+    {
+        if ($this->estPourCollaborateur()) {
+            $collab = $this->collaborateurExterne;
+
+            return mb_trim(($collab->prenom ?? '').' '.($collab->nom ?? ''));
+        }
+
+        return $this->user?->name ?? 'Inconnu';
+    }
+
+    /**
+     * Récupère l'email du destinataire (null pour collaborateurs externes).
+     */
+    public function getEmailDestinataire(): ?string
+    {
+        return $this->estPourEmploye() ? $this->user?->email : null;
+    }
+
+    /**
+     * Libellé métier de l'origine de l'affectation.
+     */
     public function getOrigineLibelle(): string
     {
+        if ($this->estPourCollaborateur()) {
+            return 'Affectation collaborateur';
+        }
+
         return $this->demande_id !== null
             ? 'Demande acceptee'
             : 'Affectation directe';
