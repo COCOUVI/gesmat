@@ -161,14 +161,14 @@ final class AdminController extends Controller
         ]);
 
         $user = Auth::user();
-        $bon = new Bon();
-        $bon->motif = 'Ajout de nouvel équipement : '.$equipement->nom;
-        $bon->user_id = $user->id;
-        $bon->statut = 'entrée';
-        $pdfName = 'bon_entree_'.$equipement->id.'.pdf';
-        $pdfPath = 'bon_entree/'.$pdfName;
-        $bon->fichier_pdf = $pdfPath;
-        $bon->save();
+        // Générer un bon d'entrée pour ce nouvel équipement
+        $bon = Bon::create([
+            'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
+            'user_id' => $user->id,
+            'statut' => 'entrée',
+            'fichier_pdf' => 'bon_entree/bon_entree_'.$equipement->id.'.pdf',
+        ]);
+        // Genrer le PDF du bon d'entrée
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
             'nom' => $user->nom ?? 'Admin',
@@ -177,11 +177,11 @@ final class AdminController extends Controller
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
         ]);
-        Storage::disk('public')->put($pdfPath, $pdf->output());
+        Storage::disk('public')->put($bon->fichier_pdf, $pdf->output());
 
         return redirect()->back() // ou ->back()
             ->with('success', 'Équipement ajouté avec succès et un Bon d \'entrée est genéré.')
-            ->with('pdf', asset('storage/'.$pdfPath));
+            ->with('pdf', asset('storage/'.$bon->fichier_pdf));
     }
 
     public function ShowToolpage()
