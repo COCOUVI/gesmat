@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Events\DemandeSubmitted;
-use App\Events\PanneReported;
+use App\Actions\ReportPanneAction;
+use App\Actions\SubmitDemandeAction;
 use App\Mail\HelpRequestMail;
 use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Demande;
-use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
@@ -31,6 +30,11 @@ use Throwable;
  */
 final class EmployeController extends Controller
 {
+    public function __construct(
+        private readonly SubmitDemandeAction $submitDemandeAction,
+        private readonly ReportPanneAction $reportPanneAction,
+    ) {}
+
     /**
      * Affiche le tableau de bord principal avec les statistiques
      */
@@ -120,36 +124,10 @@ final class EmployeController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
-            $user = Auth::user();
-            $demande = Demande::create([
-                'lieu' => $validated['lieu'],
-                'motif' => $validated['motif'],
-                'user_id' => $user->id,
-                'statut' => 'en_attente',
-            ]);
-
-            $quantitesParEquipement = [];
-
-            foreach ($validated['equipements'] as $index => $equipementId) {
-                $quantite = (int) ($validated['quantites'][$index] ?? 0);
-                $quantitesParEquipement[$equipementId] = ($quantitesParEquipement[$equipementId] ?? 0) + $quantite;
-            }
-
-            foreach ($quantitesParEquipement as $equipementId => $quantite) {
-                $equipements_ask = new EquipementDemandé();
-                $equipements_ask->demande_id = $demande->id;
-                $equipements_ask->equipement_id = $equipementId;
-                $equipements_ask->nbr_equipement = $quantite;
-                $equipements_ask->save();
-            }
-
-            DemandeSubmitted::dispatch($demande->fresh(['user', 'equipements']));
-            DB::commit();
+            $this->submitDemandeAction->handle(Auth::user(), $validated);
 
             return back()->with('success', 'Demande envoyé avec succès');
         } catch (Throwable $e) {
-            DB::rollBack();
             Log::error('Erreur lors de la soumission de la demande : '.$e->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de l’envoi de la demande.');
@@ -206,61 +184,15 @@ final class EmployeController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
-            $user = Auth::user();
-            $affectation = Affectation::with('equipement')
-                ->active()
-                ->findOrFail($validated['affectation_id']);
-
-            if ($affectation->user_id !== $user->id) {
-                DB::rollBack();
-
-                return back()->withErrors([
-                    'affectation_id' => 'Vous ne pouvez signaler une panne que sur vos propres affectations.',
-                ])->withInput();
-            }
-
-            $equipement = $affectation->equipement;
-            $quantiteAffectee = $affectation->quantite_affectee;
-            $quantiteEnPanneSignalee = $affectation->pannes()
-                ->where('statut', '!=', 'resolu')
-                ->sum('quantite');
-
-            // Vérifier que la quantité à signaler ne dépasse pas ce qui reste
-            $quantiteRestante = $quantiteAffectee - $quantiteEnPanneSignalee;
-
-            if ($validated['quantite'] > $quantiteRestante) {
-                DB::rollBack();
-
-                return back()->withErrors([
-                    'quantite' => sprintf(
-                        'Vous ne pouvez signaler que %d équipement(s) en panne pour cette affectation (affecté: %d, déjà signalé: %d).',
-                        $quantiteRestante,
-                        $quantiteAffectee,
-                        $quantiteEnPanneSignalee
-                    ),
-                ])->withInput();
-            }
-
-            // Créer la panne liée à l'affectation concernée
-            $panne = Panne::create([
-                'equipement_id' => $equipement->id,
-                'affectation_id' => $affectation->id,
-                'user_id' => $user->id,
-                'quantite' => $validated['quantite'],
-                'description' => $validated['description'],
-                'statut' => 'en_attente',
-            ]);
-
-            PanneReported::dispatch($panne->fresh(['user', 'equipement', 'affectation']));
-            DB::commit();
+            $this->reportPanneAction->handle(Auth::user(), $validated);
 
             return back()->with('success', sprintf(
                 '%d équipement(s) marqué(es) en panne et signalé(e)s avec succès.',
                 $validated['quantite']
             ));
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
-            DB::rollBack();
             Log::error('Erreur signalement panne employé: '.$e->getMessage());
 
             return back()->withErrors([

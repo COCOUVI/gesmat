@@ -151,6 +151,7 @@ it('collaborator affectation uses correct polymorphic fields', function () {
         'collaborateur_externe_id' => $collaborateur->id,
         'quantite_affectee' => 3,
         'statut' => 'active',
+        'created_by' => 'Test User',
     ]);
 
     expect($affectation->collaborateur_externe_id)->toBe($collaborateur->id);
