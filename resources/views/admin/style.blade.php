@@ -14,6 +14,79 @@
         background-color: #f5f7fa;
     }
 
+    html,
+    body.admin-shell {
+        height: 100%;
+    }
+
+    body.admin-shell {
+        overflow: hidden;
+    }
+
+    .admin-shell-scroller {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .admin-shell-body {
+        height: 100%;
+        min-height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .admin-shell-main-panel {
+        height: calc(100vh - 70px);
+        min-height: calc(100vh - 70px);
+        overflow: hidden;
+    }
+
+    .admin-shell-content {
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-shell .footer {
+        flex-shrink: 0;
+        margin-top: 0;
+    }
+
+    @media (min-width: 992px) {
+        .admin-shell .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1020;
+        }
+
+        .admin-shell .main-panel {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+    }
+
+    @media (max-width: 991px) {
+        .admin-shell .sidebar {
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            max-height: calc(100vh - 70px);
+            overflow-y: auto;
+            z-index: 1030;
+        }
+
+        .admin-shell .main-panel {
+            margin-left: 0;
+            width: 100%;
+        }
+    }
+
     .bg-gradient-toolzy-primary {
         background: linear-gradient(to right, var(--toolzy-primary), var(--toolzy-secondary));
     }

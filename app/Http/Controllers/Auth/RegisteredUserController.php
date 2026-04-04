@@ -55,7 +55,9 @@ final class RegisteredUserController extends Controller
         ]);
 
         // Envoyer un email avec les identifiants
-        Mail::to($user->email)->send(new IdentifiantsEnvoyes($user, $randomPassword));
+        $mailable = new IdentifiantsEnvoyes($user, $randomPassword);
+        $mailable->afterCommit();
+        Mail::to($user->email)->queue($mailable);
 
         return redirect()->back()->with('success', 'Utilisateur ajouté avec succès. Un email contenant les identifiants a été envoyé.');
     }

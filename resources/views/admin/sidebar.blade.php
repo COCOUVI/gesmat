@@ -124,10 +124,10 @@
             <div class="collapse {{ $affectationActive ? 'show' : '' }}" id="affectation-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('page.affectation') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('page.affectation') }}">➕ Nouvelle affectation</a>
+                        <a class="nav-link" href="{{ route('page.affectation') }}">Nouvelle affectation</a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('page.listeAffectations') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('page.listeAffectations') }}">📄 Liste des affectations</a>
+                        <a class="nav-link" href="{{ route('page.listeAffectations') }}">Liste des affectations</a>
                     </li>
                 </ul>
             </div>

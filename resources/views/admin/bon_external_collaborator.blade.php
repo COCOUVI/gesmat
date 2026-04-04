@@ -68,10 +68,11 @@
                         @php
                             $oldEquipements = old('equipements', [null]);
                             $oldQuantites = old('quantites', [null]);
+                            $oldDatesRetour = old('dates_retour', [null]);
                         @endphp
                         @foreach ($oldEquipements as $index => $equipement_id)
-                            <div class="equipement-item row mb-3">
-                                <div class="col-md-8">
+                            <div class="equipement-item row g-3 mb-3 align-items-end">
+                                <div class="col-md-4">
                                     <label class="form-label">Équipement</label>
                                     <select name="equipements[]"
                                         class="form-select equipement-select @error('equipements.' . $index) is-invalid @enderror"
@@ -102,6 +103,16 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-3">
+                                    <label class="form-label">Date de retour</label>
+                                    <input type="date" name="dates_retour[]"
+                                        class="form-control @error('dates_retour.' . $index) is-invalid @enderror"
+                                        value="{{ $oldDatesRetour[$index] ?? '' }}">
+                                    <div class="form-text">Optionnelle pour un prêt temporaire.</div>
+                                    @error('dates_retour.' . $index)
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">Quantité</label>
                                     <input type="number" name="quantites[]"
                                         class="form-control @error('quantites.' . $index) is-invalid @enderror" min="1"
@@ -110,8 +121,8 @@
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-1 d-flex align-items-end">
-                                    <button type="button" class="btn btn-danger btn-sm remove-btn w-100">Retirer</button>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-danger remove-btn w-100">Retirer la ligne</button>
                                 </div>
                             </div>
                         @endforeach
@@ -135,8 +146,8 @@
     </div>
 
     <template id="equipement-row-template">
-        <div class="equipement-item row mb-3">
-            <div class="col-md-8">
+        <div class="equipement-item row g-3 mb-3 align-items-end">
+            <div class="col-md-4">
                 <label class="form-label">Équipement</label>
                 <select name="equipements[]" class="form-select equipement-select" required>
                     <option value="">-- Sélectionner un équipement --</option>
@@ -161,11 +172,16 @@
                 </div>
             </div>
             <div class="col-md-3">
+                <label class="form-label">Date de retour</label>
+                <input type="date" name="dates_retour[]" class="form-control">
+                <div class="form-text">Optionnelle pour un prêt temporaire.</div>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Quantité</label>
                 <input type="number" name="quantites[]" class="form-control" min="1" required>
             </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button type="button" class="btn btn-danger btn-sm remove-btn w-100">Retirer</button>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger remove-btn w-100">Retirer la ligne</button>
             </div>
         </div>
     </template>
@@ -177,7 +193,6 @@
             const addButton = document.getElementById('add-equipement');
             const wrapper = document.getElementById('equipement-wrapper');
             const template = document.getElementById('equipement-row-template');
-            const typeSelect = document.getElementById('type');
 
             function updateStockInfo(row) {
                 const select = row.querySelector('.equipement-select');
@@ -193,16 +208,31 @@
                 }
             }
 
+            function refreshRemoveButtons() {
+                const rows = wrapper.querySelectorAll('.equipement-item');
+
+                rows.forEach((row) => {
+                    const button = row.querySelector('.remove-btn');
+
+                    if (button) {
+                        button.disabled = rows.length === 1;
+                    }
+                });
+            }
+
             function refreshAllRows() {
                 wrapper.querySelectorAll('.equipement-item').forEach(row => {
                     updateStockInfo(row);
                 });
+
+                refreshRemoveButtons();
             }
 
             function addEquipementField() {
                 const clone = template.content.firstElementChild.cloneNode(true);
                 wrapper.appendChild(clone);
                 updateStockInfo(clone);
+                refreshRemoveButtons();
             }
 
             refreshAllRows();
@@ -216,6 +246,7 @@
                     const rows = wrapper.querySelectorAll('.equipement-item');
                     if (rows.length > 1) {
                         e.target.closest('.equipement-item').remove();
+                        refreshRemoveButtons();
                     } else {
                         alert('Au moins un équipement est requis.');
                     }

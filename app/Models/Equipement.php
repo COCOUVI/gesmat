@@ -106,7 +106,9 @@ final class Equipement extends Model
             : $this->affectations()->get(); // ✅ fallback propre
 
         return (int) $affectations->sum(
-            fn (Affectation $affectation) => $affectation->getQuantiteActive()
+            fn (Affectation $affectation) => $affectation->estPourEmploye()
+                ? $affectation->getQuantiteActive()
+                : 0
         );
     }
 
@@ -154,7 +156,22 @@ final class Equipement extends Model
      */
     public function getQuantiteAffecteeExterne(): int
     {
-        // Ancien système: bons de collaborateurs (rétrocompatibilité)
+        $affectations = $this->relationLoaded('affectations')
+            ? $this->affectations
+            : $this->affectations()->get();
+
+        $hasExternalAffectations = $affectations->contains(
+            fn (Affectation $affectation) => $affectation->estPourCollaborateur()
+        );
+
+        $quantiteAffectations = (int) $affectations
+            ->filter(fn (Affectation $aff) => $aff->estPourCollaborateur())
+            ->sum(fn (Affectation $aff) => $aff->getQuantiteActive());
+
+        if ($hasExternalAffectations) {
+            return $quantiteAffectations;
+        }
+
         $quantiteBons = Bon::query()
             ->join('bon_equipement', 'bon_equipement.bon_id', '=', 'bons.id')
             ->whereNotNull('bons.collaborateur_externe_id')
@@ -164,16 +181,7 @@ final class Equipement extends Model
             )
             ->value('quantite');
 
-        // Nouveau système: affectations centralisées
-        $affectations = $this->relationLoaded('affectations')
-            ? $this->affectations
-            : $this->affectations()->get();
-
-        $quantiteAffectations = (int) $affectations
-            ->filter(fn (Affectation $aff) => $aff->estPourCollaborateur())
-            ->sum(fn (Affectation $aff) => $aff->getQuantiteActive());
-
-        return max(0, (int) $quantiteBons) + $quantiteAffectations;
+        return max(0, (int) $quantiteBons);
     }
 
     /**
@@ -247,17 +255,39 @@ final class Equipement extends Model
                   AND affectations.collaborateur_externe_id IS NULL
             ), 0)
             - COALESCE((
-                SELECT SUM(
-                    CASE
-                        WHEN bons.statut = ? THEN bon_equipement.quantite
-                        WHEN bons.statut = ? THEN -bon_equipement.quantite
-                        ELSE 0
-                    END
-                )
-                FROM bon_equipement
-                INNER JOIN bons ON bons.id = bon_equipement.bon_id
-                WHERE bon_equipement.equipement_id = equipements.id
-                  AND bons.collaborateur_externe_id IS NOT NULL
+                SELECT CASE
+                    WHEN EXISTS(
+                        SELECT 1
+                        FROM affectations AS aff_ext_exists
+                        WHERE aff_ext_exists.equipement_id = equipements.id
+                          AND aff_ext_exists.collaborateur_externe_id IS NOT NULL
+                    )
+                    THEN (
+                        SELECT COALESCE(SUM(
+                            CASE
+                                WHEN aff_ext.quantite_affectee > COALESCE(aff_ext.quantite_retournee, 0)
+                                    THEN aff_ext.quantite_affectee - COALESCE(aff_ext.quantite_retournee, 0)
+                                ELSE 0
+                            END
+                        ), 0)
+                        FROM affectations AS aff_ext
+                        WHERE aff_ext.equipement_id = equipements.id
+                          AND aff_ext.collaborateur_externe_id IS NOT NULL
+                    )
+                    ELSE (
+                        SELECT COALESCE(SUM(
+                            CASE
+                                WHEN bons.statut = ? THEN bon_equipement.quantite
+                                WHEN bons.statut = ? THEN -bon_equipement.quantite
+                                ELSE 0
+                            END
+                        ), 0)
+                        FROM bon_equipement
+                        INNER JOIN bons ON bons.id = bon_equipement.bon_id
+                        WHERE bon_equipement.equipement_id = equipements.id
+                          AND bons.collaborateur_externe_id IS NOT NULL
+                    )
+                END
             ), 0)
             - COALESCE((
                 SELECT SUM(
