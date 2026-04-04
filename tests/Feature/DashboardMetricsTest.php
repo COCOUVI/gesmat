@@ -111,3 +111,17 @@ test('employee dashboard returns cached aggregated personal metrics', function (
     $response->assertViewHas('nbr_assign', 3);
     $response->assertViewHas('nbr_non_resolue', 1);
 });
+
+test('admin layout uses an internal scroll shell for content', function () {
+    Cache::flush();
+
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $response = $this->actingAs($admin)->get(route('admin.homedash'));
+
+    $response->assertOk();
+    $response->assertSee('class="admin-shell"', false);
+    $response->assertSee('data-admin-scroll-shell="true"', false);
+    $response->assertSee('admin-shell-content', false);
+    $response->assertSee('fixedHeader: false', false);
+});

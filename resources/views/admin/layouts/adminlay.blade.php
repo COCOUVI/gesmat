@@ -23,17 +23,17 @@
     @include('admin.style')
 </head>
 
-<body>
-    <div class="container-scroller">
+<body class="admin-shell">
+    <div class="container-scroller admin-shell-scroller" data-admin-scroll-shell="true">
         <!-- partial:partials/_navbar.html -->
         @include('admin.navbar')
         <!-- partial -->
-        <div class="container-fluid page-body-wrapper">
+        <div class="container-fluid page-body-wrapper admin-shell-body">
             <!-- partial:partials/_sidebar.html -->
             @include('admin.sidebar')
             <!-- partial -->
-            <div class="main-panel">
-                <div class="content-wrapper">
+            <div class="main-panel admin-shell-main-panel">
+                <div class="content-wrapper admin-shell-content">
                     @yield('content')
                     <!-- Gestion des utilisateurs -->
 
@@ -96,7 +96,7 @@
                     }, []);
 
                     table.DataTable({
-                        fixedHeader: true,
+                        fixedHeader: false,
                         pageLength: 10,
                         lengthMenu: [10, 25, 50, 100],
                         order: [],
