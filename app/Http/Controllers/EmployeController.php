@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Events\DemandeSubmitted;
+use App\Events\PanneReported;
+use App\Mail\HelpRequestMail;
 use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Demande;
 use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
-use App\Services\WorkflowNotificationService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,10 +31,6 @@ use Throwable;
  */
 final class EmployeController extends Controller
 {
-    public function __construct(
-        private readonly WorkflowNotificationService $workflowNotificationService,
-    ) {}
-
     /**
      * Affiche le tableau de bord principal avec les statistiques
      */
@@ -146,11 +144,8 @@ final class EmployeController extends Controller
                 $equipements_ask->save();
             }
 
+            DemandeSubmitted::dispatch($demande->fresh(['user', 'equipements']));
             DB::commit();
-
-            $this->workflowNotificationService->notifyDemandeSubmitted(
-                $demande->fresh(['user', 'equipements'])
-            );
 
             return back()->with('success', 'Demande envoyé avec succès');
         } catch (Throwable $e) {
@@ -257,11 +252,8 @@ final class EmployeController extends Controller
                 'statut' => 'en_attente',
             ]);
 
+            PanneReported::dispatch($panne->fresh(['user', 'equipement', 'affectation']));
             DB::commit();
-
-            $this->workflowNotificationService->notifyPanneReported(
-                $panne->fresh(['user', 'equipement', 'affectation'])
-            );
 
             return back()->with('success', sprintf(
                 '%d équipement(s) marqué(es) en panne et signalé(e)s avec succès.',
@@ -321,14 +313,9 @@ final class EmployeController extends Controller
 
         try {
             $adminEmail = config('mail.from.address', 'admin@gesmat.local');
-
-            Mail::send('emails.aide', [
-                'email' => Auth::user()->email,
-                'body' => $validated['message'],
-            ], function ($mail) use ($adminEmail) {
-                $mail->to($adminEmail)
-                    ->subject('Demande d\'aide d\'un employé');
-            });
+            $mailable = new HelpRequestMail(Auth::user()->email, $validated['message']);
+            $mailable->afterCommit();
+            Mail::to($adminEmail)->queue($mailable);
 
             return back()->with('success', 'Votre message a été envoyé à l\'administrateur.');
         } catch (Exception $e) {

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Events\DemandeServed;
+use App\Events\DirectAffectationCreated;
+use App\Events\EquipmentReturned;
+use App\Events\PanneReplacementCompleted;
+use App\Events\PanneResolved;
 use App\Http\Requests\EditRequest;
 use App\Http\Requests\UpdateEquipementRequest;
 use App\Models\Affectation;
@@ -15,7 +20,6 @@ use App\Models\Equipement;
 use App\Models\Panne;
 use App\Models\Rapport;
 use App\Models\User;
-use App\Services\WorkflowNotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
@@ -40,10 +44,6 @@ use Illuminate\Support\Facades\Storage;
  */
 final class AdminController extends Controller
 {
-    public function __construct(
-        private readonly WorkflowNotificationService $workflowNotificationService,
-    ) {}
-
     public function ShowHomePage()
     {
         $nbr_equipement = (int) Equipement::sum('quantite');
@@ -274,13 +274,12 @@ final class AdminController extends Controller
                 $message = 'La demande a été partiellement servie. Elle reste en attente pour les quantités restantes.';
             }
 
-            DB::commit();
-
-            $this->workflowNotificationService->notifyDemandeServed(
+            DemandeServed::dispatch(
                 $demande->fresh(['user', 'equipements', 'affectations']),
                 $result['affectations_details'] ?? [],
                 $result['bon'] ?? null
             );
+            DB::commit();
 
             if ($result['pdf_path']) {
                 return redirect()->back()
@@ -426,12 +425,13 @@ final class AdminController extends Controller
                 'equipements' => $affectationsDetails,
             ]);
 
-            $this->workflowNotificationService->notifyDirectAffectation(
+            DirectAffectationCreated::dispatch(
                 $employe,
                 $validated['motif'],
                 $affectationsDetails,
                 $bon
             );
+            DB::commit();
 
             return redirect()->back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
@@ -744,14 +744,13 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            DB::commit();
-
-            $this->workflowNotificationService->notifyEquipmentReturned(
+            EquipmentReturned::dispatch(
                 $affectation->fresh(['user', 'collaborateurExterne', 'equipement', 'pannes']),
                 $quantiteSaineRetournee,
                 $quantitePanneRetournee,
                 $bon
             );
+            DB::commit();
 
             return redirect()->back()
                 ->with('success', 'Retour du matériel enregistré avec succès. Un bon d’entrée a été généré.')
@@ -866,12 +865,11 @@ final class AdminController extends Controller
                 'quantite_resolue' => $validated['quantite_resolue'],
             ]);
 
-            DB::commit();
-
-            $this->workflowNotificationService->notifyPanneResolved(
+            PanneResolved::dispatch(
                 $panne->fresh(['equipement', 'affectation.user', 'user']),
                 (int) $validated['quantite_resolue']
             );
+            DB::commit();
 
             return redirect()->back()->with('success', sprintf(
                 '%d équipement(s) marqué(s) comme réparé(s).',
@@ -966,13 +964,12 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            DB::commit();
-
-            $this->workflowNotificationService->notifyPanneReplacement(
+            PanneReplacementCompleted::dispatch(
                 $panne->fresh(['equipement', 'affectation.user', 'user']),
                 $quantiteRemplacement,
                 $bon
             );
+            DB::commit();
 
             return redirect()->back()
                 ->with('success', 'Le remplacement a été enregistré avec succès.')

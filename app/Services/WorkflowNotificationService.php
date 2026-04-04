@@ -434,7 +434,8 @@ final class WorkflowNotificationService
         }
 
         try {
-            Mail::to($recipient->email)->send($mail);
+            $mail->afterCommit();
+            Mail::to($recipient->email)->queue($mail);
         } catch (Throwable $throwable) {
             Log::error('Erreur lors de l’envoi d’un email workflow.', [
                 'recipient_id' => $recipient->id,

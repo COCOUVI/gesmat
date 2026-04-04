@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -12,7 +13,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 
-final class WorkflowActionMail extends Mailable
+final class WorkflowActionMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -32,7 +33,9 @@ final class WorkflowActionMail extends Mailable
         private readonly ?string $attachmentPath = null,
         private readonly ?string $attachmentName = null,
         private readonly ?string $footerNote = null,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     public function envelope(): Envelope
     {
