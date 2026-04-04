@@ -19,6 +19,7 @@ final class WorkflowActionMail extends Mailable
     /**
      * @param  array<int, array{label: string, value: string}>  $details
      * @param  array<int, string>  $highlights
+     * @param  array<int, array{label: string, url: string}>  $actionLinks
      */
     public function __construct(
         private readonly string $subjectLine,
@@ -27,6 +28,7 @@ final class WorkflowActionMail extends Mailable
         private readonly string $intro,
         private readonly array $details = [],
         private readonly array $highlights = [],
+        private readonly array $actionLinks = [],
         private readonly ?string $attachmentPath = null,
         private readonly ?string $attachmentName = null,
         private readonly ?string $footerNote = null,
@@ -49,6 +51,7 @@ final class WorkflowActionMail extends Mailable
                 'intro' => $this->intro,
                 'details' => $this->details,
                 'highlights' => $this->highlights,
+                'actionLinks' => $this->actionLinks,
                 'footerNote' => $this->footerNote,
                 'hasAttachment' => $this->attachmentPath !== null,
                 'logoPath' => public_path('images/jaspe_logo_noir_web.png'),

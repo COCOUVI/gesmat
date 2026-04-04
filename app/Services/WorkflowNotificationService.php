@@ -48,8 +48,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'Votre demande a été enregistrée avec succès. Les administrateurs et gestionnaires ont été notifiés.',
                 $details,
-                $highlights,
-                null,
+                $highlights, [
+                    ['label' => 'Voir ma demande', 'url' => route('listes.demandes')],
+                ], null,
                 null,
                 'Nous reviendrons vers vous dès qu’une décision ou une affectation aura été effectuée.'
             )
@@ -67,8 +68,9 @@ final class WorkflowNotificationService
                         $this->fullName($employee)
                     ),
                     $details,
-                    $highlights,
-                    null,
+                    $highlights, [
+                        ['label' => 'Consulter les demandes', 'url' => route('liste.demandes')],
+                    ], null,
                     null,
                     'Connectez-vous à la plateforme pour consulter et traiter cette demande.'
                 )
@@ -101,8 +103,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'Votre signalement a été transmis avec succès aux administrateurs et gestionnaires.',
                 $details,
-                [(string) $panne->description],
-                null,
+                [(string) $panne->description], [
+                    ['label' => 'Voir mon historique', 'url' => route('historique.pannes')],
+                ], null,
                 null,
                 'Vous serez informé dès qu’une résolution ou un remplacement sera effectué.'
             )
@@ -120,8 +123,9 @@ final class WorkflowNotificationService
                         $this->fullName($employee)
                     ),
                     $details,
-                    [(string) $panne->description],
-                    null,
+                    [(string) $panne->description], [
+                        ['label' => 'Gérer les pannes', 'url' => route('equipements.pannes')],
+                    ], null,
                     null,
                     'Connectez-vous à la plateforme pour décider d’une résolution ou d’un remplacement.'
                 )
@@ -158,8 +162,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'Une affectation d’équipement a été enregistrée avec succès à votre nom.',
                 $details,
-                $highlights,
-                $bon?->fichier_pdf,
+                $highlights, [
+                    ['label' => 'Voir mes affectations', 'url' => route('equipements.assignes')],
+                ], $bon?->fichier_pdf,
                 $this->attachmentNameForBon($bon),
                 'Le bon de sortie correspondant est joint à cet e-mail.'
             )
@@ -206,8 +211,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 sprintf('Votre demande a été %s. Les équipements servis sont détaillés ci-dessous.', $statut),
                 $details,
-                $highlights,
-                $bon?->fichier_pdf,
+                $highlights, [
+                    ['label' => 'Voir mes demandes', 'url' => route('listes.demandes')],
+                ], $bon?->fichier_pdf,
                 $this->attachmentNameForBon($bon),
                 'Le bon de sortie correspondant est joint à cet e-mail.'
             )
@@ -245,8 +251,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'Le retour d’équipement a été enregistré avec succès dans le système.',
                 $details,
-                [],
-                $bon?->fichier_pdf,
+                [], [
+                    ['label' => 'Voir mes affectations', 'url' => route('equipements.assignes')],
+                ], $bon?->fichier_pdf,
                 $this->attachmentNameForBon($bon),
                 'Le bon d’entrée correspondant est joint à cet e-mail.'
             )
@@ -277,8 +284,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'Une résolution a été enregistrée sur le signalement de panne que vous aviez initié.',
                 $details,
-                [(string) $panne->description],
-                null,
+                [(string) $panne->description], [
+                    ['label' => 'Voir mon historique', 'url' => route('historique.pannes')],
+                ], null,
                 null,
                 'Vous pouvez consulter l’historique de vos pannes depuis votre espace employé.'
             )
@@ -310,6 +318,9 @@ final class WorkflowNotificationService
                 'Le matériel signalé en panne a été remplacé avec succès.',
                 $details,
                 [(string) $panne->description],
+                [
+                    ['label' => 'Voir mon historique', 'url' => route('historique.pannes')],
+                ],
                 $bon?->fichier_pdf,
                 $this->attachmentNameForBon($bon),
                 'Le bon de sortie correspondant est joint à cet e-mail.'
@@ -343,8 +354,9 @@ final class WorkflowNotificationService
                 $this->fullName($employee),
                 'La date de retour prévue pour une affectation approche. Merci de prendre les dispositions nécessaires.',
                 $details,
-                [],
-                null,
+                [], [
+                    ['label' => 'Voir mes affectations', 'url' => route('equipements.assignes')],
+                ], null,
                 null,
                 'Si un retour partiel ou un incident doit être déclaré, merci de contacter l’administration du parc.'
             )
@@ -394,6 +406,9 @@ final class WorkflowNotificationService
                     ),
                     $details,
                     $highlights,
+                    [
+                        ['label' => 'Gérer les affectations', 'url' => route('page.listeAffectations')],
+                    ],
                     null,
                     null,
                     'Consultez la plateforme pour suivre les mouvements de stock liés à cet équipement.'

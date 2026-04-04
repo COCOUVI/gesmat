@@ -8,6 +8,7 @@
 <body style="margin:0; padding:24px 0; background-color:#f3f6f4; font-family:Arial, Helvetica, sans-serif; color:#111111;">
     @php
         $logoDataUri = null;
+        $actionLinks = $actionLinks ?? [];
 
         if (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
             $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
@@ -59,6 +60,16 @@
                                             <li>{{ $highlight }}</li>
                                         @endforeach
                                     </ul>
+                                </div>
+                            @endif
+
+                            @if (! empty($actionLinks))
+                                <div style="margin:0 0 24px 0; text-align:center;">
+                                    @foreach ($actionLinks as $link)
+                                        <a href="{{ $link['url'] }}" style="display:inline-block; margin:8px 6px; padding:12px 24px; background-color:#0f7b3a; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:600; font-size:14px;">
+                                            {{ $link['label'] }}
+                                        </a>
+                                    @endforeach
                                 </div>
                             @endif
 
