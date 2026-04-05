@@ -16,12 +16,12 @@ final class StoreDemandeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lieu' => 'required|string|max:255',
-            'motif' => 'required|string|min:3|max:2000',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|integer|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
+            'lieu' => ['required', 'string', 'max:255'],
+            'motif' => ['required', 'string', 'min:3', 'max:2000'],
+            'equipements' => ['required', 'array', 'min:1'],
+            'equipements.*' => ['required', 'integer', 'exists:equipements,id'],
+            'quantites' => ['required', 'array', 'min:1'],
+            'quantites.*' => ['required', 'integer', 'min:1'],
         ];
     }
 

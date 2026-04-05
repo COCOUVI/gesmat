@@ -16,7 +16,7 @@ final class UpdateCategorieRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:255',
+            'nom' => ['required', 'string', 'max:255'],
         ];
     }
 

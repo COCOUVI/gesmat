@@ -83,27 +83,19 @@ final class AdminController extends Controller
         $distribution = $metrics['distribution'];
         $growth = $metrics['growth'];
 
-        return view('admin.homedash', compact(
-            'nbr_equipement',
-            'nbr_user',
-            'nbr_affect',
-            'nbr_panne',
-            'statsParMois',
-            'distribution',
-            'growth'
-        ));
+        return view('admin.homedash', ['nbr_equipement' => $nbr_equipement, 'nbr_user' => $nbr_user, 'nbr_affect' => $nbr_affect, 'nbr_panne' => $nbr_panne, 'statsParMois' => $statsParMois, 'distribution' => $distribution, 'growth' => $growth]);
     }
 
     public function showusers()
     {
         $users = User::where('role', '!=', 'admin')->get();
 
-        return view('admin.listuserpage', compact('users'));
+        return view('admin.listuserpage', ['users' => $users]);
     }
 
     public function edituserpage(User $user)
     {
-        return view('admin.edit_user', compact('user'));
+        return view('admin.edit_user', ['user' => $user]);
     }
 
     public function deleteuser(User $user)
@@ -111,7 +103,7 @@ final class AdminController extends Controller
         $user_del_message = $user->nom.' '.$user->prenom.' a été supprimée';
         $user->delete();
 
-        return redirect()->back()->with('deleted', $user_del_message);
+        return back()->with('deleted', $user_del_message);
     }
 
     //
@@ -126,14 +118,14 @@ final class AdminController extends Controller
 
         $user->update($data);
 
-        return redirect()->back()->with('succès', 'Utilisateur modifié avec succès');
+        return back()->with('succès', 'Utilisateur modifié avec succès');
     }
 
     public function addToolpage()
     {
         $categories = Categorie::toBase()->get();
 
-        return view('admin.addtool', compact('categories'));
+        return view('admin.addtool', ['categories' => $categories]);
     }
 
     public function addTool(\App\Http\Requests\StoreToolRequest $request)
@@ -158,7 +150,7 @@ final class AdminController extends Controller
         ]);
         Storage::disk('public')->put($bon->fichier_pdf, $pdf->output());
 
-        return redirect()->back() // ou ->back()
+        return back() // ou ->back()
             ->with('success', 'Équipement ajouté avec succès et un Bon d \'entrée est genéré.')
             ->with('pdf', route('bons.download', ['bon' => $bon->id]));
     }
@@ -175,14 +167,14 @@ final class AdminController extends Controller
             ])
             ->get();
 
-        return view('admin.listtools', compact('equipements'));
+        return view('admin.listtools', ['equipements' => $equipements]);
     }
 
     public function putToolpage(Equipement $equipement)
     {
         $categories = Categorie::all();
 
-        return view('admin.puttools', compact('equipement', 'categories'));
+        return view('admin.puttools', ['equipement' => $equipement, 'categories' => $categories]);
     }
 
     public function putTool(UpdateEquipementRequest $request, Equipement $equipement)
@@ -198,11 +190,11 @@ final class AdminController extends Controller
 
             $equipement->update($data);
 
-            return redirect()->back()->with('success', 'Équipement mis à jour avec succès.');
+            return back()->with('success', 'Équipement mis à jour avec succès.');
         } catch (Exception $exception) {
             Log::error("Erreur lors de la mise à jour d'équipement : ".$exception->getMessage());
 
-            return redirect()->back()
+            return back()
                 ->with('error', 'Une erreur est survenue lors de la mise à jour.')
                 ->withInput();
         }
@@ -213,7 +205,7 @@ final class AdminController extends Controller
         $equip_del = $equipement->nom;
         $equipement->delete();
 
-        return redirect()->back()->with('deleted', "L'equipement ".$equip_del.' a été supprimer avec succès ');
+        return back()->with('deleted', "L'equipement ".$equip_del.' a été supprimer avec succès ');
     }
 
     public function ShowAllAsk()
@@ -233,7 +225,7 @@ final class AdminController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.asklist', compact('demandes'));
+        return view('admin.asklist', ['demandes' => $demandes]);
     }
 
     /**
@@ -270,23 +262,19 @@ final class AdminController extends Controller
                 ]);
             }
 
-            DemandeServed::dispatch(
-                $demande->fresh(['user', 'equipements', 'affectations']),
-                $result['affectations_details'] ?? [],
-                $result['bon'] ?? null
-            );
+            event(new \App\Events\DemandeServed($demande->fresh(['user', 'equipements', 'affectations']), $result['affectations_details'] ?? [], $result['bon'] ?? null));
 
             if ($result['pdf_path']) {
-                return redirect()->back()
+                return back()
                     ->with('success', $message)
                     ->with('pdf', route('bons.download', ['bon' => $result['bon']->id]));
             }
 
-            return redirect()->back()->with('success', $message);
+            return back()->with('success', $message);
         } catch (Exception $exception) {
             Log::error("Erreur lors de l'acceptation de demande: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 
@@ -298,11 +286,11 @@ final class AdminController extends Controller
         try {
             $demande->update(['statut' => 'rejetee']);
 
-            return redirect()->back()->with('success', 'La demande a été rejetée avec succès');
+            return back()->with('success', 'La demande a été rejetée avec succès');
         } catch (Exception $exception) {
             Log::error('Erreur lors du rejet de demande: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', 'Erreur lors du rejet de la demande.');
+            return back()->with('error', 'Erreur lors du rejet de la demande.');
         }
     }
 
@@ -320,7 +308,7 @@ final class AdminController extends Controller
 
         $employes = User::whereIn('role', ['employe', 'employé', 'employée'])->get();
 
-        return view('admin.affectation', compact('equipements_groupes', 'employes'));
+        return view('admin.affectation', ['equipements_groupes' => $equipements_groupes, 'employes' => $employes]);
     }
 
     public function HandleAffectation(StoreDirectAffectationRequest $request)
@@ -346,20 +334,15 @@ final class AdminController extends Controller
                 'equipements' => $result['affectations_details'],
             ]);
 
-            DirectAffectationCreated::dispatch(
-                $employe,
-                $result['motif'],
-                $result['affectations_details'],
-                $bon
-            );
+            event(new \App\Events\DirectAffectationCreated($employe, $result['motif'], $result['affectations_details'], $bon));
 
-            return redirect()->back()
+            return back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
                 ->with('pdf', route('bons.download', ['bon' => $bon->id]));
         } catch (Exception $exception) {
             Log::error("Erreur lors de l'affectation : ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 
@@ -388,7 +371,7 @@ final class AdminController extends Controller
             ->filter(fn (Equipement $equipement) => $equipement->getQuantiteDisponible() > 0)
             ->values();
 
-        return view('admin.pannelist', compact('pannes', 'equipementsInternes'));
+        return view('admin.pannelist', ['pannes' => $pannes, 'equipementsInternes' => $equipementsInternes]);
     }
 
     public function StoreInternalPanne(StoreInternalPanneRequest $request)
@@ -398,11 +381,11 @@ final class AdminController extends Controller
         try {
             $this->storeInternalPanneAction->handle(Auth::user(), $validated);
 
-            return redirect()->back()->with('success', 'Panne interne enregistrée avec succès.');
+            return back()->with('success', 'Panne interne enregistrée avec succès.');
         } catch (Exception $exception) {
             Log::error('Erreur création panne interne: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 
@@ -414,7 +397,7 @@ final class AdminController extends Controller
             ->orderBy('date_retour')
             ->get();
 
-        return view('admin.lost_tools', compact('equipement_lost'));
+        return view('admin.lost_tools', ['equipement_lost' => $equipement_lost]);
     }
 
     public function CollaboratorsPage()
@@ -431,35 +414,33 @@ final class AdminController extends Controller
             $request->file('chemin_carte')
         );
 
-        return redirect()->back()->with('success', 'Collaborateur ajouté avec succès.');
+        return back()->with('success', 'Collaborateur ajouté avec succès.');
     }
 
     public function ShowListCollaborator()
     {
         $collaborateurs = CollaborateurExterne::get();
 
-        return view('admin.list_collaborator', compact('collaborateurs'));
+        return view('admin.list_collaborator', ['collaborateurs' => $collaborateurs]);
     }
 
     public function destroy(CollaborateurExterne $CollaborateurExterne)
     {
         $CollaborateurExterne->delete();
 
-        return redirect()->back()->with('remove', 'le collaborateur a été supprimée');
+        return back()->with('remove', 'le collaborateur a été supprimée');
     }
 
     public function ShowBons()
     {
         $bons = Bon::latest()->get();
 
-        return view('admin.list_bons', compact('bons'));
+        return view('admin.list_bons', ['bons' => $bons]);
     }
 
     public function downloadBon(Bon $bon)
     {
-        if (! $bon->fichier_pdf || ! Storage::disk('public')->exists($bon->fichier_pdf)) {
-            abort(404);
-        }
+        abort_if(! $bon->fichier_pdf || ! Storage::disk('public')->exists($bon->fichier_pdf), 404);
 
         return response()->download(
             Storage::disk('public')->path($bon->fichier_pdf),
@@ -476,7 +457,7 @@ final class AdminController extends Controller
             },
         ])->get();
 
-        return view('admin.bon_external_collaborator', compact('collaborateurs', 'equipements_groupes'));
+        return view('admin.bon_external_collaborator', ['collaborateurs' => $collaborateurs, 'equipements_groupes' => $equipements_groupes]);
     }
 
     public function HandleBon(\App\Http\Requests\StoreBonRequest $request)
@@ -497,7 +478,7 @@ final class AdminController extends Controller
         $pdf->setPaper('A5', 'portrait');
         Storage::disk('public')->put($result['pdf_path'], $pdf->output());
 
-        return redirect()->back()
+        return back()
             ->with('success', 'Bon généré avec succès pour le collaborateur externe.')
             ->with('pdf', route('bons.download', ['bon' => $bon->id]));
     }
@@ -525,20 +506,15 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            EquipmentReturned::dispatch(
-                $affectation,
-                $result['healthy_returned'],
-                $result['broken_returned'],
-                $bon
-            );
+            event(new \App\Events\EquipmentReturned($affectation, $result['healthy_returned'], $result['broken_returned'], $bon));
 
-            return redirect()->back()
+            return back()
                 ->with('success', 'Retour du matériel enregistré avec succès')
                 ->with('pdf', route('bons.download', ['bon' => $bon->id]));
         } catch (Exception $exception) {
             Log::error("Erreur lors du retour d'équipement: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 
@@ -555,7 +531,7 @@ final class AdminController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.affectlist', compact('affectations'));
+        return view('admin.affectlist', ['affectations' => $affectations]);
     }
 
     public function CancelAffectation(string $affectationId)
@@ -563,14 +539,14 @@ final class AdminController extends Controller
         try {
             $result = $this->cancelAffectationAction->handle((int) $affectationId);
 
-            return redirect()->back()->with('success', sprintf(
+            return back()->with('success', sprintf(
                 'L’affectation de « %s » a été annulée avec succès.',
                 $result['equipement_nom']
             ));
         } catch (Exception $exception) {
             Log::error("Erreur lors de l'annulation d'affectation: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 
@@ -578,14 +554,14 @@ final class AdminController extends Controller
     {
         $demande->update(['statut' => 'en_attente']);
 
-        return redirect()->back()->with('hold', 'Demande mise en attente');
+        return back()->with('hold', 'Demande mise en attente');
     }
 
     public function ShowRapport()
     {
         $rapports = Rapport::orderBy('created_at', 'desc')->get();
 
-        return view('admin.list_rapport', compact('rapports'));
+        return view('admin.list_rapport', ['rapports' => $rapports]);
     }
 
     /**
@@ -605,19 +581,16 @@ final class AdminController extends Controller
                 'quantite_resolue' => $result['resolved_quantity'],
             ]);
 
-            PanneResolved::dispatch(
-                $panne,
-                $result['resolved_quantity']
-            );
+            event(new \App\Events\PanneResolved($panne, $result['resolved_quantity']));
 
-            return redirect()->back()->with('success', sprintf(
+            return back()->with('success', sprintf(
                 '%d équipement(s) marqué(s) comme réparé(s).',
                 $result['resolved_quantity']
             ));
         } catch (Exception $exception) {
             Log::error('Erreur résolution panne admin: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
+            return back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
         }
     }
 
@@ -653,19 +626,15 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            PanneReplacementCompleted::dispatch(
-                $panne,
-                $result['replacement_quantity'],
-                $bon
-            );
+            event(new \App\Events\PanneReplacementCompleted($panne, $result['replacement_quantity'], $bon));
 
-            return redirect()->back()
+            return back()
                 ->with('success', 'Le remplacement a été enregistré avec succès.')
                 ->with('pdf', route('bons.download', ['bon' => $bon->id]));
         } catch (Exception $exception) {
             Log::error('Erreur remplacement panne admin: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', $exception->getMessage());
+            return back()->with('error', $exception->getMessage());
         }
     }
 

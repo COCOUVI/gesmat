@@ -21,9 +21,7 @@ final readonly class ResolvePanneAction
 
             $quantiteResolvable = $panne->getQuantiteResolvable();
 
-            if ($quantiteResolvable <= 0) {
-                throw new Exception('Aucune quantité n’est encore disponible pour résolution sur cette panne.');
-            }
+            throw_if($quantiteResolvable <= 0, Exception::class, 'Aucune quantité n’est encore disponible pour résolution sur cette panne.');
 
             if ($quantiteResolue > $quantiteResolvable) {
                 throw new Exception(sprintf(

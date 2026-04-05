@@ -27,15 +27,15 @@ final class EditRequest extends FormRequest
         // $userId = $this->route('putuser') ? $this->route('putuser')->id : null;
 
         return [
-            'prenom' => 'required|string',
-            'nom' => 'required|string',
+            'prenom' => ['required', 'string'],
+            'nom' => ['required', 'string'],
             'email' => [
                 'required',
                 'email',
                 Rule::unique('users')->ignore($this->user),
             ],
-            'password' => 'nullable|min:8',
-            'password_confirmation' => 'nullable',
+            'password' => ['nullable', 'min:8'],
+            'password_confirmation' => ['nullable'],
         ];
     }
 

@@ -71,9 +71,7 @@ final readonly class RegisterEquipmentReturnAction
 
             $quantiteRetourneeTotale = $quantiteSaineRetournee + $quantitePanneRetournee;
 
-            if ($quantiteRetourneeTotale <= 0) {
-                throw new Exception('Veuillez saisir au moins une quantité à retourner.');
-            }
+            throw_if($quantiteRetourneeTotale <= 0, Exception::class, 'Veuillez saisir au moins une quantité à retourner.');
 
             if ($quantiteRetourneeTotale > $affectation->getQuantiteActive()) {
                 throw new Exception(sprintf(

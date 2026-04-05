@@ -59,8 +59,7 @@ final class EmployeController extends Controller
             ->get();
 
         $pannes = Panne::with('equipement')
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+            ->where('user_id', $user->id)->latest()
             ->take(2)
             ->get();
 
@@ -69,16 +68,7 @@ final class EmployeController extends Controller
         $nbr_non_resolue = $metrics['nbr_non_resolue'];
         $nbr_assign = $metrics['nbr_assign'];
 
-        return view('employee.layouts.main', compact(
-            'user',
-            'demandes',
-            'affectations',
-            'pannes',
-            'nbr_accept',
-            'nbr_en_attente',
-            'nbr_non_resolue',
-            'nbr_assign'
-        ));
+        return view('employee.layouts.main', ['user' => $user, 'demandes' => $demandes, 'affectations' => $affectations, 'pannes' => $pannes, 'nbr_accept' => $nbr_accept, 'nbr_en_attente' => $nbr_en_attente, 'nbr_non_resolue' => $nbr_non_resolue, 'nbr_assign' => $nbr_assign]);
     }
 
     /**
@@ -95,7 +85,7 @@ final class EmployeController extends Controller
 
         $user = Auth::user();
 
-        return view('employee.layouts.askpage', compact('user', 'equipements_par_categorie'));
+        return view('employee.layouts.askpage', ['user' => $user, 'equipements_par_categorie' => $equipements_par_categorie]);
     }
 
     public function SubmitAsk(StoreDemandeRequest $request)
@@ -135,7 +125,7 @@ final class EmployeController extends Controller
             ->filter(fn (Affectation $affectation) => $affectation->getQuantiteDisponiblePourPanne() > 0)
             ->values();
 
-        return view('employee.layouts.panne', compact('user', 'affectations'));
+        return view('employee.layouts.panne', ['user' => $user, 'affectations' => $affectations]);
     }
 
     /**
@@ -184,7 +174,7 @@ final class EmployeController extends Controller
             ->latest()
             ->get();
 
-        return view('employee.layouts.assign', compact('user', 'affectations'));
+        return view('employee.layouts.assign', ['user' => $user, 'affectations' => $affectations]);
     }
 
     /**
@@ -194,7 +184,7 @@ final class EmployeController extends Controller
     {
         $user = Auth::user();
 
-        return view('employee.layouts.help', compact('user'));
+        return view('employee.layouts.help', ['user' => $user]);
     }
 
     /**
@@ -279,11 +269,10 @@ final class EmployeController extends Controller
     {
         $user = Auth::user();
         $pannes = Panne::with('equipement:id,nom')
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+            ->where('user_id', $user->id)->latest()
             ->get();
 
-        return view('employee.layouts.pannelist', compact('pannes', 'user'));
+        return view('employee.layouts.pannelist', ['pannes' => $pannes, 'user' => $user]);
     }
 
     /**
@@ -296,11 +285,10 @@ final class EmployeController extends Controller
             'equipements:id,nom',
             'affectations:id,demande_id,equipement_id,quantite_affectee',
         ])
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+            ->where('user_id', $user->id)->latest()
             ->get();
 
-        return view('employee.layouts.list_demandes', compact('user', 'demandes'));
+        return view('employee.layouts.list_demandes', ['user' => $user, 'demandes' => $demandes]);
     }
 
     /**
@@ -312,8 +300,6 @@ final class EmployeController extends Controller
      */
     private function authorizeDelete($model, User $user): void
     {
-        if ($model->user_id !== $user->id) {
-            abort(403, 'Non autorisé à supprimer cette ressource.');
-        }
+        abort_if($model->user_id !== $user->id, 403, 'Non autorisé à supprimer cette ressource.');
     }
 }

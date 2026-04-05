@@ -48,6 +48,7 @@ final class Panne extends Model
 
     /**
      * Relation avec l'équipement en panne
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
      */
     public function equipement(): BelongsTo
     {
@@ -56,6 +57,7 @@ final class Panne extends Model
 
     /**
      * Relation avec l'affectation (si la panne a été signalée sur une affectation)
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Affectation, $this>
      */
     public function affectation(): BelongsTo
     {
@@ -64,6 +66,7 @@ final class Panne extends Model
 
     /**
      * Relation avec l'utilisateur ayant signalé la panne
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
     {
@@ -73,7 +76,7 @@ final class Panne extends Model
     /**
      * Scope pour récupérer les pannes non résolues
      */
-    public function scopeNonResolues($query)
+    protected function scopeNonResolues($query)
     {
         return $query->where('statut', '!=', 'resolu');
     }
@@ -81,7 +84,7 @@ final class Panne extends Model
     /**
      * Scope pour récupérer les pannes en attente
      */
-    public function scopeEnAttente($query)
+    protected function scopeEnAttente($query)
     {
         return $query->where('statut', 'en_attente');
     }
@@ -89,7 +92,7 @@ final class Panne extends Model
     /**
      * Scope pour récupérer les pannes résolues
      */
-    public function scopeResolues($query)
+    protected function scopeResolues($query)
     {
         return $query->where('statut', 'resolu');
     }

@@ -24,14 +24,14 @@ final class UpdateEquipementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:255',
-            'marque' => 'string|max:255',
-            'categorie_id' => 'required|exists:categories,id',
-            'description' => 'string',
-            'date_acquisition' => 'required|date',
-            'quantite' => 'nullable|integer|min:0',
-            'seuil_critique' => 'required|integer|min:0',
-            'image_path' => 'nullable|image|max:2048',
+            'nom' => ['required', 'string', 'max:255'],
+            'marque' => ['string', 'max:255'],
+            'categorie_id' => ['required', 'exists:categories,id'],
+            'description' => ['string'],
+            'date_acquisition' => ['required', 'date'],
+            'quantite' => ['nullable', 'integer', 'min:0'],
+            'seuil_critique' => ['required', 'integer', 'min:0'],
+            'image_path' => ['nullable', 'image', 'max:2048'],
         ];
     }
 

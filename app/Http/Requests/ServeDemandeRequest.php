@@ -16,10 +16,10 @@ final class ServeDemandeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantites_a_affecter' => 'required|array',
-            'quantites_a_affecter.*' => 'nullable|integer|min:0',
-            'dates_retour' => 'nullable|array',
-            'dates_retour.*' => 'nullable|date',
+            'quantites_a_affecter' => ['required', 'array'],
+            'quantites_a_affecter.*' => ['nullable', 'integer', 'min:0'],
+            'dates_retour' => ['nullable', 'array'],
+            'dates_retour.*' => ['nullable', 'date'],
         ];
     }
 }

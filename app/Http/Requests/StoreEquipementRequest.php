@@ -16,13 +16,13 @@ final class StoreEquipementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:255',
-            'categorie_id' => 'required|integer|exists:categories,id',
-            'description' => 'nullable|string',
-            'marque' => 'nullable|string',
-            'quantite' => 'required|integer|min:1',
-            'date_acquisition' => 'nullable|date',
-            'image_path' => 'nullable|image|max:2048',
+            'nom' => ['required', 'string', 'max:255'],
+            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
+            'description' => ['nullable', 'string'],
+            'marque' => ['nullable', 'string'],
+            'quantite' => ['required', 'integer', 'min:1'],
+            'date_acquisition' => ['nullable', 'date'],
+            'image_path' => ['nullable', 'image', 'max:2048'],
         ];
     }
 

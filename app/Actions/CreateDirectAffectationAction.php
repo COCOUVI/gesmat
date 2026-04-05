@@ -42,9 +42,7 @@ final readonly class CreateDirectAffectationAction
         $result = DB::transaction(function () use ($actor, $validated): array {
             $employe = User::findOrFail((int) $validated['employe_id']);
 
-            if (! in_array($employe->role, ['employe', 'employé', 'employée'], true)) {
-                throw new Exception("L'utilisateur sélectionné n'est pas un employé.");
-            }
+            throw_unless(in_array($employe->role, ['employe', 'employé', 'employée'], true), Exception::class, "L'utilisateur sélectionné n'est pas un employé.");
 
             $lignesAffectation = $this->normalizeLines(
                 $validated['equipements'],
@@ -159,9 +157,7 @@ final readonly class CreateDirectAffectationAction
 
     private function ensureAvailability(Equipement $equipement, int $quantite, int $quantiteReservee = 0): void
     {
-        if ($quantite <= 0) {
-            throw new Exception('La quantité à affecter doit être supérieure à zéro.');
-        }
+        throw_if($quantite <= 0, Exception::class, 'La quantité à affecter doit être supérieure à zéro.');
 
         $quantiteDisponible = max(0, $equipement->getQuantiteDisponible() - $quantiteReservee);
 

@@ -52,6 +52,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'équipement affecté
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
      */
     public function equipement(): BelongsTo
     {
@@ -60,6 +61,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'utilisateur ayant l'affectation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
     {
@@ -68,6 +70,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec le collaborateur externe ayant l'affectation (polymorphe)
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -76,6 +79,7 @@ final class Affectation extends Model
 
     /**
      * Demande d'origine, si l'affectation découle d'une demande.
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Demande, $this>
      */
     public function demande(): BelongsTo
     {
@@ -84,6 +88,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec les pannes liées à cette affectation
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
      */
     public function pannes(): HasMany
     {
@@ -93,7 +98,7 @@ final class Affectation extends Model
     /**
      * Scope des affectations toujours en circulation.
      */
-    public function scopeActive($query)
+    protected function scopeActive($query)
     {
         return $query->whereRaw('quantite_affectee > COALESCE(quantite_retournee, 0)');
     }

@@ -16,14 +16,14 @@ final class StoreToolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string',
-            'marque' => 'required|min:2',
-            'categorie_id' => 'required|integer|exists:categories,id',
-            'description' => 'required|string',
-            'date_acquisition' => 'required|date',
-            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'quantite' => 'required|integer|min:1',
-            'seuil_critique' => 'required|integer|min:0',
+            'nom' => ['required', 'string'],
+            'marque' => ['required', 'min:2'],
+            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
+            'description' => ['required', 'string'],
+            'date_acquisition' => ['required', 'date'],
+            'image_path' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'quantite' => ['required', 'integer', 'min:1'],
+            'seuil_critique' => ['required', 'integer', 'min:0'],
         ];
     }
 

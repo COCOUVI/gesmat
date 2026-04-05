@@ -16,7 +16,7 @@ final class ReplacePanneEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantite_remplacement' => 'required|integer|min:1',
+            'quantite_remplacement' => ['required', 'integer', 'min:1'],
         ];
     }
 }

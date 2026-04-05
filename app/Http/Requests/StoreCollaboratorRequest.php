@@ -16,9 +16,9 @@ final class StoreCollaboratorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'chemin_carte' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'nom' => ['required', 'string', 'max:255'],
+            'prenom' => ['required', 'string', 'max:255'],
+            'chemin_carte' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ];
     }
 

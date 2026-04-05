@@ -14,7 +14,7 @@ final class CategorieController extends Controller
     {
         $categories = Categorie::all();
 
-        return view('gestionnaire.categories.index', compact('categories'));
+        return view('gestionnaire.categories.index', ['categories' => $categories]);
     }
 
     public function create()
@@ -25,12 +25,12 @@ final class CategorieController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
+            'nom' => ['required', 'string', 'max:255'],
         ]);
 
         Categorie::create($validated);
 
-        return redirect()->route('gestionnaire.categories.list')
+        return to_route('gestionnaire.categories.list')
             ->with('success', 'Catégorie ajoutée avec succès.');
     }
 
@@ -38,19 +38,19 @@ final class CategorieController extends Controller
     {
         $categorie = Categorie::findOrFail($id);
 
-        return view('gestionnaire.categories.edit', compact('categorie'));
+        return view('gestionnaire.categories.edit', ['categorie' => $categorie]);
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
+            'nom' => ['required', 'string', 'max:255'],
         ]);
 
         $categorie = Categorie::findOrFail($id);
         $categorie->update($validated);
 
-        return redirect()->route('gestionnaire.categories.list')
+        return to_route('gestionnaire.categories.list')
             ->with('success', 'Catégorie mise à jour avec succès.');
     }
 
@@ -59,7 +59,7 @@ final class CategorieController extends Controller
         $categorie = Categorie::findOrFail($id);
         $categorie->delete();
 
-        return redirect()->route('gestionnaire.categories.list')
+        return to_route('gestionnaire.categories.list')
             ->with('success', 'Catégorie supprimée.');
     }
 

@@ -35,15 +35,11 @@ final readonly class ReplacePanneEquipmentAction
         $result = DB::transaction(function () use ($actor, $panne, $quantiteRemplacement): array {
             $panne->load(['equipement', 'affectation.user']);
 
-            if ($panne->estInterne() || ! $panne->affectation) {
-                throw new Exception('Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
-            }
+            throw_if($panne->estInterne() || ! $panne->affectation, Exception::class, 'Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
 
             $quantiteRemplacable = $panne->getQuantiteRemplacable();
 
-            if ($quantiteRemplacable <= 0) {
-                throw new Exception('Aucune quantité n’est disponible pour un remplacement immédiat.');
-            }
+            throw_if($quantiteRemplacable <= 0, Exception::class, 'Aucune quantité n’est disponible pour un remplacement immédiat.');
 
             if ($quantiteRemplacement > $quantiteRemplacable) {
                 throw new Exception(sprintf(

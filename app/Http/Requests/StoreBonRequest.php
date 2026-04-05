@@ -16,15 +16,15 @@ final class StoreBonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'collaborateur_id' => 'required|exists:collaborateur_externes,id',
-            'motif' => 'required|string|max:1000',
-            'type' => 'required|in:entrée,sortie',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
-            'dates_retour' => 'nullable|array',
-            'dates_retour.*' => 'nullable|date',
+            'collaborateur_id' => ['required', 'exists:collaborateur_externes,id'],
+            'motif' => ['required', 'string', 'max:1000'],
+            'type' => ['required', 'in:entrée,sortie'],
+            'equipements' => ['required', 'array', 'min:1'],
+            'equipements.*' => ['required', 'exists:equipements,id'],
+            'quantites' => ['required', 'array', 'min:1'],
+            'quantites.*' => ['required', 'integer', 'min:1'],
+            'dates_retour' => ['nullable', 'array'],
+            'dates_retour.*' => ['nullable', 'date'],
         ];
     }
 

@@ -59,7 +59,7 @@ final readonly class ReportPanneAction
                 'statut' => 'en_attente',
             ]);
 
-            PanneReported::dispatch($panne->fresh(['user', 'equipement', 'affectation']));
+            event(new \App\Events\PanneReported($panne->fresh(['user', 'equipement', 'affectation'])));
 
             return $panne;
         });

@@ -41,9 +41,7 @@ final readonly class ServeDemandeAction
             $demande->loadMissing(['equipements', 'affectations', 'user']);
             $equipementsData = $demande->equipements;
 
-            if ($equipementsData->isEmpty()) {
-                throw new Exception('Cette demande ne contient aucun équipement à servir.');
-            }
+            throw_if($equipementsData->isEmpty(), Exception::class, 'Cette demande ne contient aucun équipement à servir.');
 
             $affectationsDetails = [];
             $quantitesReservees = [];
@@ -98,9 +96,7 @@ final readonly class ServeDemandeAction
                 ];
             }
 
-            if ($assignedTotal === 0) {
-                throw new Exception('Aucune quantité n’a été affectée. Veuillez saisir au moins une quantité à servir.');
-            }
+            throw_if($assignedTotal === 0, Exception::class, 'Aucune quantité n’a été affectée. Veuillez saisir au moins une quantité à servir.');
 
             $pdfName = 'bon_sortie_demande_'.$demande->id.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_sortie/'.$pdfName;
@@ -135,9 +131,7 @@ final readonly class ServeDemandeAction
 
     private function ensureAvailability(Equipement $equipement, int $quantite, int $quantiteReservee = 0): void
     {
-        if ($quantite <= 0) {
-            throw new Exception('La quantité à affecter doit être supérieure à zéro.');
-        }
+        throw_if($quantite <= 0, Exception::class, 'La quantité à affecter doit être supérieure à zéro.');
 
         $quantiteDisponible = max(0, $equipement->getQuantiteDisponible() - $quantiteReservee);
 

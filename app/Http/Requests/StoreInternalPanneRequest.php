@@ -16,9 +16,9 @@ final class StoreInternalPanneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'equipement_id' => 'required|integer|exists:equipements,id',
-            'quantite' => 'required|integer|min:1',
-            'description' => 'required|string|min:10|max:1000',
+            'equipement_id' => ['required', 'integer', 'exists:equipements,id'],
+            'quantite' => ['required', 'integer', 'min:1'],
+            'description' => ['required', 'string', 'min:10', 'max:1000'],
         ];
     }
 }

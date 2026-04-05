@@ -21,12 +21,12 @@ final class EquipementFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom' => $this->faker->words(3, true),
-            'marque' => $this->faker->company(),
-            'description' => $this->faker->sentence(),
-            'date_acquisition' => $this->faker->date(),
-            'quantite' => $this->faker->numberBetween(50, 200),
-            'seuil_critique' => $this->faker->numberBetween(5, 20),
+            'nom' => fake()->words(3, true),
+            'marque' => fake()->company(),
+            'description' => fake()->sentence(),
+            'date_acquisition' => fake()->date(),
+            'quantite' => fake()->numberBetween(50, 200),
+            'seuil_critique' => fake()->numberBetween(5, 20),
             'image_path' => 'images/equipment_'.uniqid().'.jpg',
             'categorie_id' => Categorie::factory(),
         ];

@@ -33,6 +33,7 @@ final class Bon extends Model
 
     /**
      * Relation avec l'utilisateur (employé)
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
     {
@@ -41,6 +42,7 @@ final class Bon extends Model
 
     /**
      * Relation avec le collaborateur externe
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -49,6 +51,7 @@ final class Bon extends Model
 
     /**
      * Relation avec les équipements du bon
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function equipements(): BelongsToMany
     {

@@ -19,7 +19,7 @@ final class RapportController extends Controller
         $user = auth()->user();
         $rapports = Rapport::where('user_id', $user->id)->latest()->get();
 
-        return view('gestionnaire.rapports.index', compact('rapports'));
+        return view('gestionnaire.rapports.index', ['rapports' => $rapports]);
 
     }
 
@@ -37,14 +37,14 @@ final class RapportController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'contenu' => 'required|string',
+            'contenu' => ['required', 'string'],
         ]);
 
         $contenu = $request->contenu;
         $user = auth()->user();
 
         // Générer le PDF
-        $pdf = Pdf::loadView('gestionnaire.rapports.pdf', compact('contenu', 'user'));
+        $pdf = Pdf::loadView('gestionnaire.rapports.pdf', ['contenu' => $contenu, 'user' => $user]);
 
         // Enregistrer le PDF dans le dossier public/storage/rapports/
         $filename = 'rapport_'.now()->format('Ymd_His').'.pdf';
@@ -60,14 +60,14 @@ final class RapportController extends Controller
         ]);
 
         // return redirect()->back()->with('success', value: 'Rapport généré et soumis avec succès.');
-        return redirect()->route('gestionnaire.rapports.index')->with('success', 'Le rapport a bien été généré.');
+        return to_route('gestionnaire.rapports.index')->with('success', 'Le rapport a bien été généré.');
     }
 
     public function show($id)
     {
         $rapport = Rapport::with('user')->findOrFail($id);
 
-        return view('gestionnaire.rapports.show', compact('rapport'));
+        return view('gestionnaire.rapports.show', ['rapport' => $rapport]);
     }
 
     //     public function download($id)
@@ -109,7 +109,7 @@ final class RapportController extends Controller
 
         $rapport->delete();
 
-        return redirect()->route('gestionnaire.rapports.index')->with('success', 'Rapport supprimé avec succès.');
+        return to_route('gestionnaire.rapports.index')->with('success', 'Rapport supprimé avec succès.');
     }
 
     // /**

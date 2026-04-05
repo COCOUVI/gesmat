@@ -19,14 +19,14 @@ final class GestionnaireDemandeController extends Controller
 
         $gestionnaires = User::where('role', 'gestionnaire')->get(); // Liste des gestionnaires pour l'assignation
 
-        return view('gestionnaire.demandes.index', compact('demandes', 'gestionnaires'));
+        return view('gestionnaire.demandes.index', ['demandes' => $demandes, 'gestionnaires' => $gestionnaires]);
     }
 
     // Assigner une demande à un gestionnaire
     public function assigner(Request $request, Demande $demande)
     {
         $request->validate([
-            'gestionnaire_id' => 'required|exists:users,id',
+            'gestionnaire_id' => ['required', 'exists:users,id'],
         ]);
 
         $demande->update([
@@ -34,6 +34,6 @@ final class GestionnaireDemandeController extends Controller
             'gestionnaire_id' => $request->gestionnaire_id, // Ajoutez cette colonne si elle n'existe pas
         ]);
 
-        return redirect()->back()->with('success', 'Demande assignée avec succès !');
+        return back()->with('success', 'Demande assignée avec succès !');
     }
 }

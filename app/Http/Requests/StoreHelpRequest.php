@@ -15,7 +15,7 @@ final class StoreHelpRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['message' => 'required|string|min:10|max:2000'];
+        return ['message' => ['required', 'string', 'min:10', 'max:2000']];
     }
 
     public function messages(): array

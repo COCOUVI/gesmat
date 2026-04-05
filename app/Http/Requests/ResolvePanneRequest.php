@@ -16,7 +16,7 @@ final class ResolvePanneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantite_resolue' => 'required|integer|min:1',
+            'quantite_resolue' => ['required', 'integer', 'min:1'],
         ];
     }
 }

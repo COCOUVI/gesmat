@@ -59,6 +59,6 @@ final class RegisteredUserController extends Controller
         $mailable->afterCommit();
         Mail::to($user->email)->queue($mailable);
 
-        return redirect()->back()->with('success', 'Utilisateur ajouté avec succès. Un email contenant les identifiants a été envoyé.');
+        return back()->with('success', 'Utilisateur ajouté avec succès. Un email contenant les identifiants a été envoyé.');
     }
 }
