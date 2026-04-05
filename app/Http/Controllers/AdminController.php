@@ -160,7 +160,7 @@ final class AdminController extends Controller
 
         return redirect()->back() // ou ->back()
             ->with('success', 'Équipement ajouté avec succès et un Bon d \'entrée est genéré.')
-            ->with('pdf', asset('storage/'.$bon->fichier_pdf));
+            ->with('pdf', route('bons.download', ['bon' => $bon->id]));
     }
 
     public function ShowToolpage()
@@ -188,9 +188,9 @@ final class AdminController extends Controller
     public function putTool(UpdateEquipementRequest $request, Equipement $equipement)
     {
         try {
-            Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : ".json_encode($request->all()));
+            Log::info(sprintf("Données reçues pour la mise à jour de l'équipement ID %s : ", $equipement->id).json_encode($request->all()));
             $data = $request->only(['nom', 'etat', 'marque', 'categorie_id', 'description', 'date_acquisition', 'quantite', 'seuil_critique']);
-            Log::info("Données reçues pour la mise à jour de l'équipement ID {$equipement->id} : ".json_encode($data));
+            Log::info(sprintf("Données reçues pour la mise à jour de l'équipement ID %s : ", $equipement->id).json_encode($data));
 
             if ($request->hasFile('image_path')) {
                 $data['image_path'] = $this->storeEquipementImage($request);
@@ -199,8 +199,8 @@ final class AdminController extends Controller
             $equipement->update($data);
 
             return redirect()->back()->with('success', 'Équipement mis à jour avec succès.');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la mise à jour d'équipement : ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la mise à jour d'équipement : ".$exception->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Une erreur est survenue lors de la mise à jour.')
@@ -220,7 +220,7 @@ final class AdminController extends Controller
     {
         $demandes = Demande::with([
             'affectations:id,demande_id,equipement_id,quantite_affectee',
-            'equipements' => function ($query) {
+            'equipements' => function ($query): void {
                 $query->select(['equipements.id', 'equipements.nom', 'equipements.quantite'])
                     ->with([
                         'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',
@@ -279,14 +279,14 @@ final class AdminController extends Controller
             if ($result['pdf_path']) {
                 return redirect()->back()
                     ->with('success', $message)
-                    ->with('pdf', asset('storage/'.$result['pdf_path']));
+                    ->with('pdf', route('bons.download', ['bon' => $result['bon']->id]));
             }
 
             return redirect()->back()->with('success', $message);
-        } catch (Exception $e) {
-            Log::error("Erreur lors de l'acceptation de demande: ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de l'acceptation de demande: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 
@@ -299,8 +299,8 @@ final class AdminController extends Controller
             $demande->update(['statut' => 'rejetee']);
 
             return redirect()->back()->with('success', 'La demande a été rejetée avec succès');
-        } catch (Exception $e) {
-            Log::error('Erreur lors du rejet de demande: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur lors du rejet de demande: '.$exception->getMessage());
 
             return redirect()->back()->with('error', 'Erreur lors du rejet de la demande.');
         }
@@ -309,7 +309,7 @@ final class AdminController extends Controller
     public function Showaffectation()
     {
         $equipements_groupes = Categorie::with([
-            'equipements' => function ($query) {
+            'equipements' => function ($query): void {
                 $query->select(['equipements.id', 'equipements.nom', 'equipements.categorie_id', 'equipements.quantite'])
                     ->with(['pannes:id,equipement_id,affectation_id,quantite,quantite_retournee_stock,quantite_resolue,statut',
                         'pannes.affectation:id,quantite_affectee,quantite_retournee,statut',
@@ -355,11 +355,11 @@ final class AdminController extends Controller
 
             return redirect()->back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
-                ->with('pdf', asset('/storage/'.$pdfPath));
-        } catch (Exception $e) {
-            Log::error("Erreur lors de l'affectation : ".$e->getMessage());
+                ->with('pdf', route('bons.download', ['bon' => $bon->id]));
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de l'affectation : ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 
@@ -399,10 +399,10 @@ final class AdminController extends Controller
             $this->storeInternalPanneAction->handle(Auth::user(), $validated);
 
             return redirect()->back()->with('success', 'Panne interne enregistrée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur création panne interne: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur création panne interne: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 
@@ -455,11 +455,23 @@ final class AdminController extends Controller
         return view('admin.list_bons', compact('bons'));
     }
 
+    public function downloadBon(Bon $bon)
+    {
+        if (! $bon->fichier_pdf || ! Storage::disk('public')->exists($bon->fichier_pdf)) {
+            abort(404);
+        }
+
+        return response()->download(
+            Storage::disk('public')->path($bon->fichier_pdf),
+            basename($bon->fichier_pdf)
+        );
+    }
+
     public function CreateBon()
     {
         $collaborateurs = CollaborateurExterne::orderBy('nom')->orderBy('prenom')->get();
         $equipements_groupes = Categorie::with([
-            'equipements' => function ($query) {
+            'equipements' => function ($query): void {
                 $query->with(['affectations', 'pannes.affectation']);
             },
         ])->get();
@@ -487,7 +499,7 @@ final class AdminController extends Controller
 
         return redirect()->back()
             ->with('success', 'Bon généré avec succès pour le collaborateur externe.')
-            ->with('pdf', asset('storage/'.$result['pdf_path']));
+            ->with('pdf', route('bons.download', ['bon' => $bon->id]));
     }
 
     public function BackTool(RegisterEquipmentReturnRequest $request, Affectation $affectation)
@@ -522,11 +534,11 @@ final class AdminController extends Controller
 
             return redirect()->back()
                 ->with('success', 'Retour du matériel enregistré avec succès')
-                ->with('pdf', asset('storage/'.$pdfPath));
-        } catch (Exception $e) {
-            Log::error("Erreur lors du retour d'équipement: ".$e->getMessage());
+                ->with('pdf', route('bons.download', ['bon' => $bon->id]));
+        } catch (Exception $exception) {
+            Log::error("Erreur lors du retour d'équipement: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 
@@ -555,10 +567,10 @@ final class AdminController extends Controller
                 'L’affectation de « %s » a été annulée avec succès.',
                 $result['equipement_nom']
             ));
-        } catch (Exception $e) {
-            Log::error("Erreur lors de l'annulation d'affectation: ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de l'annulation d'affectation: ".$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 
@@ -588,7 +600,7 @@ final class AdminController extends Controller
             $result = $this->resolvePanneAction->handle($panne, (int) $validated['quantite_resolue']);
             $panne = $result['panne'];
 
-            Log::info("Panne {$panne->id} résolue par admin", [
+            Log::info(sprintf('Panne %s résolue par admin', $panne->id), [
                 'equipement_id' => $panne->equipement_id,
                 'quantite_resolue' => $result['resolved_quantity'],
             ]);
@@ -602,8 +614,8 @@ final class AdminController extends Controller
                 '%d équipement(s) marqué(s) comme réparé(s).',
                 $result['resolved_quantity']
             ));
-        } catch (Exception $e) {
-            Log::error('Erreur résolution panne admin: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur résolution panne admin: '.$exception->getMessage());
 
             return redirect()->back()->with('error', 'Erreur lors de la résolution de la panne. Veuillez réessayer.');
         }
@@ -649,11 +661,11 @@ final class AdminController extends Controller
 
             return redirect()->back()
                 ->with('success', 'Le remplacement a été enregistré avec succès.')
-                ->with('pdf', asset('storage/'.$result['pdf_path']));
-        } catch (Exception $e) {
-            Log::error('Erreur remplacement panne admin: '.$e->getMessage());
+                ->with('pdf', route('bons.download', ['bon' => $bon->id]));
+        } catch (Exception $exception) {
+            Log::error('Erreur remplacement panne admin: '.$exception->getMessage());
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', $exception->getMessage());
         }
     }
 

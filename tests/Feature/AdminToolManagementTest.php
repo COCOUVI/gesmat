@@ -8,7 +8,7 @@ use App\Models\Equipement;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 
-test('admin can add an equipment with initial state and image', function () {
+test('admin can add an equipment with initial state and image', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $categorie = Categorie::create(['nom' => 'Ajouts']);
 
@@ -38,7 +38,7 @@ test('admin can add an equipment with initial state and image', function () {
     expect(Bon::where('user_id', $admin->id)->where('statut', 'entrée')->exists())->toBeTrue();
 });
 
-test('admin can update an equipment critical threshold', function () {
+test('admin can update an equipment critical threshold', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $categorie = Categorie::create(['nom' => 'Mises à jour']);
     $equipement = Equipement::create([

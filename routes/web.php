@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class])->group(function () {
+Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class])->group(function (): void {
 
     Route::get('/rapports/create', [RapportController::class, 'create'])
         ->name('gestionnaire.rapports.create')
@@ -46,7 +46,7 @@ Route::get('/', function () {
     });
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function (): void {
     Route::get('/dashboard', [AdminController::class, 'ShowHomePage'])->name('admin.homedash')->middleware([AdminOuGestionnaire::class]);
     Route::get('/dashboard/employe', [EmployeController::class, 'index'])->name('dashboard.employee')->middleware([Isemp::class]);
 });
@@ -61,14 +61,14 @@ Route::get('/redirect-by-role', function () {
     };
 })->middleware(['auth'])->name('verifylogin');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Admin ou Gestionaire
-Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->group(function () {
+Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->group(function (): void {
     Route::get('/add_tool', [AdminController::class, 'addToolpage'])
         ->name('addToolpage');
     Route::post('/add-tool_post', [AdminController::class, 'addTool'])
@@ -115,6 +115,8 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('collaborateurs.destroy');
     Route::get('/list_bon', [AdminController::class, 'ShowBons'])
         ->name('liste.bons');
+    Route::get('/bons/{bon}/download', [AdminController::class, 'downloadBon'])
+        ->name('bons.download');
     Route::get('/bon_collaborator_external', [AdminController::class, 'CreateBon'])
         ->name('CreateBon');
     Route::post('/post_bon_collaborator_external', [AdminController::class, 'HandleBon'])
@@ -125,7 +127,7 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('affectation.annuler');
 
 });
-Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function () {
+Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function (): void {
     Route::get('/list_users', [AdminController::class, 'showusers'])
         ->name('showusers');
     Route::get('/edituser/{user}', [AdminController::class, 'edituserpage'])
@@ -140,7 +142,7 @@ Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function
         ->name('rapport.lists');
 });
 
-Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function () {
+Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function (): void {
 
     Route::get('/demande-equipement', [EmployeController::class, 'ShowAskpage'])->name('demande.equipement');
     Route::post('/demande-equipement-soumise', [EmployeController::class, 'SubmitAsk'])->name('demande.soumise');
@@ -162,16 +164,16 @@ Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function ()
 
 Route::get('/test-mail', function () {
     try {
-        Mail::raw('Ceci est un test simple laracon.', function ($message) {
+        Mail::raw('Ceci est un test simple laracon.', function ($message): void {
             $message->to('cocouvialexandro74@gmail.com')
                 ->subject('Test depuis Laravel avec Hostinger');
         });
 
         return 'Email envoyé !';
-    } catch (Exception $e) {
-        Log::error('Erreur envoi mail : '.$e->getMessage());
+    } catch (Exception $exception) {
+        Log::error('Erreur envoi mail : '.$exception->getMessage());
 
-        return 'Erreur : '.$e->getMessage();
+        return 'Erreur : '.$exception->getMessage();
     }
 });
 

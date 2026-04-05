@@ -12,8 +12,8 @@ use Illuminate\Queue\SerializesModels;
 
 final class IdentifiantsEnvoyes extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
-
+    use Queueable;
+    use SerializesModels;
     public function __construct(
         public readonly User $user,
         public readonly string $password,

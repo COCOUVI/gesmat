@@ -11,7 +11,7 @@ use App\Models\Panne;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
-test('demande validation is blocked when computed available stock is insufficient', function () {
+test('demande validation is blocked when computed available stock is insufficient', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -55,7 +55,7 @@ test('demande validation is blocked when computed available stock is insufficien
     expect($demande->fresh()->statut)->toBe('en_attente');
 });
 
-test('demande validation does not double count pannes on active affectations', function () {
+test('demande validation does not double count pannes on active affectations', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -111,7 +111,7 @@ test('demande validation does not double count pannes on active affectations', f
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(0);
 });
 
-test('demande validation is blocked by unresolved pannes returned to internal stock', function () {
+test('demande validation is blocked by unresolved pannes returned to internal stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -165,7 +165,7 @@ test('demande validation is blocked by unresolved pannes returned to internal st
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(9);
 });
 
-test('demande validation creates linked affectation with return date and generated bon', function () {
+test('demande validation creates linked affectation with return date and generated bon', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -212,7 +212,7 @@ test('demande validation creates linked affectation with return date and generat
     expect(Bon::where('user_id', $employee->id)->where('statut', 'sortie')->exists())->toBeTrue();
 });
 
-test('demande can be partially served then completed later', function () {
+test('demande can be partially served then completed later', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -266,7 +266,7 @@ test('demande can be partially served then completed later', function () {
     expect($demande->getQuantiteTotaleServie())->toBe(5);
 });
 
-test('employee can report breakdowns by affectation and quantity remaining', function () {
+test('employee can report breakdowns by affectation and quantity remaining', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Pannes']);
@@ -327,7 +327,7 @@ test('employee can report breakdowns by affectation and quantity remaining', fun
     expect(Panne::where('affectation_id', $affectation2->id)->sum('quantite'))->toBe(1);
 });
 
-test('employee can report a breakdown from string form values without crashing stock monitoring', function () {
+test('employee can report a breakdown from string form values without crashing stock monitoring', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Pannes formulaire']);
@@ -362,7 +362,7 @@ test('employee can report a breakdown from string form values without crashing s
     expect(Panne::where('affectation_id', $affectation->id)->count())->toBe(1);
 });
 
-test('partial healthy return increases available stock and keeps affectation active', function () {
+test('partial healthy return increases available stock and keeps affectation active', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -405,7 +405,7 @@ test('partial healthy return increases available stock and keeps affectation act
     expect(Bon::where('user_id', $employee->id)->where('statut', 'entrée')->exists())->toBeTrue();
 });
 
-test('returning unresolved broken quantity keeps available stock unchanged and moves panne to internal stock', function () {
+test('returning unresolved broken quantity keeps available stock unchanged and moves panne to internal stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -461,7 +461,7 @@ test('returning unresolved broken quantity keeps available stock unchanged and m
     expect($equipement->getQuantiteDisponible())->toBe(7);
 });
 
-test('admin can declare an internal breakdown from available stock', function () {
+test('admin can declare an internal breakdown from available stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
 
     $categorie = Categorie::create(['nom' => 'Pannes internes']);
@@ -494,7 +494,7 @@ test('admin can declare an internal breakdown from available stock', function ()
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(4);
 });
 
-test('admin can partially resolve an internal breakdown and restore available stock progressively', function () {
+test('admin can partially resolve an internal breakdown and restore available stock progressively', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
 
     $categorie = Categorie::create(['nom' => 'Resolution partielle']);
@@ -537,7 +537,7 @@ test('admin can partially resolve an internal breakdown and restore available st
     expect($equipement->getQuantiteDisponible())->toBe(7);
 });
 
-test('admin can resolve a breakdown still held by the employee without replacement', function () {
+test('admin can resolve a breakdown still held by the employee without replacement', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -589,7 +589,7 @@ test('admin can resolve a breakdown still held by the employee without replaceme
     expect($equipement->getQuantiteDisponible())->toBe(2);
 });
 
-test('admin can replace a broken assigned unit and create a new replacement affectation', function () {
+test('admin can replace a broken assigned unit and create a new replacement affectation', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -655,7 +655,7 @@ test('admin can replace a broken assigned unit and create a new replacement affe
     expect(Bon::where('user_id', $employee->id)->where('statut', 'sortie')->count())->toBeGreaterThan(0);
 });
 
-test('panne list shows replace action only when employee-linked breakdown has replacement stock', function () {
+test('panne list shows replace action only when employee-linked breakdown has replacement stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -701,7 +701,7 @@ test('panne list shows replace action only when employee-linked breakdown has re
     expect($panne->fresh()->getQuantiteRemplacable())->toBe(1);
 });
 
-test('panne list keeps only resolve action for internal breakdowns', function () {
+test('panne list keeps only resolve action for internal breakdowns', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
 
     $categorie = Categorie::create(['nom' => 'Affichage pannes internes']);
@@ -735,7 +735,7 @@ test('panne list keeps only resolve action for internal breakdowns', function ()
     expect($panne->fresh()->getQuantiteRemplacable())->toBe(0);
 });
 
-test('admin dashboard stats use stock quantities instead of raw row counts', function () {
+test('admin dashboard stats use stock quantities instead of raw row counts', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -809,7 +809,7 @@ test('admin dashboard stats use stock quantities instead of raw row counts', fun
     $response->assertViewHas('nbr_panne', 3);
 });
 
-test('employee dashboard stats use active assigned and unresolved quantities', function () {
+test('employee dashboard stats use active assigned and unresolved quantities', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Stats employe']);
@@ -888,7 +888,7 @@ test('employee dashboard stats use active assigned and unresolved quantities', f
     $response->assertViewHas('nbr_non_resolue', 2);
 });
 
-test('admin panne list now returns a full collection for datatables', function () {
+test('admin panne list now returns a full collection for datatables', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -938,7 +938,7 @@ test('admin panne list now returns a full collection for datatables', function (
     expect($pannes)->toHaveCount(6);
 });
 
-test('admin demande list loads pending requests without requiring a reference column on equipements', function () {
+test('admin demande list loads pending requests without requiring a reference column on equipements', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -969,7 +969,7 @@ test('admin demande list loads pending requests without requiring a reference co
     $response->assertSee('Stock disponible : 4');
 });
 
-test('non returned tools page shows future dated active affectations', function () {
+test('non returned tools page shows future dated active affectations', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -1001,7 +1001,7 @@ test('non returned tools page shows future dated active affectations', function 
     $response->assertSee('À venir');
 });
 
-test('employee demande list now returns a full collection for datatables', function () {
+test('employee demande list now returns a full collection for datatables', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     foreach (range(1, 6) as $index) {
@@ -1025,7 +1025,7 @@ test('employee demande list now returns a full collection for datatables', funct
     expect($demandes)->toHaveCount(6);
 });
 
-test('employee panne list disables fixed header on datatable to avoid duplicated table heads', function () {
+test('employee panne list disables fixed header on datatable to avoid duplicated table heads', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Vue pannes employe']);

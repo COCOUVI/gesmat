@@ -64,7 +64,7 @@ final readonly class CreateDirectAffectationAction
                 $equipement = $equipements->get($equipementId);
 
                 if (! $equipement) {
-                    throw new Exception("Équipement ID $equipementId introuvable.");
+                    throw new Exception(sprintf('Équipement ID %d introuvable.', $equipementId));
                 }
 
                 $this->ensureAvailability(
@@ -130,8 +130,10 @@ final readonly class CreateDirectAffectationAction
             $quantite = (int) ($quantites[$index] ?? 0);
             $dateRetour = $datesRetour[$index] ?? null;
             $dateRetour = $dateRetour !== null && $dateRetour !== '' ? $dateRetour : null;
-
-            if ($equipementId <= 0 || $quantite <= 0) {
+            if ($equipementId <= 0) {
+                continue;
+            }
+            if ($quantite <= 0) {
                 continue;
             }
 

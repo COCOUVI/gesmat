@@ -121,8 +121,10 @@ final readonly class CreateExternalCollaboratorBonAction
             $equipementId = (int) $equipementId;
             $dateRetour = $datesRetour[$index] ?? null;
             $dateRetour = $dateRetour !== null && $dateRetour !== '' ? $dateRetour : null;
-
-            if ($equipementId <= 0 || $quantite <= 0) {
+            if ($equipementId <= 0) {
+                continue;
+            }
+            if ($quantite <= 0) {
                 continue;
             }
 

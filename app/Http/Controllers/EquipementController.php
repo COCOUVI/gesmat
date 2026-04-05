@@ -88,8 +88,8 @@ final class EquipementController extends Controller
             ]);
 
             return redirect()->back()->with('success', 'Équipement ajouté avec succès !');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la création d'équipement : ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la création d'équipement : ".$exception->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Erreur lors de l\'ajout de l\'équipement.')
@@ -127,8 +127,8 @@ final class EquipementController extends Controller
 
             return redirect()->route('gestionnaire.tools.list')
                 ->with('success', 'Équipement modifié avec succès.');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la mise à jour d'équipement : ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la mise à jour d'équipement : ".$exception->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Erreur lors de la modification de l\'équipement.')
@@ -151,8 +151,8 @@ final class EquipementController extends Controller
             $equipement->delete();
 
             return redirect()->back()->with('success', 'Équipement supprimé avec succès.');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la suppression d'équipement : ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la suppression d'équipement : ".$exception->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Erreur lors de la suppression de l\'équipement.');

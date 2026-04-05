@@ -15,7 +15,7 @@ final class DashboardCacheService
 
     public function employeeMetricsKey(int $userId): string
     {
-        return "dashboard:employee:metrics:user:{$userId}:v1";
+        return sprintf('dashboard:employee:metrics:user:%d:v1', $userId);
     }
 
     public function forgetAdminMetrics(): void

@@ -12,8 +12,8 @@ use Illuminate\Queue\SerializesModels;
 
 final class DirectAffectationCreated implements ShouldDispatchAfterCommit
 {
-    use Dispatchable, SerializesModels;
-
+    use Dispatchable;
+    use SerializesModels;
     /**
      * @param  array<int, array{nom: string, quantite: int, date_retour: ?string}>  $affectationsDetails
      */

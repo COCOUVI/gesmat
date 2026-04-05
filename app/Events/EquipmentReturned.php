@@ -12,8 +12,8 @@ use Illuminate\Queue\SerializesModels;
 
 final class EquipmentReturned implements ShouldDispatchAfterCommit
 {
-    use Dispatchable, SerializesModels;
-
+    use Dispatchable;
+    use SerializesModels;
     public function __construct(
         public readonly Affectation $affectation,
         public readonly int $healthyReturned,

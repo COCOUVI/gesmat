@@ -8,8 +8,9 @@ use App\Models\CollaborateurExterne;
 use App\Models\Equipement;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
-it('can create an external collaborator with identity card', function () {
+it('can create an external collaborator with identity card', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $this->actingAs($admin);
 
@@ -30,7 +31,7 @@ it('can create an external collaborator with identity card', function () {
     expect($collaborateur->carte_chemin)->not->toBeNull();
 });
 
-it('can create affectation for external collaborator with sortie bon', function () {
+it('can create affectation for external collaborator with sortie bon', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $this->actingAs($admin);
 
@@ -58,6 +59,7 @@ it('can create affectation for external collaborator with sortie bon', function 
         ->first();
 
     expect($bon)->not->toBeNull();
+    $response->assertSessionHas('pdf', route('bons.download', ['bon' => $bon->id]));
     expect($bon->equipements()->count())->toBe(1);
 
     // Verify affectation created
@@ -76,7 +78,29 @@ it('can create affectation for external collaborator with sortie bon', function 
     expect($equipement->getQuantiteDisponible())->toBe(90);
 });
 
-it('can return equipment from collaborator via BackTool', function () {
+it('downloads bon through secure route', function (): void {
+    Storage::fake('public');
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->actingAs($admin);
+
+    $collaborateur = CollaborateurExterne::factory()->create();
+    $bon = Bon::create([
+        'collaborateur_externe_id' => $collaborateur->id,
+        'motif' => 'Bon de test',
+        'statut' => 'sortie',
+        'fichier_pdf' => 'bon_collaborateurs/bon_collab_test.pdf',
+    ]);
+
+    Storage::disk('public')->put($bon->fichier_pdf, 'test-pdf-content');
+
+    $response = $this->get(route('bons.download', ['bon' => $bon->id]));
+
+    $response->assertOk();
+    $response->assertDownload('bon_collab_test.pdf');
+});
+
+it('can return equipment from collaborator via BackTool', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $this->actingAs($admin);
 
@@ -94,7 +118,7 @@ it('can return equipment from collaborator via BackTool', function () {
     ]);
 
     // Return equipment via BackTool
-    $response = $this->post("/dashboard/back_tool/{$affectation->id}", [
+    $response = $this->post('/dashboard/back_tool/' . $affectation->id, [
         'quantite_saine_retournee' => 8,
         'pannes_retournees' => [],
     ]);
@@ -120,7 +144,7 @@ it('can return equipment from collaborator via BackTool', function () {
     expect($equipement->getQuantiteDisponible())->toBe(98); // 100 - 10 + 8
 });
 
-it('complete collaborator workflow creates two bons', function () {
+it('complete collaborator workflow creates two bons', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $this->actingAs($admin);
 
@@ -146,7 +170,7 @@ it('complete collaborator workflow creates two bons', function () {
     $affectation = Affectation::where('collaborateur_externe_id', $collaborateur->id)->first();
 
     // Step 2: Return equipment via BackTool (creates entrée bon)
-    $this->post("/dashboard/back_tool/{$affectation->id}", [
+    $this->post('/dashboard/back_tool/' . $affectation->id, [
         'quantite_saine_retournee' => 5,
         'pannes_retournees' => [],
     ]);
@@ -163,7 +187,7 @@ it('complete collaborator workflow creates two bons', function () {
     expect($equipement->getQuantiteDisponible())->toBe(50); // Fully returned
 });
 
-it('collaborator affectation uses correct polymorphic fields', function () {
+it('collaborator affectation uses correct polymorphic fields', function (): void {
     $collaborateur = CollaborateurExterne::factory()->create([
         'nom' => 'Martin',
         'prenom' => 'Pierre',

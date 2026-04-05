@@ -53,7 +53,7 @@
                         <td>{{ $bon->statut }}</td>
                         <td>
                             @if ($bon->fichier_pdf)
-                                <a href="{{ asset('storage/' . $bon->fichier_pdf) }}" class="btn btn-sm btn-primary"
+                                <a href="{{ route('bons.download', ['bon' => $bon->id]) }}" class="btn btn-sm btn-primary"
                                     download>
                                     Télécharger
                                 </a>

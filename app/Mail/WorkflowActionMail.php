@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Storage;
 
 final class WorkflowActionMail extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
-
+    use Queueable;
+    use SerializesModels;
     /**
      * @param  array<int, array{label: string, value: string}>  $details
      * @param  array<int, string>  $highlights

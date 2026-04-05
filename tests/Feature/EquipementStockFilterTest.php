@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Equipement;
 use App\Models\Panne;
-use App\Models\Affectation;
 use App\Models\User;
 
-test('employee demand page shows only equipements with stock', function () {
+test('employee demand page shows only equipements with stock', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Category Test']);
@@ -44,7 +44,7 @@ test('employee demand page shows only equipements with stock', function () {
     $response->assertDontSee('Equipment Without Stock');
 });
 
-test('admin affectation page shows only equipements with stock', function () {
+test('admin affectation page shows only equipements with stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
 
     $categorie = Categorie::create(['nom' => 'Category Test']);
@@ -80,7 +80,7 @@ test('admin affectation page shows only equipements with stock', function () {
     $response->assertDontSee('Equipment Without Stock');
 });
 
-test('equipement stock scope filters correctly', function () {
+test('equipement stock scope filters correctly', function (): void {
     $categorie = Categorie::create(['nom' => 'Test']);
 
     Equipement::create([
@@ -109,7 +109,7 @@ test('equipement stock scope filters correctly', function () {
     expect($equipmentsWithStock->first()->nom)->toBe('With Stock');
 });
 
-test('employee demand page uses computed available stock and hides fully reserved equipment', function () {
+test('employee demand page uses computed available stock and hides fully reserved equipment', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Category Stock Reel']);
@@ -173,7 +173,7 @@ test('employee demand page uses computed available stock and hides fully reserve
     $response->assertDontSee('Hidden Equipment');
 });
 
-test('computed available stock does not double count pannes on active affectations', function () {
+test('computed available stock does not double count pannes on active affectations', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Category No Double Count']);
@@ -211,7 +211,7 @@ test('computed available stock does not double count pannes on active affectatio
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(7);
 });
 
-test('computed available stock excludes unresolved pannes returned to internal stock', function () {
+test('computed available stock excludes unresolved pannes returned to internal stock', function (): void {
     $employee = User::factory()->create(['role' => 'employe']);
 
     $categorie = Categorie::create(['nom' => 'Category Internal Panne']);

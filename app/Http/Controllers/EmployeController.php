@@ -88,7 +88,7 @@ final class EmployeController extends Controller
     {
         // Charger les catégories avec UNIQUEMENT les équipements en stock (quantite > 0)
         $equipements_par_categorie = Categorie::with([
-            'equipements' => function ($query) {
+            'equipements' => function ($query): void {
                 $query->withStock();
             },
         ])->get();
@@ -106,8 +106,8 @@ final class EmployeController extends Controller
             $this->submitDemandeAction->handle(Auth::user(), $validated);
 
             return back()->with('success', 'Demande envoyé avec succès');
-        } catch (Throwable $e) {
-            Log::error('Erreur lors de la soumission de la demande : '.$e->getMessage());
+        } catch (Throwable $throwable) {
+            Log::error('Erreur lors de la soumission de la demande : '.$throwable->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de l’envoi de la demande.');
         }
@@ -125,7 +125,7 @@ final class EmployeController extends Controller
             ->active()
             ->with([
                 'equipement',
-                'pannes' => function ($query) {
+                'pannes' => function ($query): void {
                     $query->where('statut', '!=', 'resolu');
                 },
             ])
@@ -176,7 +176,7 @@ final class EmployeController extends Controller
         $affectations = Affectation::with([
             'equipement',
             'demande',
-            'pannes' => function ($query) {
+            'pannes' => function ($query): void {
                 $query->where('statut', '!=', 'resolu');
             },
         ])
@@ -211,10 +211,10 @@ final class EmployeController extends Controller
             Mail::to($adminEmail)->queue($mailable);
 
             return back()->with('success', 'Votre message a été envoyé à l\'administrateur.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'envoi d\'aide: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de l'envoi d'aide: ".$exception->getMessage());
 
-            return back()->with('error', 'Une erreur est survenue lors de l\'envoi du message.');
+            return back()->with('error', "Une erreur est survenue lors de l'envoi du message.");
         }
     }
 
@@ -229,8 +229,8 @@ final class EmployeController extends Controller
             $panne->delete();
 
             return back()->with('success', 'Panne supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression de panne: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur lors de la suppression de panne: '.$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -247,8 +247,8 @@ final class EmployeController extends Controller
             $affectation->delete();
 
             return back()->with('success', 'Affectation supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression d\'affectation: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la suppression d'affectation: ".$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -265,8 +265,8 @@ final class EmployeController extends Controller
             $demande->delete();
 
             return back()->with('success', 'Demande supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression de demande: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur lors de la suppression de demande: '.$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }

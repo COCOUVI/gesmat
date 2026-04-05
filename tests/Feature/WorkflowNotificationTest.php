@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
-test('employee equipment request sends confirmation to employee and notifications to admins and managers', function () {
+test('employee equipment request sends confirmation to employee and notifications to admins and managers', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
@@ -55,7 +55,7 @@ test('employee equipment request sends confirmation to employee and notification
     Mail::assertQueued(WorkflowActionMail::class, 3);
 });
 
-test('employee breakdown report sends confirmation to employee and notifications to admins and managers', function () {
+test('employee breakdown report sends confirmation to employee and notifications to admins and managers', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
@@ -105,7 +105,7 @@ test('employee breakdown report sends confirmation to employee and notifications
     Mail::assertQueued(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->envelope()->subject === 'Nouveau signalement de panne à traiter');
 });
 
-test('serving a demande sends the output slip by email only to the employee', function () {
+test('serving a demande sends the output slip by email only to the employee', function (): void {
     Storage::fake('public');
     Mail::fake();
 
@@ -148,7 +148,7 @@ test('serving a demande sends the output slip by email only to the employee', fu
     Mail::assertQueued(WorkflowActionMail::class, 1);
 });
 
-test('direct affectation sends the output slip by email only to the employee', function () {
+test('direct affectation sends the output slip by email only to the employee', function (): void {
     Storage::fake('public');
     Mail::fake();
 
@@ -186,7 +186,7 @@ test('direct affectation sends the output slip by email only to the employee', f
     Mail::assertQueued(WorkflowActionMail::class, 1);
 });
 
-test('equipment return sends the entry slip by email only to the employee', function () {
+test('equipment return sends the entry slip by email only to the employee', function (): void {
     Storage::fake('public');
     Mail::fake();
 
@@ -229,7 +229,7 @@ test('equipment return sends the entry slip by email only to the employee', func
     Mail::assertQueued(WorkflowActionMail::class, 1);
 });
 
-test('breakdown resolution notifies the employee linked to the affectation', function () {
+test('breakdown resolution notifies the employee linked to the affectation', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
@@ -284,7 +284,7 @@ test('breakdown resolution notifies the employee linked to the affectation', fun
     Mail::assertQueued(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->envelope()->subject === 'Votre signalement de panne a été mis à jour');
 });
 
-test('breakdown replacement sends the replacement slip only to the employee', function () {
+test('breakdown replacement sends the replacement slip only to the employee', function (): void {
     Storage::fake('public');
     Mail::fake();
 
@@ -340,7 +340,7 @@ test('breakdown replacement sends the replacement slip only to the employee', fu
         && count($mail->attachments()) === 1);
 });
 
-test('upcoming return reminder command notifies the employee only once per day', function () {
+test('upcoming return reminder command notifies the employee only once per day', function (): void {
     Mail::fake();
     Artisan::call('cache:clear');
 
@@ -382,7 +382,7 @@ test('upcoming return reminder command notifies the employee only once per day',
     Mail::assertQueued(WorkflowActionMail::class, fn (WorkflowActionMail $mail): bool => $mail->envelope()->subject === 'Rappel : une date de retour approche');
 });
 
-test('critical stock alert is sent to admins and managers when a direct affectation reaches the threshold', function () {
+test('critical stock alert is sent to admins and managers when a direct affectation reaches the threshold', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
@@ -425,7 +425,7 @@ test('critical stock alert is sent to admins and managers when a direct affectat
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(1);
 });
 
-test('critical stock alert is sent to admins and managers when an internal breakdown reaches the threshold', function () {
+test('critical stock alert is sent to admins and managers when an internal breakdown reaches the threshold', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
@@ -462,7 +462,7 @@ test('critical stock alert is sent to admins and managers when an internal break
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(1);
 });
 
-test('employee help request is queued to the configured administrator address', function () {
+test('employee help request is queued to the configured administrator address', function (): void {
     Mail::fake();
     config()->set('mail.from.address', 'support@example.com');
 
@@ -482,7 +482,7 @@ test('employee help request is queued to the configured administrator address', 
     Mail::assertQueued(HelpRequestMail::class, fn (HelpRequestMail $mail): bool => $mail->envelope()->subject === "Demande d'aide d'un employé");
 });
 
-test('admin user creation queues the credentials email', function () {
+test('admin user creation queues the credentials email', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([

@@ -12,8 +12,8 @@ use Illuminate\Queue\SerializesModels;
 
 final class PanneReplacementCompleted implements ShouldDispatchAfterCommit
 {
-    use Dispatchable, SerializesModels;
-
+    use Dispatchable;
+    use SerializesModels;
     public function __construct(
         public readonly Panne $panne,
         public readonly int $replacementQuantity,

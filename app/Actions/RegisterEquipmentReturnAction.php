@@ -34,7 +34,7 @@ final readonly class RegisterEquipmentReturnAction
          * } $result
          */
         $result = DB::transaction(function () use ($affectation, $validated): array {
-            $affectation->load(['equipement', 'user', 'collaborateurExterne', 'pannes' => function ($query) {
+            $affectation->load(['equipement', 'user', 'collaborateurExterne', 'pannes' => function ($query): void {
                 $query->where('statut', '!=', 'resolu');
             }]);
 

@@ -25,7 +25,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Onduleurs',
-                
+
                 'marque' => 'OPTI UPS',
                 'description' => 'Appareil de secours électrique pour les coupures de courant.',
                 'date_acquisition' => '2025-01-01',
@@ -37,7 +37,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Imprimante',
-                
+
                 'marque' => 'HP',
                 'description' => 'Imprimante standard pour les impressions bureautiques.',
                 'date_acquisition' => '2025-01-01',
@@ -49,7 +49,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Régulateur',
-                
+
                 'marque' => 'Roche',
                 'description' => 'Stabilisateur de tension pour matériel électrique.',
                 'date_acquisition' => '2025-01-01',
@@ -61,7 +61,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Roll Up',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Support d’affichage publicitaire portatif.',
                 'date_acquisition' => '2025-01-01',
@@ -73,7 +73,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Imprimante 3 en 1',
-                
+
                 'marque' => 'Olivetti',
                 'description' => 'Imprimante multifonction : impression, scan et copie.',
                 'date_acquisition' => '2025-01-01',
@@ -85,7 +85,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bureau Armoire',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Mobilier de rangement intégré au bureau.',
                 'date_acquisition' => '2025-01-01',
@@ -97,7 +97,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Relieuse',
-                
+
                 'marque' => 'Buyor',
                 'description' => 'Appareil pour relier des documents.',
                 'date_acquisition' => '2025-01-01',
@@ -109,7 +109,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Paper Cutter',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Massicot de coupe pour papiers et documents.',
                 'date_acquisition' => '2025-01-01',
@@ -121,7 +121,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Imprimante 3 en 1',
-                
+
                 'marque' => 'HP',
                 'description' => 'Imprimante multifonction HP.',
                 'date_acquisition' => '2025-01-01',
@@ -133,7 +133,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Table Bureautique/Stagiaire',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Table de travail destinée aux stagiaires ou usage bureautique.',
                 'date_acquisition' => '2025-01-01',
@@ -145,7 +145,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bureau secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Bureau utilisé par le personnel de secrétariat.',
                 'date_acquisition' => '2025-01-01',
@@ -157,7 +157,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bureau Communication',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Bureau attribué au service de communication.',
                 'date_acquisition' => '2025-01-01',
@@ -169,7 +169,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Vidéo Projecteur',
-                
+
                 'marque' => 'NEC',
                 'description' => 'Appareil de projection vidéo pour présentations.',
                 'date_acquisition' => '2025-01-01',
@@ -181,7 +181,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Range Cachets',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Support ou casier pour rangement des cachets.',
                 'date_acquisition' => '2025-01-01',
@@ -193,7 +193,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Micro Panasonic',
-                
+
                 'marque' => 'Panasonic',
                 'description' => 'Microphone de bureau pour usage professionnel.',
                 'date_acquisition' => '2025-01-01',
@@ -205,7 +205,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Ecran Bureautique/Secrétariat',
-                
+
                 'marque' => 'DELL',
                 'description' => 'Écran informatique pour travail de bureau.',
                 'date_acquisition' => '2025-01-01',
@@ -217,7 +217,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Souris/ Secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Souris informatique pour poste de secrétariat.',
                 'date_acquisition' => '2025-01-01',
@@ -229,7 +229,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier Bureautique / Secrétariat',
-                
+
                 'marque' => 'HP',
                 'description' => 'Clavier HP pour usage bureautique au secrétariat.',
                 'date_acquisition' => '2025-01-01',
@@ -241,7 +241,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Unité Centrale / Secrétariat',
-                
+
                 'marque' => 'HP',
                 'description' => 'Unité centrale HP pour bureau de secrétariat.',
                 'date_acquisition' => '2025-01-01',
@@ -253,7 +253,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Tiroir/ Secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Tiroir de rangement pour poste de secrétariat.',
                 'date_acquisition' => '2025-01-01',
@@ -265,7 +265,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Attache-Lettre/ Secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Accessoire pour maintenir ensemble des documents papier.',
                 'date_acquisition' => '2025-01-01',
@@ -277,7 +277,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Barre Décorateur',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Barre utilisée à des fins décoratives dans un bureau.',
                 'date_acquisition' => '2025-01-01',
@@ -289,7 +289,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bureau/ Secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Bureau utilisé par les secrétaires pour leurs activités quotidiennes.',
                 'date_acquisition' => '2025-01-01',
@@ -301,7 +301,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Rallonge/ Secrétariat',
-                
+
                 'marque' => 'YAKI',
                 'description' => 'Multiprise électrique pour connecter plusieurs équipements.',
                 'date_acquisition' => '2025-01-01',
@@ -313,7 +313,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Onduleur',
-                
+
                 'marque' => 'MERCURY',
                 'description' => 'Alimentation de secours pour équipements électroniques.',
                 'date_acquisition' => '2025-01-01',
@@ -325,7 +325,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Onduleur',
-                
+
                 'marque' => 'EATON',
                 'description' => 'Appareil UPS pour la protection de données en cas de coupure.',
                 'date_acquisition' => '2025-01-01',
@@ -337,7 +337,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Armoire/Caissons',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Mobilier de rangement avec tiroirs ou portes.',
                 'date_acquisition' => '2025-01-01',
@@ -349,7 +349,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Brasseurs',
-                
+
                 'marque' => 'SMC',
                 'description' => 'Équipement de gestion de câblage dans les baies réseau.',
                 'date_acquisition' => '2025-01-01',
@@ -361,7 +361,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chaises/ Secrétariat',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chaises ergonomiques destinées au personnel administratif.',
                 'date_acquisition' => '2025-01-01',
@@ -373,7 +373,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chaises/Stagiaires',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chaises standards fournies pour les stagiaires.',
                 'date_acquisition' => '2025-01-01',
@@ -385,7 +385,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Tableau Politique de Qualité',
-                
+
                 'marque' => 'inconnue',
                 'description' => "Tableau mural affichant la politique de qualité de l'entreprise.",
                 'date_acquisition' => '2025-01-01',
@@ -397,7 +397,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Appareil Photo/Vidéo',
-                
+
                 'marque' => 'Canon',
                 'description' => 'Appareil numérique pour prise de photos et vidéos.',
                 'date_acquisition' => '2025-01-01',
@@ -409,7 +409,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Répéteur',
-                
+
                 'marque' => 'WPS',
                 'description' => 'Appareil permettant d’étendre la portée du signal Wi-Fi.',
                 'date_acquisition' => '2025-01-01',
@@ -421,7 +421,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chaise à Trois places',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chaise pouvant accueillir trois personnes.',
                 'date_acquisition' => '2025-01-01',
@@ -433,7 +433,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Moulu',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Produit moulu (préciser la nature si nécessaire).',
                 'date_acquisition' => '2025-01-01',
@@ -445,7 +445,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Moulu IPS',
-                
+
                 'marque' => 'Ingelec',
                 'description' => 'Produit moulu fourni par Ingelec.',
                 'date_acquisition' => '2025-01-01',
@@ -457,7 +457,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone Fixe',
-                
+
                 'marque' => 'Panasonic',
                 'description' => 'Téléphone fixe de marque Panasonic.',
                 'date_acquisition' => '2025-01-01',
@@ -469,7 +469,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Batterie Panasonic',
-                
+
                 'marque' => 'Mercury',
                 'description' => 'Batterie Panasonic fournie par Mercury.',
                 'date_acquisition' => '2025-01-01',
@@ -481,7 +481,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'ODF',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Organisateur de fibres optiques (ODF).',
                 'date_acquisition' => '2025-01-01',
@@ -493,7 +493,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'ONT',
-                
+
                 'marque' => 'HUAWEI',
                 'description' => 'Terminal réseau optique (ONT) de marque HUAWEI.',
                 'date_acquisition' => '2025-01-01',
@@ -505,7 +505,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Etiqueteuse',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Appareil pour imprimer des étiquettes.',
                 'date_acquisition' => '2025-01-01',
@@ -517,7 +517,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'DOM',
-                
+
                 'marque' => 'HIKVISION',
                 'description' => 'Dispositif de sécurité HIKVISION.',
                 'date_acquisition' => '2025-01-01',
@@ -529,7 +529,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Souffleur',
-                
+
                 'marque' => 'WORXPLEX',
                 'description' => 'Souffleur pour le nettoyage extérieur.',
                 'date_acquisition' => '2025-01-01',
@@ -541,7 +541,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Rouleau câble Ethernet',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Rouleau de câble réseau Ethernet.',
                 'date_acquisition' => '2025-01-01',
@@ -553,7 +553,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Plots',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Plots pour travaux ou marquage.',
                 'date_acquisition' => '2025-01-01',
@@ -565,7 +565,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Scie à Métaux',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Scie pour couper le métal.',
                 'date_acquisition' => '2025-01-01',
@@ -577,7 +577,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone fixe',
-                
+
                 'marque' => 'GRANDSTREAM',
                 'description' => 'Téléphone fixe de marque GRANDSTREAM.',
                 'date_acquisition' => '2025-01-01',
@@ -589,7 +589,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier HP K-1700',
-                
+
                 'marque' => 'HP',
                 'description' => 'Clavier HP modèle K-1700.',
                 'date_acquisition' => '2025-01-01',
@@ -601,7 +601,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier SUN',
-                
+
                 'marque' => 'SUN',
                 'description' => 'Clavier de marque SUN.',
                 'date_acquisition' => '2025-01-01',
@@ -613,7 +613,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier DELL/L100',
-                
+
                 'marque' => 'DELL',
                 'description' => 'Clavier DELL modèle L100.',
                 'date_acquisition' => '2025-01-01',
@@ -625,7 +625,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Marteau Piqueur',
-                
+
                 'marque' => 'TITAN',
                 'description' => 'Marteau piqueur de marque TITAN.',
                 'date_acquisition' => '2025-01-01',
@@ -637,7 +637,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'ONT HUAWEI',
-                
+
                 'marque' => 'HUAWEI',
                 'description' => 'Terminal réseau optique HUAWEI.',
                 'date_acquisition' => '2025-01-01',
@@ -649,7 +649,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'MEDIA Converter',
-                
+
                 'marque' => 'NetPro',
                 'description' => 'Convertisseur média NetPro.',
                 'date_acquisition' => '2025-01-01',
@@ -661,7 +661,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Coupleur LC Bleue',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Coupleur LC de couleur bleue.',
                 'date_acquisition' => '2025-01-01',
@@ -673,7 +673,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Connecteur Fibre',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Connecteur pour fibre optique.',
                 'date_acquisition' => '2025-01-01',
@@ -685,7 +685,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Coupleur LC Vert',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Coupleur LC de couleur verte.',
                 'date_acquisition' => '2025-01-01',
@@ -697,7 +697,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Routeur Echolife',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Routeur Echolife pour réseau informatique.',
                 'date_acquisition' => '2025-01-01',
@@ -709,7 +709,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Fibre Transparente',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Fibre optique transparente.',
                 'date_acquisition' => '2025-01-01',
@@ -721,7 +721,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Boite de Dérivation',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Boite pour dérivation électrique ou fibre optique.',
                 'date_acquisition' => '2025-01-01',
@@ -733,7 +733,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Serrures',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Serrures diverses pour portes et meubles.',
                 'date_acquisition' => '2025-01-01',
@@ -745,7 +745,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Caméra HILOOK',
-                
+
                 'marque' => 'HILOOK',
                 'description' => 'Caméra de surveillance HILOOK.',
                 'date_acquisition' => '2025-01-01',
@@ -757,7 +757,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone fixe',
-                
+
                 'marque' => 'ALCATEL',
                 'description' => 'Téléphone fixe de marque ALCATEL.',
                 'date_acquisition' => '2025-01-01',
@@ -769,7 +769,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Sapin de NOEL',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Décoration sapin de Noël.',
                 'date_acquisition' => '2025-01-01',
@@ -781,7 +781,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Imprimante I-SENSYS',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Imprimante I-SENSYS pour bureau.',
                 'date_acquisition' => '2025-01-01',
@@ -793,7 +793,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Handboss Universal',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Outil Handboss Universal.',
                 'date_acquisition' => '2025-01-01',
@@ -805,7 +805,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Serveur OPTI UPS',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Serveur avec alimentation UPS OPTI.',
                 'date_acquisition' => '2025-01-01',
@@ -817,7 +817,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Malette d’équipement',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Malette contenant divers équipements nécessaires.',
                 'date_acquisition' => '2025-01-01',
@@ -829,7 +829,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Embase de Prise RJ45',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Embase pour prise réseau RJ45.',
                 'date_acquisition' => '2025-01-01',
@@ -841,7 +841,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Plaque Frontale',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Plaque frontale pour prise ou équipement.',
                 'date_acquisition' => '2025-01-01',
@@ -853,7 +853,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Pince Optique',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Pince pour manipulation de fibre optique.',
                 'date_acquisition' => '2025-01-01',
@@ -865,7 +865,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Testeur RJ45 RJ11',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Testeur pour câbles RJ45 et RJ11.',
                 'date_acquisition' => '2025-01-01',
@@ -877,7 +877,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Perceuse T.I.P',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Perceuse électrique T.I.P.',
                 'date_acquisition' => '2025-01-01',
@@ -889,7 +889,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Multimètre',
-                
+
                 'marque' => 'ING-CO',
                 'description' => 'Multimètre de marque ING-CO.',
                 'date_acquisition' => '2025-01-01',
@@ -901,7 +901,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câbles Ethernet Pré sertis',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câbles Ethernet déjà sertis prêts à l’emploi.',
                 'date_acquisition' => '2025-01-01',
@@ -913,7 +913,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'CUI-PH04',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Produit ou équipement CUI-PH04.',
                 'date_acquisition' => '2025-01-01',
@@ -925,7 +925,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier HP KU-0841',
-                
+
                 'marque' => 'HP',
                 'description' => 'Clavier modèle HP KU-0841.',
                 'date_acquisition' => '2025-01-01',
@@ -937,7 +937,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'BNC',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Connecteurs BNC pour câblage.',
                 'date_acquisition' => '2025-01-01',
@@ -949,7 +949,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier HP TPA-L001K Noir',
-                
+
                 'marque' => 'HP',
                 'description' => 'Clavier HP TPA-L001K couleur noire.',
                 'date_acquisition' => '2025-01-01',
@@ -961,7 +961,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Clavier HP TPA-L001K Blanc',
-                
+
                 'marque' => 'HP',
                 'description' => 'Clavier HP TPA-L001K couleur blanche.',
                 'date_acquisition' => '2025-01-01',
@@ -973,7 +973,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Unité Centrale DELL',
-                
+
                 'marque' => 'DELL',
                 'description' => 'Unité centrale de marque DELL.',
                 'date_acquisition' => '2025-01-01',
@@ -985,7 +985,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Serveur DELL',
-                
+
                 'marque' => 'DELL',
                 'description' => 'Serveur informatique de marque DELL.',
                 'date_acquisition' => '2025-01-01',
@@ -997,7 +997,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Boucle',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Boucle pour installation électrique ou réseau.',
                 'date_acquisition' => '2025-01-01',
@@ -1009,7 +1009,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Routeur CISCO',
-                
+
                 'marque' => 'CISCO',
                 'description' => 'Routeur réseau CISCO.',
                 'date_acquisition' => '2025-01-01',
@@ -1021,7 +1021,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone fixe THOSON',
-                
+
                 'marque' => 'THOSON',
                 'description' => 'Téléphone fixe de marque THOSON.',
                 'date_acquisition' => '2025-01-01',
@@ -1033,7 +1033,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Surface BOX',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Surface BOX pour installation technique.',
                 'date_acquisition' => '2025-01-01',
@@ -1045,7 +1045,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone fixe',
-                
+
                 'marque' => 'Panasonic',
                 'description' => 'Téléphone fixe Panasonic.',
                 'date_acquisition' => '2025-01-01',
@@ -1057,7 +1057,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Testeur Câbles Ethernet',
-                
+
                 'marque' => 'NOYAFA',
                 'description' => 'Testeur de câbles Ethernet de marque NOYAFA.',
                 'date_acquisition' => '2025-01-01',
@@ -1069,7 +1069,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'DVR',
-                
+
                 'marque' => 'HIKVISION',
                 'description' => 'Enregistreur vidéo numérique HIKVISION.',
                 'date_acquisition' => '2025-01-01',
@@ -1081,7 +1081,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'DVR',
-                
+
                 'marque' => 'AUSNO',
                 'description' => 'Enregistreur vidéo numérique AUSNO.',
                 'date_acquisition' => '2025-01-01',
@@ -1093,7 +1093,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Détecteur Incendie',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Détecteur d’incendie pour sécurité.',
                 'date_acquisition' => '2025-01-01',
@@ -1105,7 +1105,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Téléphone/PBX',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Système téléphonique PBX.',
                 'date_acquisition' => '2025-01-01',
@@ -1117,7 +1117,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Colle Bougie',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Colle spéciale pour bougies.',
                 'date_acquisition' => '2025-01-01',
@@ -1129,7 +1129,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Fer à Souder',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Fer à souder pour travaux électroniques.',
                 'date_acquisition' => '2025-01-01',
@@ -1141,7 +1141,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Ecrou & Boulons',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Jeu d’écrous et boulons divers.',
                 'date_acquisition' => '2025-01-01',
@@ -1153,7 +1153,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Vis & Chevilles',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Vis et chevilles pour fixation.',
                 'date_acquisition' => '2025-01-01',
@@ -1165,7 +1165,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Sacs d’emballage',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Sacs pour emballage et stockage.',
                 'date_acquisition' => '2025-01-01',
@@ -1177,7 +1177,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Boite d’Alimentation :CD 12V',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Boite d’alimentation 12V CD.',
                 'date_acquisition' => '2025-01-01',
@@ -1189,7 +1189,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'PABX TC-3000K IKE',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Système PABX TC-3000K de marque IKE.',
                 'date_acquisition' => '2025-01-01',
@@ -1201,7 +1201,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'LaserJet PH /CI115A',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Imprimante LaserJet modèle PH/CI115A.',
                 'date_acquisition' => '2025-01-01',
@@ -1213,7 +1213,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Boulons C11015',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Boulons modèle C11015.',
                 'date_acquisition' => '2025-01-01',
@@ -1225,7 +1225,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chargeurs',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chargeurs divers pour appareils électroniques.',
                 'date_acquisition' => '2025-01-01',
@@ -1237,7 +1237,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chargeurs Android',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chargeurs compatibles Android.',
                 'date_acquisition' => '2025-01-01',
@@ -1249,7 +1249,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Tie',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Serre-câbles (Tie) pour gestion des câbles.',
                 'date_acquisition' => '2025-01-01',
@@ -1261,7 +1261,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Pince à Sertir Bleue',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Pince à sertir de couleur bleue.',
                 'date_acquisition' => '2025-01-01',
@@ -1273,7 +1273,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Pince à Sertir Verte',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Pince à sertir de couleur verte.',
                 'date_acquisition' => '2025-01-01',
@@ -1285,7 +1285,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Interrupteur YAKI',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Interrupteur de marque YAKI.',
                 'date_acquisition' => '2025-01-01',
@@ -1297,7 +1297,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Routeur D-Link',
-                
+
                 'marque' => 'D-Link',
                 'description' => 'Routeur réseau de marque D-Link.',
                 'date_acquisition' => '2025-01-01',
@@ -1309,7 +1309,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Switch HIKVISION',
-                
+
                 'marque' => 'HIKVISION',
                 'description' => 'Switch réseau HIKVISION.',
                 'date_acquisition' => '2025-01-01',
@@ -1321,7 +1321,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bande de Signalisation/Délimiteur',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Bande pour signalisation et délimitation.',
                 'date_acquisition' => '2025-01-01',
@@ -1333,7 +1333,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Poulie',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Poulie pour levage ou guidage.',
                 'date_acquisition' => '2025-01-01',
@@ -1345,7 +1345,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'TvBOX MKQPR',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Boite ou produit TVBOX MKQPR.',
                 'date_acquisition' => '2025-01-01',
@@ -1357,7 +1357,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Disque Dur HDD 1TO',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Disque dur HDD de 1 To.',
                 'date_acquisition' => '2025-01-01',
@@ -1369,7 +1369,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Prolongateur HDMI RX',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Prolongateur HDMI RX pour transmission vidéo.',
                 'date_acquisition' => '2025-01-01',
@@ -1381,7 +1381,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Power Bank',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Batterie externe portable (Power Bank).',
                 'date_acquisition' => '2025-01-01',
@@ -1393,7 +1393,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Connecteurs BNC',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Connecteurs BNC pour câblage vidéo.',
                 'date_acquisition' => '2025-01-01',
@@ -1405,7 +1405,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Connecteur RJ45',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Connecteur réseau RJ45.',
                 'date_acquisition' => '2025-01-01',
@@ -1417,7 +1417,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câble Coaxial UTP',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câble coaxial UTP pour transmission de données.',
                 'date_acquisition' => '2025-01-01',
@@ -1429,7 +1429,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Fiche d’Alimentation',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Fiche d’alimentation électrique.',
                 'date_acquisition' => '2025-01-01',
@@ -1441,7 +1441,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Papier Thermal',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Papier thermique pour imprimantes.',
                 'date_acquisition' => '2025-01-01',
@@ -1453,7 +1453,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câble BNC',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câble avec connecteur BNC.',
                 'date_acquisition' => '2025-01-01',
@@ -1465,7 +1465,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Disque Dur SATA 1TO',
-                
+
                 'marque' => 'TOSHIBA',
                 'description' => 'Disque dur SATA 1 To de marque TOSHIBA.',
                 'date_acquisition' => '2025-01-01',
@@ -1477,7 +1477,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Disque Dur SAS 2 TO',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Disque dur SAS de 2 To.',
                 'date_acquisition' => '2025-01-01',
@@ -1489,7 +1489,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Disque Dur Pipeline HD 2 TO',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Disque dur Pipeline HD de 2 To.',
                 'date_acquisition' => '2025-01-01',
@@ -1501,7 +1501,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Caméra EncroVision',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Caméra de marque EncroVision.',
                 'date_acquisition' => '2025-01-01',
@@ -1513,7 +1513,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Connect Assessories',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Accessoires divers de connexion.',
                 'date_acquisition' => '2025-01-01',
@@ -1525,7 +1525,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câble 350.024.373',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câble référence 350.024.373',
                 'date_acquisition' => '2025-01-01',
@@ -1537,7 +1537,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câble 350.024.336',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câble référence 350.024.336',
                 'date_acquisition' => '2025-01-01',
@@ -1549,7 +1549,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Câble (CLIP)',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Câble type CLIP',
                 'date_acquisition' => '2025-01-01',
@@ -1561,7 +1561,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Armement',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Equipement armement',
                 'date_acquisition' => '2025-01-01',
@@ -1573,7 +1573,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Chaise1 DT',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Chaise pour DT',
                 'date_acquisition' => '2025-01-01',
@@ -1585,7 +1585,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Traverses',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Traverses diverses',
                 'date_acquisition' => '2025-01-01',
@@ -1597,7 +1597,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Trépied/Stabilisateur YF-3388',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Trépied/Stabilisateur modèle YF-3388',
                 'date_acquisition' => '2025-01-01',
@@ -1609,7 +1609,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Climatiseur',
-                
+
                 'marque' => 'Hisense',
                 'description' => 'Climatiseur de marque Hisense',
                 'date_acquisition' => '2025-01-01',
@@ -1621,7 +1621,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Bureau DT',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Bureau pour DT',
                 'date_acquisition' => '2025-01-01',
@@ -1633,7 +1633,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Rallonge',
-                
+
                 'marque' => 'Ingelec',
                 'description' => 'Rallonge électrique de marque Ingelec',
                 'date_acquisition' => '2025-01-01',
@@ -1645,7 +1645,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Caisson/Armoire/DT',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Caisson ou armoire pour DT',
                 'date_acquisition' => '2025-01-01',
@@ -1657,7 +1657,7 @@ final class EquipementSeeder extends Seeder
             ],
             [
                 'nom' => 'Échelle rouge',
-                
+
                 'marque' => 'inconnue',
                 'description' => 'Échelle en aluminium ou métal peint en rouge, utilisée pour les accès en hauteur',
                 'date_acquisition' => '2025-01-01',

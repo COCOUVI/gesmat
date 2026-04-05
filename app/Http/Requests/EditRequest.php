@@ -50,7 +50,7 @@ final class EditRequest extends FormRequest
             'prenom.required' => 'Le prénom est obligatoire',
             'nom.required' => 'Le nom est obligatoire',
             // 'password.required' => 'Le mot de passe est obligatoire',
-            'email.required' => 'L\'email est obligatoire',
+            'email.required' => "L'email est obligatoire",
             'email.email' => 'L\'email doit être une adresse valide',
             'email.unique' => 'Cet email est déjà utilisé',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères',

@@ -7,7 +7,7 @@ use App\Models\Categorie;
 use App\Models\Equipement;
 use App\Models\User;
 
-test('debug affectation process', function () {
+test('debug affectation process', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 

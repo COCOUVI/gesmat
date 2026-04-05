@@ -10,7 +10,7 @@ use App\Models\Panne;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
-test('admin dashboard returns aggregated metrics from optimized queries', function () {
+test('admin dashboard returns aggregated metrics from optimized queries', function (): void {
     Cache::flush();
 
     $admin = User::factory()->create(['role' => 'admin']);
@@ -54,7 +54,7 @@ test('admin dashboard returns aggregated metrics from optimized queries', functi
     $response->assertViewHas('nbr_panne', 2);
 });
 
-test('employee dashboard returns cached aggregated personal metrics', function () {
+test('employee dashboard returns cached aggregated personal metrics', function (): void {
     Cache::flush();
 
     $employee = User::factory()->create(['role' => 'employe']);
@@ -112,7 +112,7 @@ test('employee dashboard returns cached aggregated personal metrics', function (
     $response->assertViewHas('nbr_non_resolue', 1);
 });
 
-test('admin layout uses an internal scroll shell for content', function () {
+test('admin layout uses an internal scroll shell for content', function (): void {
     Cache::flush();
 
     $admin = User::factory()->create(['role' => 'admin']);
