@@ -44,7 +44,7 @@
                 <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
                     <a class="navbar-brand d-flex align-items-center" href="index.html">
                         <i class="fas fa-tools me-2" style="color: var(--primary);"></i>
-                        <span class="logo-text  d-sm-inline">J-Tools</span>
+                        <span class="logo-text  d-sm-inline">J-MAT</span>
                     </a>
                 </div>
 

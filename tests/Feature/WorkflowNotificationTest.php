@@ -530,6 +530,6 @@ test('credentials mail renders the company logo image', function (): void {
 
     $html = $mail->render();
 
-    expect($html)->toContain('alt="J-Tools Logo"');
+    expect($html)->toContain('alt="J-MAT Logo"');
     expect($html)->toContain('<img src="');
 });

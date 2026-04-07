@@ -141,10 +141,10 @@ final class AdminController extends Controller
 
     public function addTool(\App\Http\Requests\StoreToolRequest $request)
     {
-        $validated = $request->validated();
+        $actionData = $request->getActionData();
         $result = $this->createEquipementAction->handle(
             Auth::user(),
-            $validated,
+            $actionData,
             $request->file('image_path')
         );
         $equipement = $result['equipement'];

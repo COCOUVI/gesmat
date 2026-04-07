@@ -165,6 +165,41 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all anonymous checkboxes in replenishment modals
+            document.querySelectorAll('.is-anonymous-check').forEach(checkbox => {
+                const equipId = checkbox.id.replace('isAnonymous', '');
+                const selectGroup = document.getElementById('selectGroup' + equipId);
+                const manualGroup = document.getElementById('manualGroup' + equipId);
+                const deposantSelect = document.getElementById('deposantSelect' + equipId);
+
+                function updateDisplay() {
+                    if (checkbox.checked) {
+                        selectGroup.style.display = 'none';
+                        manualGroup.classList.remove('d-none');
+                        deposantSelect.value = '';
+                        deposantSelect.name = '';
+                    } else {
+                        selectGroup.style.display = 'block';
+                        manualGroup.classList.add('d-none');
+                        deposantSelect.name = 'deposant_id';
+                        const nomInput = manualGroup.querySelector('input[name="deposant_anonymous_nom"]');
+                        const prenomInput = manualGroup.querySelector('input[name="deposant_anonymous_prenom"]');
+                        if (nomInput) nomInput.value = '';
+                        if (prenomInput) prenomInput.value = '';
+                    }
+                }
+
+                checkbox.addEventListener('change', updateDisplay);
+                updateDisplay(); // Initialize on page load
+            });
+        });
+    </script>
+@endpush
+@endsection
 @push('popups')
     {{-- Modales de réapprovisionnement pour chaque équipement --}}
     @forelse ($equipements as $equip)
@@ -210,47 +245,63 @@
 
                             {{-- Qui dépose le matériel --}}
                             <div class="mb-3">
-                                <label for="deposantSelect{{ $equip->id }}" class="form-label">
+                                <label class="form-label">
                                     Qui dépose le matériel ? (Optionnel)
                                 </label>
-                                <select name="deposant_id" id="deposantSelect{{ $equip->id }}" 
-                                        class="form-select @error('deposant_id') is-invalid @enderror">
-                                    <option value="">-- Réapprovisionnement anonyme --</option>
-                                    <optgroup label="Employés">
-                                        @forelse ($employes as $emp)
-                                            <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
-                                                {{ $emp->nom }} {{ $emp->prenom }}
-                                            </option>
-                                        @empty
-                                        @endforelse
-                                    </optgroup>
-                                    <optgroup label="Collaborateurs externes">
-                                        @forelse ($collaborateurs as $collab)
-                                            <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
-                                                {{ $collab->nom }}
-                                            </option>
-                                        @empty
-                                        @endforelse
-                                    </optgroup>
-                                </select>
-                                @error('deposant_id')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
+                                <div class="form-check mb-2">
+                                    <input type="hidden" name="is_anonymous" value="0">
+                                    <input type="checkbox" class="form-check-input is-anonymous-check" name="is_anonymous" value="1" id="isAnonymous{{ $equip->id }}">
+                                    <label class="form-check-label" for="isAnonymous{{ $equip->id }}">
+                                        <small>Anonyme - Remplir manuellement</small>
+                                    </label>
+                                </div>
+
+                                {{-- Mode: Sélection (par défaut) --}}
+                                <div class="deposant-select-group" id="selectGroup{{ $equip->id }}">
+                                    <select name="deposant_id" class="form-select deposant-select @error('deposant_id') is-invalid @enderror"
+                                            id="deposantSelect{{ $equip->id }}">
+                                        <option value="">-- Choisir une personne --</option>
+                                        <optgroup label="Employés">
+                                            @forelse ($employes as $emp)
+                                                <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
+                                                    {{ $emp->nom }} {{ $emp->prenom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                        <optgroup label="Collaborateurs externes">
+                                            @forelse ($collaborateurs as $collab)
+                                                <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
+                                                    {{ $collab->nom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                    </select>
+                                    @error('deposant_id')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Mode: Entrée manuelle (anonyme) --}}
+                                <div class="deposant-manual-group d-none" id="manualGroup{{ $equip->id }}">
+                                    <input type="text" name="deposant_anonymous_nom" placeholder="Nom" 
+                                           class="form-control mb-2 @error('deposant_anonymous_nom') is-invalid @enderror"
+                                           value="{{ old('deposant_anonymous_nom') }}">
+                                    <input type="text" name="deposant_anonymous_prenom" placeholder="Prénom" 
+                                           class="form-control @error('deposant_anonymous_prenom') is-invalid @enderror"
+                                           value="{{ old('deposant_anonymous_prenom') }}">
+                                    @error('deposant_anonymous_nom')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                    @error('deposant_anonymous_prenom')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             {{-- Ou renseigner le nom --}}
-                            <div class="mb-3">
-                                <label for="deposantNomLibre{{ $equip->id }}" class="form-label">
-                                    Ou renseigner un nom
-                                </label>
-                                <input type="text" name="deposant_nom_libre" id="deposantNomLibre{{ $equip->id }}" 
-                                       class="form-control @error('deposant_nom_libre') is-invalid @enderror"
-                                       placeholder="Fournisseur, personne externe..." value="{{ old('deposant_nom_libre') }}">
-                                <small class="text-muted">À remplir si la personne n'est pas dans la liste</small>
-                                @error('deposant_nom_libre')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            {{-- REMOVED: Functionality moved to anonymous mode toggle --}}
                         </div>
 
                         <div class="modal-footer">

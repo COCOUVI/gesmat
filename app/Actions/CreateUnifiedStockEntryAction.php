@@ -80,7 +80,10 @@ final readonly class CreateUnifiedStockEntryAction
      *     description: string,
      *     reference?: string,
      *     quantite: int|string,
-     *     date_acquisition?: string
+     *     date_acquisition?: string,
+     *     interlocuteur_type?: string,
+     *     interlocuteur_id?: int|null,
+     *     interlocuteur_nom_libre?: string|null
      * }  $validated
      */
     private function handleNewEquipment(User $actor, array $validated, int $quantite): array
@@ -101,17 +104,19 @@ final readonly class CreateUnifiedStockEntryAction
         ]);
 
         // Génère le bon d'entrée
-        $source = $validated['source'] ?? 'Fournisseur externe';
         $pdfName = 'bon_entree_nouvel_equipement_'.$equipement->id.'_'.now()->timestamp.'.pdf';
         $pdfPath = 'bon_entree/'.$pdfName;
 
-        $bon = Bon::create([
+        $bonData = [
             'motif' => sprintf('Ajout de nouvel équipement : %s (%s), quantité : %d', $equipement->nom, $equipement->marque, $quantite),
             'statut' => 'entrée',
             'fichier_pdf' => $pdfPath,
-            'interlocuteur_type' => 'libre',
-            'interlocuteur_nom_libre' => $source,
-        ]);
+            'interlocuteur_type' => $validated['interlocuteur_type'] ?? 'libre',
+            'interlocuteur_id' => $validated['interlocuteur_id'] ?? null,
+            'interlocuteur_nom_libre' => $validated['interlocuteur_nom_libre'] ?? null,
+        ];
+
+        $bon = Bon::create($bonData);
 
         $bon->equipements()->attach($equipement->id, ['quantite' => $quantite]);
 
@@ -121,6 +126,12 @@ final readonly class CreateUnifiedStockEntryAction
             'bon' => $bon,
             'pdf_path' => $pdfPath,
             'quantite_added' => $quantite,
+            'equipements_details' => [
+                [
+                    'nom' => $equipement->nom,
+                    'quantite' => $quantite,
+                ],
+            ],
         ];
     }
 
@@ -128,7 +139,10 @@ final readonly class CreateUnifiedStockEntryAction
      * @param  array{
      *     source?: string,
      *     equipement_id: int|string,
-     *     quantite: int|string
+     *     quantite: int|string,
+     *     interlocuteur_type?: string,
+     *     interlocuteur_id?: int|null,
+     *     interlocuteur_nom_libre?: string|null
      * }  $validated
      */
     private function handleReplenishment(User $actor, array $validated, int $quantite): array
@@ -143,17 +157,19 @@ final readonly class CreateUnifiedStockEntryAction
         ]);
 
         // Génère le bon d'entrée
-        $source = $validated['source'] ?? 'Réapprovisionnement interne';
         $pdfName = 'bon_entree_reappro_'.$equipement->id.'_'.now()->timestamp.'.pdf';
         $pdfPath = 'bon_entree/'.$pdfName;
 
-        $bon = Bon::create([
+        $bonData = [
             'motif' => sprintf('Réapprovisionnement : %s, quantité ajoutée : %d', $equipement->nom, $quantite),
             'statut' => 'entrée',
             'fichier_pdf' => $pdfPath,
-            'interlocuteur_type' => 'libre',
-            'interlocuteur_nom_libre' => $source,
-        ]);
+            'interlocuteur_type' => $validated['interlocuteur_type'] ?? 'libre',
+            'interlocuteur_id' => $validated['interlocuteur_id'] ?? null,
+            'interlocuteur_nom_libre' => $validated['interlocuteur_nom_libre'] ?? null,
+        ];
+
+        $bon = Bon::create($bonData);
 
         $bon->equipements()->attach($equipement->id, ['quantite' => $quantite]);
 
@@ -163,6 +179,12 @@ final readonly class CreateUnifiedStockEntryAction
             'bon' => $bon,
             'pdf_path' => $pdfPath,
             'quantite_added' => $quantite,
+            'equipements_details' => [
+                [
+                    'nom' => $equipement->nom,
+                    'quantite' => $quantite,
+                ],
+            ],
         ];
     }
 }

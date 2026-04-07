@@ -8,7 +8,7 @@
     <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px;">
         <div style="text-align: center;">
             <img src="https://ton-site.com/logo.png" alt="TOOLZY" style="height: 60px; margin-bottom: 20px;">
-            <h2 style="color: #1e293b;">Bienvenue sur J-Tools</h2>
+            <h2 style="color: #1e293b;">Bienvenue sur J-MAT</h2>
         </div>
 
         <p style="font-size: 16px; color: #333;">
@@ -26,7 +26,7 @@
         </p>
 
         <p style="font-size: 14px; color: #999;">
-            — L’équipe J-Tools
+            — L'équipe J-MAT
         </p>
     </div>
 </body>

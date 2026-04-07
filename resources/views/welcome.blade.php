@@ -8,7 +8,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-5 mb-lg-0">
                     <h1 class="display-4 fw-bold mb-4">Optimisez votre parc <br>matériel avec <span
-                            class="text-warning">J-Tools</span></h1>
+                            class="text-warning">J-MAT</span></h1>
                     <p class="lead mb-5">La solution complète pour une gestion efficace et traçable de votre inventaire
                         professionnel</p>
                     <div class="d-flex flex-wrap gap-3">
@@ -61,7 +61,7 @@
         <div class="container">
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-8 text-center">
-                    <h2 class="fw-bold mb-3">Pourquoi choisir J-Tools ?</h2>
+                    <h2 class="fw-bold mb-3">Pourquoi choisir J-MAT ?</h2>
                     <p class="text-muted">Découvrez les avantages de notre solution pour votre entreprise</p>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             <div class="row justify-content-center mb-6">
                 <div class="col-lg-8 text-center">
                     <h2 class="fw-bold mb-3">Fonctionnalités Clés</h2>
-                    <p class="text-muted">Découvrez comment J-Tools optimise votre gestion de matériel</p>
+                    <p class="text-muted">Découvrez comment J-MAT optimise votre gestion de matériel</p>
                 </div>
             </div>
 

@@ -1,7 +1,7 @@
 <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
         <a class="navbar-brand brand-logo" href="index.html">
-            <span class="toolzy-logo"><i class="fas fa-tools text-primary"></i>JASPETools</span>
+            <span class="toolzy-logo"><i class="fas fa-tools text-primary"></i>J-MAT</span>
         </a>
         <a class="navbar-brand brand-logo-mini" href="index.html">
             <i class="fas fa-tools text-primary"></i>

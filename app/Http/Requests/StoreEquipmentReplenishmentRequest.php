@@ -18,8 +18,10 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
         return [
             'equipement_id' => ['required', 'exists:equipements,id'],
             'quantite' => ['required', 'integer', 'min:1'],
+            'is_anonymous' => ['sometimes', 'in:0,1'],
             'deposant_id' => ['nullable', 'string'],
-            'deposant_nom_libre' => ['nullable', 'string', 'max:500'],
+            'deposant_anonymous_nom' => ['nullable', 'string', 'max:100'],
+            'deposant_anonymous_prenom' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -39,10 +41,18 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
      */
     public function getDeposantName(): ?string
     {
-        if ($this->input('deposant_nom_libre')) {
-            return $this->input('deposant_nom_libre');
+        // If anonymous mode, combine nom and prenom
+        $anonymousNom = $this->input('deposant_anonymous_nom');
+        $anonymousPrenom = $this->input('deposant_anonymous_prenom');
+
+        if ($anonymousNom || $anonymousPrenom) {
+            $nom = $anonymousNom ?? '';
+            $prenom = $anonymousPrenom ?? '';
+
+            return mb_trim("{$nom} {$prenom}") ?: null;
         }
 
+        // If deposant_id is set, resolve it
         $deposantId = $this->input('deposant_id');
         if (! $deposantId) {
             return null;
@@ -76,18 +86,24 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
         $interlocuteurId = null;
         $interlocuteurNomLibre = null;
 
-        if ($data['deposant_id']) {
-            if (str_starts_with($data['deposant_id'], 'user_')) {
-                $interlocuteurType = 'user';
-                $interlocuteurId = (int) str_replace('user_', '', $data['deposant_id']);
-            } elseif (str_starts_with($data['deposant_id'], 'collab_')) {
-                $interlocuteurType = 'collaborateur_externe';
-                $interlocuteurId = (int) str_replace('collab_', '', $data['deposant_id']);
+        // Handle deposant data
+        $isAnonymous = (int) ($data['is_anonymous'] ?? 0);
+        if ($isAnonymous) {
+            // Anonymous mode: combine nom and prenom
+            $nom = $data['deposant_anonymous_nom'] ?? '';
+            $prenom = $data['deposant_anonymous_prenom'] ?? '';
+            $interlocuteurNomLibre = mb_trim("{$nom} {$prenom}");
+        } else {
+            // Selected mode
+            if ($data['deposant_id'] ?? null) {
+                if (str_starts_with($data['deposant_id'], 'user_')) {
+                    $interlocuteurType = 'user';
+                    $interlocuteurId = (int) str_replace('user_', '', $data['deposant_id']);
+                } elseif (str_starts_with($data['deposant_id'], 'collab_')) {
+                    $interlocuteurType = 'collaborateur_externe';
+                    $interlocuteurId = (int) str_replace('collab_', '', $data['deposant_id']);
+                }
             }
-        }
-
-        if ($data['deposant_nom_libre']) {
-            $interlocuteurNomLibre = $data['deposant_nom_libre'];
         }
 
         return [
@@ -103,9 +119,20 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
     protected function after()
     {
         return function ($validator) {
-            if (empty($this->input('deposant_id')) && empty($this->input('deposant_nom_libre'))) {
-                // Both are optional - that's fine
-                return;
+            $isAnonymous = (int) ($this->input('is_anonymous') ?? 0);
+            $deposantId = $this->input('deposant_id');
+            $anonymousNom = $this->input('deposant_anonymous_nom');
+            $anonymousPrenom = $this->input('deposant_anonymous_prenom');
+
+            // If anonymous is checked, at least one of nom or prenom should be filled
+            if ($isAnonymous && ! $anonymousNom && ! $anonymousPrenom) {
+                $validator->errors()->add('deposant_anonymous_nom', 'Veuillez remplir au moins le nom ou le prénom de l\'anonyme.');
+            }
+
+            // If anonymous is not checked but a deposant is selected via select, it should not have anon values
+            if (! $isAnonymous && ($anonymousNom || $anonymousPrenom)) {
+                // This shouldn't happen with JS, but validate anyway
+                $validator->errors()->add('deposant_id', 'Sélectionnez un mode: soit anonyme, soit une personne de la liste.');
             }
         };
     }

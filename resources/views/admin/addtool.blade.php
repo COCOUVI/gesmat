@@ -124,10 +124,23 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
+                                {{-- Checkbox Anonyme --}}
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input type="hidden" name="is_anonymous" value="0">
+                                        <input type="checkbox" class="form-check-input" name="is_anonymous" id="isAnonymous" value="1"
+                                            @checked((old('is_anonymous') === '1' || old('is_anonymous') === 1))>
+                                        <label class="form-check-label" for="isAnonymous">
+                                            <strong>Anonyme - Remplir manuellement le nom et prénom</strong>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {{-- Mode: Sélection (par défaut) --}}
+                                <div class="col-md-6" id="deposantSelectSection" style="display: block;">
                                     <label for="deposantSelect" class="form-label">Sélectionner un déposant</label>
                                     <select class="form-select" name="deposant_id" id="deposantSelect">
-                                        <option value="">-- Aucun (libre/anonyme) --</option>
+                                        <option value="">-- Choisir une personne --</option>
                                         <optgroup label="Employés">
                                             @forelse ($employes as $emp)
                                                 <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
@@ -150,14 +163,26 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label for="deposantNomLibre" class="form-label">Ou renseigner le nom</label>
-                                    <input type="text" class="form-control" name="deposant_nom_libre" id="deposantNomLibre"
-                                        placeholder="Ex: Fournisseur XYZ, Jean Dupont..." value="{{ old('deposant_nom_libre') }}">
-                                    <small class="text-muted">À remplir si la personne n'est pas dans la liste</small>
-                                    @error('deposant_nom_libre')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
+                                {{-- Mode: Entrée manuelle (anonyme) --}}
+                                <div class="col-md-6" id="deposantManualSection" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label for="deposantNom" class="form-label">Nom de l'anonyme</label>
+                                            <input type="text" class="form-control" name="deposant_anonymous_nom" id="deposantNom"
+                                                placeholder="Ex: Dupont" value="{{ old('deposant_anonymous_nom') }}">
+                                            @error('deposant_anonymous_nom')
+                                                <div class="text-danger small">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="deposantPrenom" class="form-label">Prénom de l'anonyme</label>
+                                            <input type="text" class="form-control" name="deposant_anonymous_prenom" id="deposantPrenom"
+                                                placeholder="Ex: Jean" value="{{ old('deposant_anonymous_prenom') }}">
+                                            @error('deposant_anonymous_prenom')
+                                                <div class="text-danger small">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -180,6 +205,33 @@
 @endsection
 {{-- telechargement automatique du pdf--}}
 @push('scripts')
+    <script>
+        // Toggle between select and manual entry for deposant
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAnonymousCheckbox = document.getElementById('isAnonymous');
+            const deposantSelectSection = document.getElementById('deposantSelectSection');
+            const deposantManualSection = document.getElementById('deposantManualSection');
+            const deposantSelect = document.getElementById('deposantSelect');
+
+            function updateDeposantDisplay() {
+                if (isAnonymousCheckbox.checked) {
+                    deposantSelectSection.style.display = 'none';
+                    deposantManualSection.style.display = 'block';
+                    deposantSelect.value = '';
+                    deposantSelect.name = '';
+                } else {
+                    deposantSelectSection.style.display = 'block';
+                    deposantManualSection.style.display = 'none';
+                    deposantSelect.name = 'deposant_id';
+                    document.getElementById('deposantNom').value = '';
+                    document.getElementById('deposantPrenom').value = '';
+                }
+            }
+
+            isAnonymousCheckbox.addEventListener('change', updateDeposantDisplay);
+            updateDeposantDisplay();
+        });
+    </script>
     @if (session('pdf'))
         <script>
             window.onload = function() {

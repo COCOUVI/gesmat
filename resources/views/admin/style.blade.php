@@ -303,7 +303,7 @@
     .profile-initials {
         width: 40px;
         height: 40px;
-        border-radius: 8px;
+        border-radius: 50%;
         background: linear-gradient(to right, var(--toolzy-primary), var(--toolzy-secondary));
         color: white;
         display: flex;

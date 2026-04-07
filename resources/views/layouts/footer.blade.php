@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-lg-4 mb-4 mb-lg-0">
                 <h5 class="mb-4 text-white">
-                    <i class="fas fa-tools me-2"></i>J-Tools
+                    <i class="fas fa-tools me-2"></i>J-MAT
                 </h5>
                 <p class="mb-4">
                     Solution de gestion de matériel pour Jaspe Technologie<br>
@@ -39,7 +39,7 @@
                     </li>
                     <li>
                         <i class="fas fa-envelope me-2 text-primary"></i>
-                        <span class="text-white-50">support@J-Tools.bj</span>
+                        <span class="text-white-50">support@J-MAT.bj</span>
                     </li>
                 </ul>
             </div>
@@ -48,7 +48,7 @@
         <hr class="my-5 bg-light">
 
         <div class="text-center text-white-50">
-            <p class="mb-0">&copy; 2025 J-Tools - Jaspe Technologie. Tous droits réservés.</p>
+            <p class="mb-0">&copy; 2025 J-MAT - Jaspe Technologie. Tous droits réservés.</p>
         </div>
     </div>
 </footer>
