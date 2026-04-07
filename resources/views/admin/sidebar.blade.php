@@ -96,7 +96,7 @@
                     <li class="nav-item {{ request()->routeIs('tools.lost') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('tools.lost') }}">
                             <i class="mdi mdi-emoticon-sad-outline"></i>
-                            Retours planifiés
+                            Équipements non retournés
                         </a>
                     </li>
                 </ul>

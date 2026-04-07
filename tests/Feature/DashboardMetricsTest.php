@@ -136,6 +136,6 @@ test('admin sidebar groups links under clearer stock and movement menus', functi
     $response->assertOk();
     $response->assertSee('Stock & inventaire', false);
     $response->assertSee('Mouvements');
-    $response->assertSee('Retours planifiés');
+    $response->assertSee('Équipements non retournés');
     $response->assertSee('Mouvement collaborateur externe');
 });

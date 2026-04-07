@@ -169,7 +169,7 @@ final class AdminController extends Controller
     public function ShowToolpage()
     {
         $equipements = Equipement::query()
-            ->select(['id', 'nom', 'description', 'categorie_id', 'quantite', 'image_path'])
+            ->select(['id', 'nom', 'marque', 'description', 'categorie_id', 'quantite', 'image_path'])
             ->with([
                 'categorie:id,nom',
                 'affectations:id,equipement_id,user_id,collaborateur_externe_id,quantite_affectee,quantite_retournee,statut',

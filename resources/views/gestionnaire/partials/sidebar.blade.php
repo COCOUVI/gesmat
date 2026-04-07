@@ -66,7 +66,7 @@
                     <li class="nav-item {{ request()->routeIs('gestionnaire.equipements.perdus') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('gestionnaire.equipements.perdus') }}">
                             <i class="mdi mdi-emoticon-sad-outline"></i>
-                            Retours planifiés
+                            Équipements non retournés
                         </a>
                     </li>
                 </ul>
