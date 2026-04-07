@@ -24,6 +24,8 @@ final class StoreToolRequest extends FormRequest
             'image_path' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'quantite' => ['required', 'integer', 'min:1'],
             'seuil_critique' => ['required', 'integer', 'min:0'],
+            'deposant_id' => ['nullable', 'string'],
+            'deposant_nom_libre' => ['nullable', 'string', 'max:500'],
         ];
     }
 

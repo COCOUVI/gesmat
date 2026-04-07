@@ -115,6 +115,50 @@
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                {{-- Section : Qui dépose cet équipement --}}
+                                <div class="col-12 mt-4">
+                                    <div class="border-top pt-4">
+                                        <h6 class="mb-3"><i class="mdi mdi-account-check me-2"></i>Qui dépose cet équipement ? (Optionnel)</h6>
+                                        <p class="text-muted small">Renseignez la provenance du matériel pour traçabilité</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="deposantSelect" class="form-label">Sélectionner un déposant</label>
+                                    <select class="form-select" name="deposant_id" id="deposantSelect">
+                                        <option value="">-- Aucun (libre/anonyme) --</option>
+                                        <optgroup label="Employés">
+                                            @forelse ($employes as $emp)
+                                                <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
+                                                    {{ $emp->nom }} {{ $emp->prenom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                        <optgroup label="Collaborateurs externes">
+                                            @forelse ($collaborateurs as $collab)
+                                                <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
+                                                    {{ $collab->nom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                    </select>
+                                    @error('deposant_id')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="deposantNomLibre" class="form-label">Ou renseigner le nom</label>
+                                    <input type="text" class="form-control" name="deposant_nom_libre" id="deposantNomLibre"
+                                        placeholder="Ex: Fournisseur XYZ, Jean Dupont..." value="{{ old('deposant_nom_libre') }}">
+                                    <small class="text-muted">À remplir si la personne n'est pas dans la liste</small>
+                                    @error('deposant_nom_libre')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="row mt-4">

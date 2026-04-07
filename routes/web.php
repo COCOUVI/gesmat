@@ -93,6 +93,8 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('page.affectation');
     Route::post('/afectation-post', [AdminController::class, 'HandleAffectation'])
         ->name('handle.affectation');
+    Route::post('/replenish-equipment', [AdminController::class, 'ReplenishEquipment'])
+        ->name('replenish.equipment');
     Route::get('/listes_affectations', [AdminController::class, 'Showlistaffectation'])
         ->name('page.listeAffectations');
     Route::get('/equipement-pannes', [AdminController::class, 'Showpannes'])

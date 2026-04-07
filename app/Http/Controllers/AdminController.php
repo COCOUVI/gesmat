@@ -9,6 +9,8 @@ use App\Actions\CreateDirectAffectationAction;
 use App\Actions\CreateEquipementAction;
 use App\Actions\CreateExternalCollaboratorAction;
 use App\Actions\CreateExternalCollaboratorBonAction;
+use App\Actions\CreateUnifiedAffectationAction;
+use App\Actions\CreateUnifiedStockEntryAction;
 use App\Actions\RegisterEquipmentReturnAction;
 use App\Actions\ReplacePanneEquipmentAction;
 use App\Actions\ResolvePanneAction;
@@ -24,8 +26,9 @@ use App\Http\Requests\RegisterEquipmentReturnRequest;
 use App\Http\Requests\ReplacePanneEquipmentRequest;
 use App\Http\Requests\ResolvePanneRequest;
 use App\Http\Requests\ServeDemandeRequest;
-use App\Http\Requests\StoreDirectAffectationRequest;
+use App\Http\Requests\StoreEquipmentReplenishmentRequest;
 use App\Http\Requests\StoreInternalPanneRequest;
+use App\Http\Requests\StoreUnifiedAffectationRequest;
 use App\Http\Requests\UpdateEquipementRequest;
 use App\Models\Affectation;
 use App\Models\Bon;
@@ -61,6 +64,8 @@ final class AdminController extends Controller
     public function __construct(
         private readonly ServeDemandeAction $serveDemandeAction,
         private readonly CreateDirectAffectationAction $createDirectAffectationAction,
+        private readonly CreateUnifiedAffectationAction $createUnifiedAffectationAction,
+        private readonly CreateUnifiedStockEntryAction $createUnifiedStockEntryAction,
         private readonly CreateEquipementAction $createEquipementAction,
         private readonly CreateExternalCollaboratorAction $createExternalCollaboratorAction,
         private readonly StoreInternalPanneAction $storeInternalPanneAction,
@@ -124,8 +129,14 @@ final class AdminController extends Controller
     public function addToolpage()
     {
         $categories = Categorie::toBase()->get();
+        $employes = User::whereIn('role', ['employe', 'employé', 'employée'])->get();
+        $collaborateurs = CollaborateurExterne::all();
 
-        return view('admin.addtool', ['categories' => $categories]);
+        return view('admin.addtool', [
+            'categories' => $categories,
+            'employes' => $employes,
+            'collaborateurs' => $collaborateurs,
+        ]);
     }
 
     public function addTool(\App\Http\Requests\StoreToolRequest $request)
@@ -167,7 +178,14 @@ final class AdminController extends Controller
             ])
             ->get();
 
-        return view('admin.listtools', ['equipements' => $equipements]);
+        $employes = User::whereIn('role', ['employe', 'employé', 'employée'])->get();
+        $collaborateurs = CollaborateurExterne::all();
+
+        return view('admin.listtools', [
+            'equipements' => $equipements,
+            'employes' => $employes,
+            'collaborateurs' => $collaborateurs,
+        ]);
     }
 
     public function putToolpage(Equipement $equipement)
@@ -307,40 +325,82 @@ final class AdminController extends Controller
         ])->get();
 
         $employes = User::whereIn('role', ['employe', 'employé', 'employée'])->get();
+        $collaborateurs = CollaborateurExterne::all();
 
-        return view('admin.affectation', ['equipements_groupes' => $equipements_groupes, 'employes' => $employes]);
+        return view('admin.affectation', [
+            'equipements_groupes' => $equipements_groupes,
+            'employes' => $employes,
+            'collaborateurs' => $collaborateurs,
+        ]);
     }
 
-    public function HandleAffectation(StoreDirectAffectationRequest $request)
+    public function HandleAffectation(StoreUnifiedAffectationRequest $request)
     {
-        $validated = $request->validated();
-
         set_time_limit(120);
 
         try {
-            $result = $this->createDirectAffectationAction->handle(Auth::user(), $validated);
+            $actionData = $request->getActionData();
+            $result = $this->createUnifiedAffectationAction->handle(Auth::user(), $actionData);
 
-            $employe = $result['employe'];
+            $interlocuteur = $result['interlocuteur'];
             $bon = $result['bon'];
-            $pdfPath = $result['pdf_path'];
+
+            $interlocuteurNom = $interlocuteur instanceof User
+                ? ($interlocuteur->nom ?? 'Employé')
+                : ($interlocuteur->nom ?? 'Collaborateur');
+
+            $interlocuteurPrenom = $interlocuteur instanceof User
+                ? ($interlocuteur->prenom ?? '')
+                : '';
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $employe->nom ?? '',
-                'prenom' => $employe->prenom ?? '',
+                'nom' => $interlocuteurNom,
+                'prenom' => $interlocuteurPrenom,
                 'motif' => $result['motif'],
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
                 'equipements' => $result['affectations_details'],
             ]);
 
-            event(new DirectAffectationCreated($employe, $result['motif'], $result['affectations_details'], $bon));
+            event(new DirectAffectationCreated($interlocuteur, $result['motif'], $result['affectations_details'], $bon));
 
             return back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
                 ->with('pdf', route('bons.download', ['bon' => $bon->id]));
         } catch (Exception $exception) {
             Log::error("Erreur lors de l'affectation : ".$exception->getMessage());
+
+            return back()->with('error', $exception->getMessage());
+        }
+    }
+
+    public function ReplenishEquipment(StoreEquipmentReplenishmentRequest $request)
+    {
+        set_time_limit(120);
+
+        try {
+            $actionData = $request->getActionData();
+            $result = $this->createUnifiedStockEntryAction->handle(Auth::user(), $actionData);
+
+            $bon = $result['bon'];
+            $equipement = Equipement::findOrFail($actionData['equipement_id']);
+
+            $this->generateBonPdf($bon, [
+                'date' => now()->format('d/m/Y'),
+                'nom' => Auth::user()->nom ?? 'Admin',
+                'prenom' => Auth::user()->prenom ?? '',
+                'motif' => 'Réapprovisionnement : '.$equipement->nom.' (Quantité: '.$actionData['quantite'].')',
+                'numero_bon' => $bon->id,
+                'type' => $bon->statut,
+                'equipements' => $result['equipements_details'] ?? [],
+            ]);
+
+            return back()
+                ->with('success', 'Réapprovisionnement effectué avec succès et un bon d\'entrée a été généré.')
+                ->with('pdf', route('bons.download', ['bon' => $bon->id]));
+        } catch (Exception $exception) {
+            Log::error('Erreur lors du réapprovisionnement : '.$exception->getMessage());
 
             return back()->with('error', $exception->getMessage());
         }
