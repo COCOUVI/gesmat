@@ -262,7 +262,7 @@ final class AdminController extends Controller
                 ]);
             }
 
-            event(new \App\Events\DemandeServed($demande->fresh(['user', 'equipements', 'affectations']), $result['affectations_details'] ?? [], $result['bon'] ?? null));
+            event(new DemandeServed($demande->fresh(['user', 'equipements', 'affectations']), $result['affectations_details'] ?? [], $result['bon'] ?? null));
 
             if ($result['pdf_path']) {
                 return back()
@@ -334,7 +334,7 @@ final class AdminController extends Controller
                 'equipements' => $result['affectations_details'],
             ]);
 
-            event(new \App\Events\DirectAffectationCreated($employe, $result['motif'], $result['affectations_details'], $bon));
+            event(new DirectAffectationCreated($employe, $result['motif'], $result['affectations_details'], $bon));
 
             return back()
                 ->with('success', 'Affectation réussie avec succès et un bon de sortie a été généré.')
@@ -478,8 +478,12 @@ final class AdminController extends Controller
         $pdf->setPaper('A5', 'portrait');
         Storage::disk('public')->put($result['pdf_path'], $pdf->output());
 
+        $message = $validated['type'] === 'entrée'
+            ? 'Bon d’entrée généré avec succès pour le collaborateur externe.'
+            : 'Bon de sortie généré avec succès pour le collaborateur externe.';
+
         return back()
-            ->with('success', 'Bon généré avec succès pour le collaborateur externe.')
+            ->with('success', $message)
             ->with('pdf', route('bons.download', ['bon' => $bon->id]));
     }
 
@@ -506,7 +510,7 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            event(new \App\Events\EquipmentReturned($affectation, $result['healthy_returned'], $result['broken_returned'], $bon));
+            event(new EquipmentReturned($affectation, $result['healthy_returned'], $result['broken_returned'], $bon));
 
             return back()
                 ->with('success', 'Retour du matériel enregistré avec succès')
@@ -581,7 +585,7 @@ final class AdminController extends Controller
                 'quantite_resolue' => $result['resolved_quantity'],
             ]);
 
-            event(new \App\Events\PanneResolved($panne, $result['resolved_quantity']));
+            event(new PanneResolved($panne, $result['resolved_quantity']));
 
             return back()->with('success', sprintf(
                 '%d équipement(s) marqué(s) comme réparé(s).',
@@ -626,7 +630,7 @@ final class AdminController extends Controller
                 ]],
             ]);
 
-            event(new \App\Events\PanneReplacementCompleted($panne, $result['replacement_quantity'], $bon));
+            event(new PanneReplacementCompleted($panne, $result['replacement_quantity'], $bon));
 
             return back()
                 ->with('success', 'Le remplacement a été enregistré avec succès.')

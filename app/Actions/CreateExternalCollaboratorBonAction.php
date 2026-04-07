@@ -50,10 +50,14 @@ final readonly class CreateExternalCollaboratorBonAction
                 'fichier_pdf' => $pdfPath,
             ]);
 
+            $datesRetour = $validated['type'] === 'sortie'
+                ? ($validated['dates_retour'] ?? [])
+                : [];
+
             $lignes = $this->buildLines(
                 $validated['equipements'],
                 $validated['quantites'],
-                $validated['dates_retour'] ?? []
+                $datesRetour
             );
 
             $bonEquipements = $lignes
@@ -75,6 +79,24 @@ final readonly class CreateExternalCollaboratorBonAction
                         'quantite_affectee' => $line['quantite'],
                         'statut' => 'active',
                         'created_by' => $actor->nom.' '.$actor->prenom,
+                    ]);
+                }
+            } else {
+                $equipementsALivrer = Equipement::query()
+                    ->whereIn('id', $lignes->pluck('equipement_id')->all())
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($lignes as $line) {
+                    /** @var Equipement|null $equipement */
+                    $equipement = $equipementsALivrer->get($line['equipement_id']);
+
+                    if (! $equipement) {
+                        continue;
+                    }
+
+                    $equipement->update([
+                        'quantite' => $equipement->quantite + $line['quantite'],
                     ]);
                 }
             }

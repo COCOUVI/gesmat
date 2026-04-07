@@ -78,6 +78,59 @@ it('can create affectation for external collaborator with sortie bon', function 
     expect($equipement->getQuantiteDisponible())->toBe(90);
 });
 
+it('can create an entree bon for external collaborator and increase stock', function (): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->actingAs($admin);
+
+    $collaborateur = CollaborateurExterne::factory()->create([
+        'nom' => 'Kouadio',
+        'prenom' => 'Anne',
+    ]);
+    $equipement = Equipement::factory()->create(['quantite' => 12]);
+
+    $response = $this->post('/dashboard/post_bon_collaborator_external', [
+        'collaborateur_id' => $collaborateur->id,
+        'motif' => 'Livraison complémentaire',
+        'type' => 'entrée',
+        'equipements' => [$equipement->id],
+        'quantites' => [4],
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success', 'Bon d’entrée généré avec succès pour le collaborateur externe.');
+
+    $bon = Bon::where('collaborateur_externe_id', $collaborateur->id)
+        ->where('statut', 'entrée')
+        ->first();
+
+    expect($bon)->not->toBeNull();
+    expect($bon->equipements()->count())->toBe(1);
+    expect(
+        Affectation::where('collaborateur_externe_id', $collaborateur->id)
+            ->where('equipement_id', $equipement->id)
+            ->count()
+    )->toBe(0);
+
+    $equipement->refresh();
+    expect($equipement->quantite)->toBe(16);
+    expect($equipement->getQuantiteDisponible())->toBe(16);
+});
+
+it('bon collaborator page lets admin switch between entree and sortie modes', function (): void {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $this->actingAs($admin);
+
+    CollaborateurExterne::factory()->create();
+    Equipement::factory()->create(['quantite' => 5]);
+
+    $response = $this->get(route('CreateBon'));
+
+    $response->assertOk();
+    $response->assertSee('Bon d’entrée');
+    $response->assertSee('Bon de sortie');
+    $response->assertSee('id="bon-type"', false);
+});
+
 it('downloads bon through secure route', function (): void {
     Storage::fake('public');
 
@@ -118,7 +171,7 @@ it('can return equipment from collaborator via BackTool', function (): void {
     ]);
 
     // Return equipment via BackTool
-    $response = $this->post('/dashboard/back_tool/' . $affectation->id, [
+    $response = $this->post('/dashboard/back_tool/'.$affectation->id, [
         'quantite_saine_retournee' => 8,
         'pannes_retournees' => [],
     ]);
@@ -170,7 +223,7 @@ it('complete collaborator workflow creates two bons', function (): void {
     $affectation = Affectation::where('collaborateur_externe_id', $collaborateur->id)->first();
 
     // Step 2: Return equipment via BackTool (creates entrée bon)
-    $this->post('/dashboard/back_tool/' . $affectation->id, [
+    $this->post('/dashboard/back_tool/'.$affectation->id, [
         'quantite_saine_retournee' => 5,
         'pannes_retournees' => [],
     ]);

@@ -1,5 +1,8 @@
 @extends('admin.layouts.adminlay')
 @section('content')
+    @php
+        $selectedType = old('type', 'sortie');
+    @endphp
     <div class="container mt-5">
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -17,20 +20,45 @@
 
         <div class="card shadow-lg">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Assigner des équipements à un collaborateur externe</h4>
-                <p class="mb-0 small mt-2">Créez une affectation d'équipements pour le collaborateur. Les retours seront gérés depuis la liste d'affectations.</p>
+                <h4 class="mb-0" id="bon-title">
+                    {{ $selectedType === 'entrée' ? 'Enregistrer une livraison de matériel' : 'Assigner des équipements à un collaborateur externe' }}
+                </h4>
+                <p class="mb-0 small mt-2" id="bon-subtitle">
+                    {{ $selectedType === 'entrée'
+                        ? 'Le bon d’entrée enregistre le matériel livré par le collaborateur et augmente le stock.'
+                        : 'Le bon de sortie enregistre le matériel emprunté par le collaborateur et crée les affectations externes.' }}
+                </p>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <strong>À savoir:</strong> Une affectation génère un bon de <strong>sortie</strong>. 
-                    Les<strong>retours</strong> sont gérés depuis la liste d'affectations avec le bouton <strong>Retour</strong>.
+                <div class="mb-4">
+                    <label class="form-label fw-semibold d-block">Type de bon</label>
+                    <div class="d-flex flex-wrap gap-2" id="bon-type-toggle">
+                        <button type="button"
+                            class="btn {{ $selectedType === 'entrée' ? 'btn-success active' : 'btn-outline-success' }} bon-type-btn"
+                            data-type="entrée">
+                            Bon d’entrée
+                        </button>
+                        <button type="button"
+                            class="btn {{ $selectedType === 'sortie' ? 'btn-primary active' : 'btn-outline-primary' }} bon-type-btn"
+                            data-type="sortie">
+                            Bon de sortie
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert {{ $selectedType === 'entrée' ? 'alert-success' : 'alert-info' }}" id="bon-helper">
+                    <strong>À savoir :</strong>
+                    <span id="bon-helper-text">
+                        {{ $selectedType === 'entrée'
+                            ? 'Utilise ce formulaire quand un collaborateur externe livre du matériel. Le stock des équipements sélectionnés sera augmenté.'
+                            : 'Utilise ce formulaire quand un collaborateur externe emprunte du matériel. Des affectations externes seront créées et le stock disponible diminuera.' }}
+                    </span>
                 </div>
 
                 <form action="{{ route('HandleBon') }}" method="POST">
                     @csrf
 
-                    {{-- Type de bon hidden (toujours sortie) --}}
-                    <input type="hidden" name="type" value="sortie">
+                    <input type="hidden" name="type" id="bon-type" value="{{ $selectedType }}">
 
                     {{-- Sélection collaborateur --}}
                     <div class="mb-3">
@@ -102,11 +130,12 @@
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-3 date-retour-group {{ $selectedType === 'entrée' ? 'd-none' : '' }}">
                                     <label class="form-label">Date de retour</label>
                                     <input type="date" name="dates_retour[]"
                                         class="form-control @error('dates_retour.' . $index) is-invalid @enderror"
-                                        value="{{ $oldDatesRetour[$index] ?? '' }}">
+                                        value="{{ $oldDatesRetour[$index] ?? '' }}"
+                                        @disabled($selectedType === 'entrée')>
                                     <div class="form-text">Optionnelle pour un prêt temporaire.</div>
                                     @error('dates_retour.' . $index)
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -128,7 +157,7 @@
                         @endforeach
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary mb-3" id="add-equipement">
+                    <button type="button" class="btn {{ $selectedType === 'entrée' ? 'btn-outline-success' : 'btn-outline-primary' }} mb-3" id="add-equipement">
                         <i class="mdi mdi-plus"></i> Ajouter un équipement
                     </button>
 
@@ -136,7 +165,7 @@
 
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('CreateBon') }}" class="btn btn-secondary">Annuler</a>
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn {{ $selectedType === 'entrée' ? 'btn-success' : 'btn-primary' }}" id="submit-bon-button">
                             <i class="mdi mdi-file-document-outline me-1"></i> Générer le bon
                         </button>
                     </div>
@@ -171,9 +200,9 @@
                     Sélectionnez un équipement pour voir les stocks.
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 date-retour-group {{ $selectedType === 'entrée' ? 'd-none' : '' }}">
                 <label class="form-label">Date de retour</label>
-                <input type="date" name="dates_retour[]" class="form-control">
+                <input type="date" name="dates_retour[]" class="form-control" @disabled($selectedType === 'entrée')>
                 <div class="form-text">Optionnelle pour un prêt temporaire.</div>
             </div>
             <div class="col-md-3">
@@ -193,19 +222,98 @@
             const addButton = document.getElementById('add-equipement');
             const wrapper = document.getElementById('equipement-wrapper');
             const template = document.getElementById('equipement-row-template');
+            const typeInput = document.getElementById('bon-type');
+            const typeButtons = document.querySelectorAll('.bon-type-btn');
+            const title = document.getElementById('bon-title');
+            const subtitle = document.getElementById('bon-subtitle');
+            const helper = document.getElementById('bon-helper');
+            const helperText = document.getElementById('bon-helper-text');
+            const submitButton = document.getElementById('submit-bon-button');
+
+            const typeConfig = {
+                'entrée': {
+                    title: 'Enregistrer une livraison de matériel',
+                    subtitle: 'Le bon d’entrée enregistre le matériel livré par le collaborateur et augmente le stock.',
+                    helperClass: 'alert-success',
+                    helperText: 'Utilise ce formulaire quand un collaborateur externe livre du matériel. Le stock des équipements sélectionnés sera augmenté.',
+                    addButtonClass: 'btn-outline-success',
+                    submitButtonClass: 'btn-success',
+                },
+                sortie: {
+                    title: 'Assigner des équipements à un collaborateur externe',
+                    subtitle: 'Le bon de sortie enregistre le matériel emprunté par le collaborateur et crée les affectations externes.',
+                    helperClass: 'alert-info',
+                    helperText: 'Utilise ce formulaire quand un collaborateur externe emprunte du matériel. Des affectations externes seront créées et le stock disponible diminuera.',
+                    addButtonClass: 'btn-outline-primary',
+                    submitButtonClass: 'btn-primary',
+                }
+            };
 
             function updateStockInfo(row) {
                 const select = row.querySelector('.equipement-select');
                 const stockInfo = row.querySelector('.stock-info');
                 const option = select?.selectedOptions?.[0];
+                const selectedType = typeInput.value;
 
                 if (stockInfo && option && option.value) {
                     const disponible = option.dataset.disponible;
                     const externe = option.dataset.externe;
-                    stockInfo.textContent = `Stock disponible: ${disponible} | Sortie externe: ${externe}`;
+
+                    if (selectedType === 'entrée') {
+                        stockInfo.textContent = `Stock actuel avant entrée: ${disponible} | Déjà sorti externe: ${externe}`;
+                    } else {
+                        stockInfo.textContent = `Stock disponible: ${disponible} | Déjà sorti externe: ${externe}`;
+                    }
                 } else {
                     stockInfo.textContent = 'Sélectionnez un équipement pour voir les stocks.';
                 }
+            }
+
+            function updateDateRetourVisibility() {
+                const selectedType = typeInput.value;
+
+                wrapper.querySelectorAll('.date-retour-group').forEach((group) => {
+                    const input = group.querySelector('input[name="dates_retour[]"]');
+                    const hidden = selectedType === 'entrée';
+
+                    group.classList.toggle('d-none', hidden);
+
+                    if (input) {
+                        input.disabled = hidden;
+
+                        if (hidden) {
+                            input.value = '';
+                        }
+                    }
+                });
+            }
+
+            function updateTypeUi() {
+                const selectedType = typeInput.value;
+                const config = typeConfig[selectedType];
+
+                title.textContent = config.title;
+                subtitle.textContent = config.subtitle;
+                helper.classList.remove('alert-info', 'alert-success');
+                helper.classList.add(config.helperClass);
+                helperText.textContent = config.helperText;
+                addButton.classList.remove('btn-outline-primary', 'btn-outline-success');
+                addButton.classList.add(config.addButtonClass);
+                submitButton.classList.remove('btn-primary', 'btn-success');
+                submitButton.classList.add(config.submitButtonClass);
+
+                typeButtons.forEach((button) => {
+                    const isActive = button.dataset.type === selectedType;
+
+                    button.classList.toggle('active', isActive);
+                    button.classList.toggle('btn-success', button.dataset.type === 'entrée' && isActive);
+                    button.classList.toggle('btn-outline-success', button.dataset.type === 'entrée' && !isActive);
+                    button.classList.toggle('btn-primary', button.dataset.type === 'sortie' && isActive);
+                    button.classList.toggle('btn-outline-primary', button.dataset.type === 'sortie' && !isActive);
+                });
+
+                updateDateRetourVisibility();
+                refreshAllRows();
             }
 
             function refreshRemoveButtons() {
@@ -241,6 +349,13 @@
                 addButton.addEventListener('click', addEquipementField);
             }
 
+            typeButtons.forEach((button) => {
+                button.addEventListener('click', function() {
+                    typeInput.value = this.dataset.type;
+                    updateTypeUi();
+                });
+            });
+
             wrapper.addEventListener('click', function(e) {
                 if (e.target.classList.contains('remove-btn')) {
                     const rows = wrapper.querySelectorAll('.equipement-item');
@@ -258,6 +373,8 @@
                     updateStockInfo(e.target.closest('.equipement-item'));
                 }
             });
+
+            updateTypeUi();
         });
     </script>
 
