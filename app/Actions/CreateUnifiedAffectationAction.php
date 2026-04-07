@@ -6,24 +6,34 @@ namespace App\Actions;
 
 use App\Models\Affectation;
 use App\Models\Bon;
+use App\Models\CollaborateurExterne;
 use App\Models\Equipement;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-final readonly class CreateDirectAffectationAction
+/**
+ * Unified action for creating affectations (assignments) for both employees and external collaborators.
+ *
+ * Handles:
+ * - Direct affectation to employee
+ * - Direct affectation to external collaborator
+ * - Automatic bon creation with interlocuteur tracking
+ */
+final readonly class CreateUnifiedAffectationAction
 {
     /**
      * @param  array{
-     *     employe_id: int|string,
+     *     interlocuteur_type: 'user'|'collaborateur_externe',
+     *     interlocuteur_id: int|string,
      *     motif: string,
      *     equipements: array<int, int|string>,
      *     quantites: array<int, int|string>,
      *     dates_retour?: array<int, string|null>
      * }  $validated
      * @return array{
-     *     employe: User,
      *     bon: Bon,
+     *     interlocuteur: User|CollaborateurExterne,
      *     pdf_path: string,
      *     motif: string,
      *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>
@@ -32,17 +42,24 @@ final readonly class CreateDirectAffectationAction
     public function handle(User $actor, array $validated): array
     {
         /** @var array{
-         *     employe: User,
          *     bon: Bon,
+         *     interlocuteur: User|CollaborateurExterne,
          *     pdf_path: string,
          *     motif: string,
          *     affectations_details: array<int, array{nom: string, quantite: int, date_retour: string|null}>
          * } $result
          */
         $result = DB::transaction(function () use ($actor, $validated): array {
-            $employe = User::findOrFail((int) $validated['employe_id']);
+            $interlocuteurType = $validated['interlocuteur_type'];
+            $interlocuteurId = (int) $validated['interlocuteur_id'];
 
-            throw_unless(in_array($employe->role, ['employe', 'employé', 'employée'], true), Exception::class, "L'utilisateur sélectionné n'est pas un employé.");
+            // Récupère l'interlocuteur (employé ou collaborateur externe)
+            if ($interlocuteurType === 'user') {
+                $interlocuteur = User::findOrFail($interlocuteurId);
+                throw_unless(in_array($interlocuteur->role, ['employe', 'employé', 'employée'], true), Exception::class, "L'utilisateur sélectionné n'est pas un employé.");
+            } else {
+                $interlocuteur = CollaborateurExterne::findOrFail($interlocuteurId);
+            }
 
             $lignesAffectation = $this->normalizeLines(
                 $validated['equipements'],
@@ -71,15 +88,22 @@ final readonly class CreateDirectAffectationAction
                     $quantitesReservees[$equipementId] ?? 0
                 );
 
-                Affectation::create([
+                // Crée l'affectation
+                $affectationData = [
                     'equipement_id' => $equipementId,
-                    'user_id' => $employe->id,
-                    'demande_id' => null,
                     'date_retour' => $rawDate ?: null,
                     'created_by' => $actor->nom.' '.$actor->prenom,
                     'quantite_affectee' => $quantite,
                     'statut' => 'active',
-                ]);
+                ];
+
+                if ($interlocuteurType === 'user') {
+                    $affectationData['user_id'] = $interlocuteurId;
+                } else {
+                    $affectationData['collaborateur_externe_id'] = $interlocuteurId;
+                }
+
+                Affectation::create($affectationData);
 
                 $quantitesReservees[$equipementId] = ($quantitesReservees[$equipementId] ?? 0) + $quantite;
 
@@ -90,21 +114,30 @@ final readonly class CreateDirectAffectationAction
                 ];
             }
 
-            $pdfName = 'bon_sortie_'.$employe->id.'_'.now()->timestamp.'.pdf';
+            $pdfName = 'bon_sortie_'.($interlocuteurType === 'user' ? 'employee_' : 'collaborateur_').$interlocuteurId.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_sortie/'.$pdfName;
 
-            $bon = Bon::create([
-                'user_id' => $employe->id,
+            // Prépare les données du bon
+            $bonData = [
                 'motif' => $validated['motif'],
                 'statut' => 'sortie',
                 'fichier_pdf' => $pdfPath,
-                'interlocuteur_type' => 'user',
-                'interlocuteur_id' => $employe->id,
-            ]);
+                'interlocuteur_type' => $interlocuteurType,
+                'interlocuteur_id' => $interlocuteurId,
+            ];
+
+            // Ajoute les anciens champs pour la rétro-compatibilité
+            if ($interlocuteurType === 'user') {
+                $bonData['user_id'] = $interlocuteurId;
+            } else {
+                $bonData['collaborateur_externe_id'] = $interlocuteurId;
+            }
+
+            $bon = Bon::create($bonData);
 
             return [
-                'employe' => $employe,
                 'bon' => $bon,
+                'interlocuteur' => $interlocuteur,
                 'pdf_path' => $pdfPath,
                 'motif' => $validated['motif'],
                 'affectations_details' => $affectationsDetails,
@@ -151,23 +184,18 @@ final readonly class CreateDirectAffectationAction
             $groupedLines[$groupKey]['quantite'] += $quantite;
         }
 
-        return array_map(
-            fn (string $key): array => $groupedLines[$key],
-            $orderedKeys
-        );
+        return array_map(fn ($groupKey) => $groupedLines[$groupKey], $orderedKeys);
     }
 
-    private function ensureAvailability(Equipement $equipement, int $quantite, int $quantiteReservee = 0): void
+    private function ensureAvailability(Equipement $equipement, int $quantite, int $alreadyReserved): void
     {
-        throw_if($quantite <= 0, Exception::class, 'La quantité à affecter doit être supérieure à zéro.');
+        $disponible = $equipement->getQuantiteDisponible() - $alreadyReserved;
 
-        $quantiteDisponible = max(0, $equipement->getQuantiteDisponible() - $quantiteReservee);
-
-        if ($quantiteDisponible < $quantite) {
+        if ($quantite > $disponible) {
             throw new Exception(sprintf(
                 "Quantité insuffisante pour l'équipement « %s » (disponible : %d, demandée : %d).",
                 $equipement->nom,
-                $quantiteDisponible,
+                $disponible,
                 $quantite
             ));
         }

@@ -48,6 +48,8 @@ final readonly class CreateExternalCollaboratorBonAction
                 'motif' => $validated['motif'],
                 'statut' => $validated['type'],
                 'fichier_pdf' => $pdfPath,
+                'interlocuteur_type' => 'collaborateur_externe',
+                'interlocuteur_id' => $collaborateur->id,
             ]);
 
             $datesRetour = $validated['type'] === 'sortie'

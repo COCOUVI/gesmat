@@ -106,8 +106,12 @@ final readonly class RegisterEquipmentReturnAction
 
             if ($affectation->estPourCollaborateur()) {
                 $bonData['collaborateur_externe_id'] = $affectation->collaborateur_externe_id;
+                $bonData['interlocuteur_type'] = 'collaborateur_externe';
+                $bonData['interlocuteur_id'] = $affectation->collaborateur_externe_id;
             } else {
                 $bonData['user_id'] = $affectation->user_id;
+                $bonData['interlocuteur_type'] = 'user';
+                $bonData['interlocuteur_id'] = $affectation->user_id;
             }
 
             $bon = Bon::create($bonData);

@@ -88,10 +88,16 @@
                         <a class="nav-link" href="{{ route('addToolpage') }}">Ajouter un équipement</a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('equipements.pannes') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('equipements.pannes') }}">Pannes</a>
+                        <a class="nav-link" href="{{ route('equipements.pannes') }}">
+                            <i class="mdi mdi-alert-circle-outline"></i>
+                            Pannes
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('tools.lost') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('tools.lost') }}">Retours planifiés</a>
+                        <a class="nav-link" href="{{ route('tools.lost') }}">
+                            <i class="mdi mdi-emoticon-sad-outline"></i>
+                            Retours planifiés
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -107,7 +113,10 @@
             <div class="collapse {{ $mouvementsActive ? 'show' : '' }}" id="movement-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('liste.demandes') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('liste.demandes') }}">Demandes d'équipement</a>
+                        <a class="nav-link" href="{{ route('liste.demandes') }}">
+                            <i class="mdi mdi-cart-outline"></i>
+                            Demandes d'équipement
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('page.affectation') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('page.affectation') }}">Nouvelle affectation</a>

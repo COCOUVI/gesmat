@@ -58,10 +58,16 @@
                         <a class="nav-link" href="{{ route('gestionnaire.tools.add') }}">Ajouter un équipement</a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.pannes.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.pannes.index') }}">Pannes</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.pannes.index') }}">
+                            <i class="mdi mdi-alert-circle-outline"></i>
+                            Pannes
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.equipements.perdus') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.equipements.perdus') }}">Retours planifiés</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.equipements.perdus') }}">
+                            <i class="mdi mdi-emoticon-sad-outline"></i>
+                            Retours planifiés
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -77,7 +83,10 @@
             <div class="collapse {{ $mouvementsActive ? 'show' : '' }}" id="affectation-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('gestionnaire.demandes.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.demandes.index') }}">Demandes d'équipement</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.demandes.index') }}">
+                            <i class="mdi mdi-cart-outline"></i>
+                            Demandes d'équipement
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.affectations.index') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('gestionnaire.affectations.index') }}">Liste des

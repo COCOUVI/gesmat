@@ -29,11 +29,15 @@ final class Bon extends Model
         'motif',
         'statut',
         'fichier_pdf',
+        'interlocuteur_type',
+        'interlocuteur_id',
+        'interlocuteur_nom_libre',
     ];
 
     /**
      * Relation avec l'utilisateur (employé)
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -42,7 +46,8 @@ final class Bon extends Model
 
     /**
      * Relation avec le collaborateur externe
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
+     *
+     * @return BelongsTo<CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -51,12 +56,38 @@ final class Bon extends Model
 
     /**
      * Relation avec les équipements du bon
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     *
+     * @return BelongsToMany<Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function equipements(): BelongsToMany
     {
         return $this->belongsToMany(Equipement::class, 'bon_equipement')
             ->withPivot('quantite')
             ->withTimestamps();
+    }
+
+    /**
+     * Récupère l'interlocuteur (user, collaborateur externe ou libre)
+     */
+    public function getInterlocuteur(): ?Model
+    {
+        return match ($this->interlocuteur_type) {
+            'user' => User::find($this->interlocuteur_id),
+            'collaborateur_externe' => CollaborateurExterne::find($this->interlocuteur_id),
+            default => null,
+        };
+    }
+
+    /**
+     * Récupère le nom complet de l'interlocuteur
+     */
+    public function getInterlocuteurNom(): string
+    {
+        return match ($this->interlocuteur_type) {
+            'user' => ($this->getInterlocuteur()?->nom ?? '').' '.($this->getInterlocuteur()?->prenom ?? ''),
+            'collaborateur_externe' => $this->getInterlocuteur()?->nom ?? '',
+            'libre' => $this->interlocuteur_nom_libre ?? 'Inconnu',
+            default => 'Inconnu',
+        };
     }
 }
