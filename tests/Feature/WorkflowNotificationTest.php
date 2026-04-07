@@ -505,3 +505,31 @@ test('admin user creation queues the credentials email', function (): void {
     Mail::assertQueued(IdentifiantsEnvoyes::class, 1);
     Mail::assertQueued(IdentifiantsEnvoyes::class);
 });
+
+test('workflow action mail renders the company logo image', function (): void {
+    $mail = new WorkflowActionMail(
+        'Sujet de test',
+        'Titre de test',
+        'Alice',
+        'Contenu de test'
+    );
+
+    $html = $mail->render();
+
+    expect($html)->toContain('alt="Jaspe Technologies"');
+    expect($html)->toContain('<img src="');
+});
+
+test('credentials mail renders the company logo image', function (): void {
+    $user = User::factory()->create([
+        'role' => 'employe',
+        'email' => 'logo-mail@example.com',
+    ]);
+
+    $mail = new IdentifiantsEnvoyes($user, 'secret-temporaire');
+
+    $html = $mail->render();
+
+    expect($html)->toContain('alt="J-Tools Logo"');
+    expect($html)->toContain('<img src="');
+});

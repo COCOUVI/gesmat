@@ -69,16 +69,18 @@
 </head>
 <body>
     @php
-        $logoDataUri = null;
-        if (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
-            $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
+        $logoSrc = null;
+        if (isset($message, $logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = $message->embed($logoPath);
+        } elseif (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
         }
     @endphp
 
     <div class="email-container">
         <div class="email-header">
-            @if ($logoDataUri)
-                <img src="{{ $logoDataUri }}" alt="J-Tools Logo" style="max-width: 150px; height: auto; margin-bottom: 15px; display: block;">
+            @if ($logoSrc)
+                <img src="{{ $logoSrc }}" alt="J-Tools Logo" style="max-width: 150px; height: auto; margin-bottom: 15px; display: block;">
             @else
                 <i class="fas fa-tools"></i> <strong>J-Tools</strong>
             @endif

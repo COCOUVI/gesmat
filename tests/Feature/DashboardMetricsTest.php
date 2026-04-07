@@ -125,3 +125,17 @@ test('admin layout uses an internal scroll shell for content', function (): void
     $response->assertSee('admin-shell-content', false);
     $response->assertSee('fixedHeader: false', false);
 });
+
+test('admin sidebar groups links under clearer stock and movement menus', function (): void {
+    Cache::flush();
+
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $response = $this->actingAs($admin)->get(route('admin.homedash'));
+
+    $response->assertOk();
+    $response->assertSee('Stock & inventaire', false);
+    $response->assertSee('Mouvements');
+    $response->assertSee('Retours planifiés');
+    $response->assertSee('Mouvement collaborateur externe');
+});

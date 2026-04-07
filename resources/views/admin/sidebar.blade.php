@@ -54,22 +54,32 @@
         @endif
 
 
-        {{-- Gestion Équipements --}}
-        {{-- Gestion Équipements --}}
         @php
-            $equipActive =
+            $stockActive =
                 request()->routeIs('ShowToolpage') ||
                 request()->routeIs('addToolpage') ||
-                request()->routeIs('liste.bons');
+                request()->routeIs('equipements.pannes') ||
+                request()->routeIs('tools.lost');
+            $mouvementsActive =
+                request()->routeIs('liste.demandes') ||
+                request()->routeIs('page.affectation') ||
+                request()->routeIs('page.listeAffectations') ||
+                request()->routeIs('liste.bons') ||
+                request()->routeIs('CreateBon');
+            $collabActive =
+                request()->routeIs('CollaboratorsPage') ||
+                request()->routeIs('ShowListCollaborator');
+            $rapportActive = request()->routeIs('gestionnaire.rapports.*');
         @endphp
+
         <li class="nav-item">
-            <a class="nav-link" data-toggle="collapse" href="#equipment-management"
-                aria-expanded="{{ $equipActive ? 'true' : 'false' }}" aria-controls="equipment-management">
-                <span class="menu-title">Gestion Équipements</span>
+            <a class="nav-link" data-toggle="collapse" href="#stock-management"
+                aria-expanded="{{ $stockActive ? 'true' : 'false' }}" aria-controls="stock-management">
+                <span class="menu-title">Stock & inventaire</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-laptop menu-icon"></i>
             </a>
-            <div class="collapse {{ $equipActive ? 'show' : '' }}" id="equipment-management">
+            <div class="collapse {{ $stockActive ? 'show' : '' }}" id="stock-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('ShowToolpage') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('ShowToolpage') }}">Inventaire</a>
@@ -77,57 +87,39 @@
                     <li class="nav-item {{ request()->routeIs('addToolpage') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('addToolpage') }}">Ajouter un équipement</a>
                     </li>
-                    <li class="nav-item {{ request()->routeIs('liste.bons') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('liste.bons') }}">BONS</a>
+                    <li class="nav-item {{ request()->routeIs('equipements.pannes') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('equipements.pannes') }}">Pannes</a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('tools.lost') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('tools.lost') }}">Retours planifiés</a>
                     </li>
                 </ul>
             </div>
         </li>
 
-
-        {{-- Équipements en Panne --}}
-        <li class="nav-item {{ request()->routeIs('equipements.pannes') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('equipements.pannes') }}">
-                <span class="menu-title">Equipements en Pannes</span>
-                <i class="mdi mdi-alert-circle-outline menu-icon"></i>
-            </a>
-        </li>
-
-        {{-- Équipements Perdus --}}
-        <li class="nav-item {{ request()->routeIs('tools.lost') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('tools.lost') }}">
-                <span class="menu-title">Equipements non retournés</span>
-                <i class="mdi mdi-emoticon-sad-outline menu-icon"></i>
-            </a>
-        </li>
-
-        {{-- Demande Équipement --}}
-        <li class="nav-item {{ request()->routeIs('liste.demandes') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('liste.demandes') }}">
-                <span class="menu-title">Demande D'équipement</span>
-                <i class="mdi mdi-cart-outline menu-icon"></i>
-            </a>
-        </li>
-
-        {{-- Affectation Équipements --}}
-        @php
-            $affectationActive = request()->routeIs('page.affectation') || request()->routeIs('page.listeAffectations');
-             $rapportActive = request()->routeIs('gestionnaire.rapports.*');
-        @endphp
-        <li class="nav-item ">
-            <a class="nav-link" data-toggle="collapse" href="#affectation-management"
-                aria-expanded="{{ $affectationActive ? 'true' : 'false' }}" aria-controls="affectation-management">
-                <span class="menu-title">Affectation Équipements</span>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#movement-management"
+                aria-expanded="{{ $mouvementsActive ? 'true' : 'false' }}" aria-controls="movement-management">
+                <span class="menu-title">Mouvements</span>
                 <i class="menu-arrow"></i>
-                <i class="mdi mdi-transfer menu-icon"></i>
+                <i class="mdi mdi-swap-horizontal menu-icon"></i>
             </a>
-            <div class="collapse {{ $affectationActive ? 'show' : '' }}" id="affectation-management">
+            <div class="collapse {{ $mouvementsActive ? 'show' : '' }}" id="movement-management">
                 <ul class="nav flex-column sub-menu">
+                    <li class="nav-item {{ request()->routeIs('liste.demandes') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('liste.demandes') }}">Demandes d'équipement</a>
+                    </li>
                     <li class="nav-item {{ request()->routeIs('page.affectation') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('page.affectation') }}">Nouvelle affectation</a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('page.listeAffectations') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('page.listeAffectations') }}">Liste des affectations</a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('liste.bons') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('liste.bons') }}">Bons</a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('CreateBon') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('CreateBon') }}">Mouvement collaborateur externe</a>
                     </li>
                 </ul>
             </div>
@@ -163,16 +155,6 @@
                 </div>
             </li>
         @endif
-
-
-
-        {{-- Collaborateurs Externes --}}
-        @php
-            $collabActive =
-                request()->routeIs('CollaboratorsPage') ||
-                request()->routeIs('ShowListCollaborator') ||
-                request()->routeIs('CreateBon');
-        @endphp
         <li class="nav-item {{ $collabActive ? 'active' : '' }}">
             <a class="nav-link" data-toggle="collapse" href="#collab-externes"
                 aria-expanded="{{ $collabActive ? 'true' : 'false' }}" aria-controls="collab-externes">
@@ -187,9 +169,6 @@
                     </li>
                     <li class="nav-item {{ request()->routeIs('ShowListCollaborator') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('ShowListCollaborator') }}">Liste</a>
-                    </li>
-                    <li class="nav-item {{ request()->routeIs('CreateBon') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('CreateBon') }}">Bon</a>
                     </li>
                 </ul>
             </div>
