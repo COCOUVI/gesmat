@@ -35,6 +35,37 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
     }
 
     /**
+     * Get the deposant name for display on the bon
+     */
+    public function getDeposantName(): ?string
+    {
+        if ($this->input('deposant_nom_libre')) {
+            return $this->input('deposant_nom_libre');
+        }
+
+        $deposantId = $this->input('deposant_id');
+        if (! $deposantId) {
+            return null;
+        }
+
+        if (str_starts_with($deposantId, 'user_')) {
+            $userId = (int) str_replace('user_', '', $deposantId);
+            $user = \App\Models\User::find($userId);
+
+            return $user ? "{$user->nom} {$user->prenom}" : null;
+        }
+
+        if (str_starts_with($deposantId, 'collab_')) {
+            $collabId = (int) str_replace('collab_', '', $deposantId);
+            $collab = \App\Models\CollaborateurExterne::find($collabId);
+
+            return $collab ? $collab->nom : null;
+        }
+
+        return null;
+    }
+
+    /**
      * Get validated data formatted for CreateUnifiedStockEntryAction
      */
     public function getActionData(): array
@@ -67,5 +98,15 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
             'interlocuteur_id' => $interlocuteurId,
             'interlocuteur_nom_libre' => $interlocuteurNomLibre,
         ];
+    }
+
+    protected function after()
+    {
+        return function ($validator) {
+            if (empty($this->input('deposant_id')) && empty($this->input('deposant_nom_libre'))) {
+                // Both are optional - that's fine
+                return;
+            }
+        };
     }
 }

@@ -151,10 +151,13 @@ final class AdminController extends Controller
         $bon = $result['bon'];
         $pdfPath = $result['pdf_path'];
 
+        $deposantName = $request->getDeposantName() ?? Auth::user()->nom;
+        $deposantPrenom = Auth::user()->prenom ?? '';
+
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
-            'nom' => Auth::user()->nom ?? 'Admin',
-            'prenom' => Auth::user()->prenom ?? '',
+            'nom' => $deposantName,
+            'prenom' => $deposantPrenom,
             'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
@@ -385,11 +388,13 @@ final class AdminController extends Controller
 
             $bon = $result['bon'];
             $equipement = Equipement::findOrFail($actionData['equipement_id']);
+            $deposantName = $request->getDeposantName() ?? Auth::user()->nom;
+            $deposantPrenom = Auth::user()->prenom ?? '';
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => Auth::user()->nom ?? 'Admin',
-                'prenom' => Auth::user()->prenom ?? '',
+                'nom' => $deposantName,
+                'prenom' => $deposantPrenom,
                 'motif' => 'Réapprovisionnement : '.$equipement->nom.' (Quantité: '.$actionData['quantite'].')',
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
