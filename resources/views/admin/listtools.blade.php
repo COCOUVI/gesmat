@@ -199,7 +199,7 @@
         });
     </script>
 @endpush
-@endsection
+
 @push('popups')
     {{-- Modales de réapprovisionnement pour chaque équipement --}}
     @forelse ($equipements as $equip)
