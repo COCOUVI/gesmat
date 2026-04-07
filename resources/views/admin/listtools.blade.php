@@ -169,22 +169,26 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Find all anonymous checkboxes in replenishment modals
-            document.querySelectorAll('.is-anonymous-check').forEach(checkbox => {
-                const equipId = checkbox.id.replace('isAnonymous', '');
+            // Handle anonymous mode toggle with radio buttons
+            document.querySelectorAll('.mode-toggle').forEach(radio => {
+                const equipId = radio.id.match(/\d+$/)[0];
                 const selectGroup = document.getElementById('selectGroup' + equipId);
                 const manualGroup = document.getElementById('manualGroup' + equipId);
+                const isAnonymousHidden = document.getElementById('isAnonymousHidden' + equipId);
                 const deposantSelect = document.getElementById('deposantSelect' + equipId);
 
                 function updateDisplay() {
-                    if (checkbox.checked) {
+                    const isAnonymous = document.getElementById('modeAnonym' + equipId).checked;
+                    if (isAnonymous) {
                         selectGroup.style.display = 'none';
                         manualGroup.classList.remove('d-none');
+                        isAnonymousHidden.value = '1';
                         deposantSelect.value = '';
                         deposantSelect.name = '';
                     } else {
                         selectGroup.style.display = 'block';
                         manualGroup.classList.add('d-none');
+                        isAnonymousHidden.value = '0';
                         deposantSelect.name = 'deposant_id';
                         const nomInput = manualGroup.querySelector('input[name="deposant_anonymous_nom"]');
                         const prenomInput = manualGroup.querySelector('input[name="deposant_anonymous_prenom"]');
@@ -193,8 +197,14 @@
                     }
                 }
 
-                checkbox.addEventListener('change', updateDisplay);
-                updateDisplay(); // Initialize on page load
+                radio.addEventListener('change', updateDisplay);
+            });
+
+            // Initialize on page load
+            document.querySelectorAll('.mode-toggle').forEach(radio => {
+                if (radio.checked) {
+                    radio.dispatchEvent(new Event('change'));
+                }
             });
         });
     </script>
@@ -245,16 +255,25 @@
 
                             {{-- Qui dépose le matériel --}}
                             <div class="mb-3">
-                                <label class="form-label">
-                                    Qui dépose le matériel ? (Optionnel)
+                                <label class="form-label fw-semibold mb-3">
+                                    Qui dépose le matériel ? <span class="badge bg-info">Optionnel</span>
                                 </label>
-                                <div class="form-check mb-2">
-                                    <input type="hidden" name="is_anonymous" value="0">
-                                    <input type="checkbox" class="form-check-input is-anonymous-check" name="is_anonymous" value="1" id="isAnonymous{{ $equip->id }}">
-                                    <label class="form-check-label" for="isAnonymous{{ $equip->id }}">
-                                        <small>Anonyme - Remplir manuellement</small>
+
+                                {{-- Mode toggle: Select or Anonymous --}}
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <input type="radio" class="btn-check mode-toggle" name="deposit_mode" id="modeSelect{{ $equip->id }}" value="select" checked>
+                                    <label class="btn btn-outline-primary" for="modeSelect{{ $equip->id }}">
+                                        <i class="mdi mdi-account me-1"></i> Sélectionner une personne
+                                    </label>
+
+                                    <input type="radio" class="btn-check mode-toggle" name="deposit_mode" id="modeAnonym{{ $equip->id }}" value="anonym">
+                                    <label class="btn btn-outline-primary" for="modeAnonym{{ $equip->id }}">
+                                        <i class="mdi mdi-incognito me-1"></i> Anonyme
                                     </label>
                                 </div>
+
+                                {{-- Hidden field for checkbox compatibility --}}
+                                <input type="hidden" name="is_anonymous" value="0" id="isAnonymousHidden{{ $equip->id }}">
 
                                 {{-- Mode: Sélection (par défaut) --}}
                                 <div class="deposant-select-group" id="selectGroup{{ $equip->id }}">
@@ -279,23 +298,23 @@
                                         </optgroup>
                                     </select>
                                     @error('deposant_id')
-                                        <div class="text-danger small">{{ $message }}</div>
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 {{-- Mode: Entrée manuelle (anonyme) --}}
                                 <div class="deposant-manual-group d-none" id="manualGroup{{ $equip->id }}">
-                                    <input type="text" name="deposant_anonymous_nom" placeholder="Nom" 
+                                    <input type="text" name="deposant_anonymous_nom" placeholder="Nom (au moins l'un des deux requis)" 
                                            class="form-control mb-2 @error('deposant_anonymous_nom') is-invalid @enderror"
                                            value="{{ old('deposant_anonymous_nom') }}">
                                     <input type="text" name="deposant_anonymous_prenom" placeholder="Prénom" 
                                            class="form-control @error('deposant_anonymous_prenom') is-invalid @enderror"
                                            value="{{ old('deposant_anonymous_prenom') }}">
                                     @error('deposant_anonymous_nom')
-                                        <div class="text-danger small">{{ $message }}</div>
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                     @error('deposant_anonymous_prenom')
-                                        <div class="text-danger small">{{ $message }}</div>
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
