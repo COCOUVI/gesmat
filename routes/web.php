@@ -167,7 +167,7 @@ Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function ()
 Route::get('/test-mail', function () {
     try {
         Mail::raw('Ceci est un test simple laracon.', function ($message): void {
-            $message->to('cocouvialexandro74@gmail.com')
+            $message->to('nolanpatinde0@gmail.com')
                 ->subject('Test depuis Laravel avec Hostinger');
         });
 
@@ -178,6 +178,44 @@ Route::get('/test-mail', function () {
         return 'Erreur : '.$exception->getMessage();
     }
 });
+
+// Queue trigger endpoint (for Hostinger cron with PHP 8.4 web)
+Route::get('/trigger-queue', function () {
+    // Sécurité : vérifier le token
+    $token = request('token');
+    if ($token !== env('QUEUE_TRIGGER_TOKEN')) {
+        return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+    }
+
+    // Ne pas exécuter en local
+    if (app()->environment('local')) {
+        return response()->json(['status' => 'error', 'message' => 'Not allowed in local environment'], 403);
+    }
+
+    try {
+        // Exécuter les jobs en attente
+        \Illuminate\Support\Facades\Artisan::call('queue:work', [
+            '--once' => true,
+            '--max-time' => 55, // 55 secondes max (Hostinger limit ~60s)
+            '--max-jobs' => 10, // Max 10 jobs par appel
+        ]);
+
+        \Illuminate\Support\Facades\Log::info('Queue triggered successfully via webhook');
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Queue processed',
+            'timestamp' => now(),
+        ]);
+    } catch (Exception $exception) {
+        \Illuminate\Support\Facades\Log::error('Queue trigger error: ' . $exception->getMessage());
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $exception->getMessage(),
+        ], 500);
+    }
+})->name('trigger.queue');
 
 // deleteuser
 require __DIR__.'/auth.php';
