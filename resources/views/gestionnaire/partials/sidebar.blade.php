@@ -112,12 +112,12 @@
                             <span>Bons</span>
                         </a>
                     </li>
-                    <li class="nav-item {{ request()->routeIs('gestionnaire.bons.bon_external_collaborator') ? 'active' : '' }}">
+                    {{-- <li class="nav-item {{ request()->routeIs('gestionnaire.bons.bon_external_collaborator') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('gestionnaire.bons.bon_external_collaborator') }}">
                             <i class="mdi mdi-truck-delivery-outline"></i>
                             <span>Mouvement collaborateur externe</span>
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
         </li>

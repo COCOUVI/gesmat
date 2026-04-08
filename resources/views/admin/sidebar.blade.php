@@ -148,12 +148,12 @@
                             <span>Bons</span>
                         </a>
                     </li>
-                    <li class="nav-item {{ request()->routeIs('CreateBon') ? 'active' : '' }}">
+                    {{-- <li class="nav-item {{ request()->routeIs('CreateBon') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('CreateBon') }}">
                             <i class="mdi mdi-truck-delivery-outline"></i>
                             <span>Mouvement collaborateur externe</span>
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
         </li>
