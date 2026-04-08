@@ -206,7 +206,7 @@ final class Affectation extends Model
             return mb_trim(($collab->prenom ?? '').' '.($collab->nom ?? ''));
         }
 
-        return $this->user?->name ?? 'Inconnu';
+        return mb_trim(($this->user?->nom ?? '').' '.($this->user?->prenom ?? '')) ?: 'Inconnu';
     }
 
     /**

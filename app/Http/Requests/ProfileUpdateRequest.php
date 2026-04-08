@@ -10,15 +10,16 @@ use Illuminate\Validation\Rule;
 
 final class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'nom' => ['required', 'string', 'max:255'],
+            'prenom' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -27,6 +28,20 @@ final class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'poste' => ['required', 'string', 'max:255'],
+            'service' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nom.required' => 'Le nom est requis.',
+            'prenom.required' => 'Le prénom est requis.',
+            'email.required' => "L'adresse e-mail est requise.",
+            'email.email' => "L'adresse e-mail n'est pas valide.",
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
+            'poste.required' => 'Le poste est requis.',
         ];
     }
 }

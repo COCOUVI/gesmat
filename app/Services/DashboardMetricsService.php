@@ -55,14 +55,18 @@ final readonly class DashboardMetricsService
                     ->whereMonth('created_at', $now->month)
                     ->whereYear('created_at', $now->year)
                     ->count();
-                $userBeforeMonth = User::query()
-                    ->where('created_at', '<', $now->copy()->startOfMonth())
+                $previousMonth = $now->copy()->subMonth();
+                $userPreviousMonth = User::query()
+                    ->whereMonth('created_at', $previousMonth->month)
+                    ->whereYear('created_at', $previousMonth->year)
                     ->count();
 
                 $growth = 0.0;
 
-                if ($nbrUser > 0) {
-                    $growth = (($userThisMonth - $userBeforeMonth) / $nbrUser) * 100;
+                if ($userPreviousMonth > 0) {
+                    $growth = (($userThisMonth - $userPreviousMonth) / $userPreviousMonth) * 100;
+                } elseif ($userThisMonth > 0) {
+                    $growth = 100.0;
                 }
 
                 return [
@@ -151,6 +155,7 @@ final readonly class DashboardMetricsService
             : 'MONTH(created_at)';
 
         $totalsByMonth = Affectation::query()
+            ->whereYear('created_at', now()->year)
             ->selectRaw($monthExpression . ' as month_number, COALESCE(SUM(quantite_affectee), 0) as total')
             ->groupBy('month_number')
             ->pluck('total', 'month_number');

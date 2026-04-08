@@ -153,7 +153,7 @@
             <p><strong>Date :</strong> {{ $date ?? now()->format('d/m/Y') }}</p>
             <p><strong>Numéro :</strong> {{ $numero_bon ?? '...' }}</p>
             <p><strong style="display:inline-block; min-width:130px;">Nom & Prénoms:</strong><span
-                    style="display:inline-block;">{{ ($nom ?? 'Nom') . ' ' . ($prenom ?? '') }}</span></p>
+                    style="display:inline-block;">{{ trim(($nom ?? 'Nom') . ' ' . ($prenom ?? '')) }}</span></p>
         </div>
 
         <!-- ... autres sections du bon -->

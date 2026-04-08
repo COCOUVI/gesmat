@@ -152,7 +152,7 @@
                                         <optgroup label="Collaborateurs externes">
                                             @forelse ($collaborateurs as $collab)
                                                 <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
-                                                    {{ $collab->nom }}
+                                                    {{ $collab->nom }} {{ $collab->prenom }}
                                                 </option>
                                             @empty
                                             @endforelse

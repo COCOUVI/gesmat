@@ -6,14 +6,14 @@
     <ul class="nav">
         {{-- Profil --}}
         <li class="nav-item nav-profile">
-            <a href="{{ url('/dashboard/admin') }}" class="nav-link">
+            <a href="{{ route('admin.homedash') }}" class="nav-link">
                 <div class="d-flex align-items-center">
                     <div class="profile-initials">{{ $initials }}</div>
-                    <div class="nav-profile-text d-flex flex-column ">
-                        <span class="font-weight-bold mb-2 text-truncate d-block deplace" style="max-width: 150px;">
+                    <div class="nav-profile-text d-flex flex-column">
+                        <span class="font-weight-bold mb-1 d-block">
                             {{ auth()->user()->nom }} {{ auth()->user()->prenom }}
                         </span>
-                        {{-- <span class="text-secondary text-small">Administrateur</span> --}}
+                        <span class="text-secondary text-small">{{ ucfirst(auth()->user()->role) }}</span>
                     </div>
                 </div>
             </a>
@@ -43,10 +43,16 @@
                 <div class="collapse {{ $userActive ? 'show' : '' }}" id="user-management">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item {{ request()->routeIs('showusers') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('showusers') }}">Liste des utilisateurs</a>
+                            <a class="nav-link" href="{{ route('showusers') }}">
+                                <i class="mdi mdi-format-list-bulleted"></i>
+                                <span>Liste des utilisateurs</span>
+                            </a>
                         </li>
                         <li class="nav-item {{ request()->routeIs('register') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('register') }}">Ajouter un utilisateur</a>
+                            <a class="nav-link" href="{{ route('register') }}">
+                                <i class="mdi mdi-account-plus-outline"></i>
+                                <span>Ajouter un utilisateur</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -82,21 +88,27 @@
             <div class="collapse {{ $stockActive ? 'show' : '' }}" id="stock-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('ShowToolpage') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('ShowToolpage') }}">Inventaire</a>
+                        <a class="nav-link" href="{{ route('ShowToolpage') }}">
+                            <i class="mdi mdi-clipboard-text-outline"></i>
+                            <span>Inventaire</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('addToolpage') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('addToolpage') }}">Ajouter un équipement</a>
+                        <a class="nav-link" href="{{ route('addToolpage') }}">
+                            <i class="mdi mdi-plus-box-outline"></i>
+                            <span>Ajouter un équipement</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('equipements.pannes') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('equipements.pannes') }}">
                             <i class="mdi mdi-alert-circle-outline"></i>
-                            Pannes
+                            <span>Pannes</span>
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('tools.lost') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('tools.lost') }}">
                             <i class="mdi mdi-emoticon-sad-outline"></i>
-                            Équipements non retournés
+                            <span>Équipements non retournés</span>
                         </a>
                     </li>
                 </ul>
@@ -115,20 +127,32 @@
                     <li class="nav-item {{ request()->routeIs('liste.demandes') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('liste.demandes') }}">
                             <i class="mdi mdi-cart-outline"></i>
-                            Demandes d'équipement
+                            <span>Demandes d'équipement</span>
                         </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('page.affectation') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('page.affectation') }}">Nouvelle affectation</a>
+                        <a class="nav-link" href="{{ route('page.affectation') }}">
+                            <i class="mdi mdi-plus-circle-outline"></i>
+                            <span>Nouvelle affectation</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('page.listeAffectations') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('page.listeAffectations') }}">Liste des affectations</a>
+                        <a class="nav-link" href="{{ route('page.listeAffectations') }}">
+                            <i class="mdi mdi-format-list-checks"></i>
+                            <span>Liste des affectations</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('liste.bons') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('liste.bons') }}">Bons</a>
+                        <a class="nav-link" href="{{ route('liste.bons') }}">
+                            <i class="mdi mdi-file-document-outline"></i>
+                            <span>Bons</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('CreateBon') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('CreateBon') }}">Mouvement collaborateur externe</a>
+                        <a class="nav-link" href="{{ route('CreateBon') }}">
+                            <i class="mdi mdi-truck-delivery-outline"></i>
+                            <span>Mouvement collaborateur externe</span>
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -153,12 +177,16 @@
                 <div class="collapse {{ $rapportActive ? 'show' : '' }}" id="rapport-management">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item {{ request()->routeIs('gestionnaire.rapports.index') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('gestionnaire.rapports.index') }}">Liste des
-                                rapports</a>
+                            <a class="nav-link" href="{{ route('gestionnaire.rapports.index') }}">
+                                <i class="mdi mdi-format-list-bulleted"></i>
+                                <span>Liste des rapports</span>
+                            </a>
                         </li>
                         <li class="nav-item {{ request()->routeIs('gestionnaire.rapports.create') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('gestionnaire.rapports.create') }}">Générer un
-                                rapport</a>
+                            <a class="nav-link" href="{{ route('gestionnaire.rapports.create') }}">
+                                <i class="mdi mdi-file-plus-outline"></i>
+                                <span>Générer un rapport</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -174,10 +202,16 @@
             <div class="collapse {{ $collabActive ? 'show' : '' }}" id="collab-externes">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('CollaboratorsPage') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('CollaboratorsPage') }}">Ajouter</a>
+                        <a class="nav-link" href="{{ route('CollaboratorsPage') }}">
+                            <i class="mdi mdi-account-plus-outline"></i>
+                            <span>Ajouter</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('ShowListCollaborator') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('ShowListCollaborator') }}">Liste</a>
+                        <a class="nav-link" href="{{ route('ShowListCollaborator') }}">
+                            <i class="mdi mdi-account-multiple-outline"></i>
+                            <span>Liste</span>
+                        </a>
                     </li>
                 </ul>
             </div>

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/css1/style.css">
     <!-- endinject -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <link rel="shortcut icon" href="/images1/favicon.png" />
     <style>
       :root {
@@ -80,6 +81,19 @@
       .dataTables_wrapper .dataTables_filter {
         margin-bottom: 12px;
       }
+
+      .choices__inner {
+        min-height: 38px;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+        padding: 0.4375rem 0.75rem;
+      }
+
+      .choices__list--dropdown,
+      .choices__list[aria-expanded] {
+        z-index: 1085;
+      }
     </style>
     @stack('styles')
   </head>
@@ -104,6 +118,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <!-- endinject -->
     <!-- Plugin js for this page-->
     <!-- End plugin js for this page-->
@@ -122,6 +137,50 @@
     <script src="/js1/jquery.cookie.js" type="text/javascript"></script>
     <!-- Custom js for this page-->
     <script src="/js1/dashboard.js"></script>
+    <script>
+      window.initEnhancedSelects = function(scope = document) {
+        const root = scope instanceof Element || scope instanceof Document ? scope : document;
+        const selects = root.querySelectorAll('select');
+
+        selects.forEach(function(select) {
+          if (select.dataset.choiceInitialized === 'true') {
+            return;
+          }
+
+          if (select.closest('.dataTables_wrapper') || select.classList.contains('choices__input')) {
+            return;
+          }
+
+          if (select.dataset.enhanceSelect === 'false') {
+            return;
+          }
+
+          const optionCount = select.querySelectorAll('option').length;
+          const emptyOption = Array.from(select.options).find(function(option) {
+            return option.value === '';
+          });
+
+          new Choices(select, {
+            shouldSort: false,
+            itemSelectText: '',
+            searchEnabled: select.multiple || optionCount >= 8 || select.dataset.search === 'true',
+            removeItemButton: select.multiple,
+            allowHTML: false,
+            noResultsText: 'Aucun résultat',
+            noChoicesText: 'Aucun choix disponible',
+            searchPlaceholderValue: 'Rechercher...',
+            placeholder: Boolean(emptyOption),
+            placeholderValue: emptyOption ? emptyOption.textContent.trim() : '',
+          });
+
+          select.dataset.choiceInitialized = 'true';
+        });
+      };
+
+      document.addEventListener('DOMContentLoaded', function() {
+        window.initEnhancedSelects();
+      });
+    </script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         $('table.smart-data-table').each(function() {

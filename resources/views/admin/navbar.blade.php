@@ -54,6 +54,9 @@
                     </div>
                 </a>
                 <div class="dropdown-menu navbar-dropdown" aria-labelledby="profileDropdown">
+                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                        <i class="mdi mdi-account-circle mr-2 text-primary"></i> Mon profil
+                    </a>
                     <div class="dropdown-divider"></div>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf

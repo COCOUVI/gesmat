@@ -42,7 +42,8 @@ test('bon tracks interlocuteur type for external collaborator affectation', func
 
     expect($bon->interlocuteur_type)->toBe('collaborateur_externe');
     expect($bon->interlocuteur_id)->toBe($collaborateur->id);
-    expect($bon->getInterlocuteurNom())->toBe($collaborateur->nom);
+    expect($bon->getInterlocuteurNom())->toContain($collaborateur->nom);
+    expect($bon->getInterlocuteurNom())->toContain($collaborateur->prenom);
 });
 
 test('bon tracks libre source for equipment entry', function (): void {
@@ -82,4 +83,37 @@ test('bon returns equipment return interlocuteur properly', function (): void {
     expect($bon->interlocuteur_type)->toBe('user');
     expect($bon->interlocuteur_id)->toBe($employee->id);
     expect($bon->getInterlocuteur()->id)->toBe($employee->id);
+});
+
+test('bon returns identity parts for libre and collaborator sources', function (): void {
+    $collaborateur = CollaborateurExterne::factory()->create([
+        'nom' => 'Tossou',
+        'prenom' => 'Alice',
+    ]);
+
+    $collaborateurBon = Bon::create([
+        'collaborateur_externe_id' => $collaborateur->id,
+        'motif' => 'Livraison',
+        'statut' => 'entrée',
+        'fichier_pdf' => 'test/collab.pdf',
+        'interlocuteur_type' => 'collaborateur_externe',
+        'interlocuteur_id' => $collaborateur->id,
+    ]);
+
+    $libreBon = Bon::create([
+        'motif' => 'Réapprovisionnement libre',
+        'statut' => 'entrée',
+        'fichier_pdf' => 'test/libre.pdf',
+        'interlocuteur_type' => 'libre',
+        'interlocuteur_nom_libre' => 'Jean Dupont',
+    ]);
+
+    expect($collaborateurBon->getInterlocuteurIdentityParts())->toBe([
+        'nom' => 'Tossou',
+        'prenom' => 'Alice',
+    ]);
+    expect($libreBon->getInterlocuteurIdentityParts())->toBe([
+        'nom' => 'Jean Dupont',
+        'prenom' => '',
+    ]);
 });

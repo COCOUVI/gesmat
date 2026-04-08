@@ -149,15 +149,12 @@ final class AdminController extends Controller
         );
         $equipement = $result['equipement'];
         $bon = $result['bon'];
-        $pdfPath = $result['pdf_path'];
-
-        $deposantName = $request->getDeposantName() ?? Auth::user()->nom;
-        $deposantPrenom = Auth::user()->prenom ?? '';
+        $identity = $this->resolveBonIdentity($bon, Auth::user()->nom ?? 'Utilisateur', Auth::user()->prenom ?? '');
 
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
-            'nom' => $deposantName,
-            'prenom' => $deposantPrenom,
+            'nom' => $identity['nom'],
+            'prenom' => $identity['prenom'],
             'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
@@ -345,21 +342,18 @@ final class AdminController extends Controller
             $actionData = $request->getActionData();
             $result = $this->createUnifiedAffectationAction->handle(Auth::user(), $actionData);
 
-            $interlocuteur = $result['interlocuteur'];
             $bon = $result['bon'];
-
-            $interlocuteurNom = $interlocuteur instanceof User
-                ? ($interlocuteur->nom ?? 'Employé')
-                : ($interlocuteur->nom ?? 'Collaborateur');
-
-            $interlocuteurPrenom = $interlocuteur instanceof User
-                ? ($interlocuteur->prenom ?? '')
-                : '';
+            $interlocuteur = $result['interlocuteur'];
+            $identity = $this->resolveBonIdentity(
+                $bon,
+                $interlocuteur instanceof User ? ($interlocuteur->nom ?? 'Employé') : ($interlocuteur->nom ?? 'Collaborateur'),
+                $interlocuteur instanceof User ? ($interlocuteur->prenom ?? '') : ($interlocuteur->prenom ?? '')
+            );
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $interlocuteurNom,
-                'prenom' => $interlocuteurPrenom,
+                'nom' => $identity['nom'],
+                'prenom' => $identity['prenom'],
                 'motif' => $result['motif'],
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
@@ -387,14 +381,13 @@ final class AdminController extends Controller
             $result = $this->createUnifiedStockEntryAction->handle(Auth::user(), $actionData);
 
             $bon = $result['bon'];
-            $equipement = Equipement::findOrFail($actionData['equipement_id']);
-            $deposantName = $request->getDeposantName() ?? Auth::user()->nom;
-            $deposantPrenom = Auth::user()->prenom ?? '';
+            $equipement = $result['equipement'];
+            $identity = $this->resolveBonIdentity($bon, Auth::user()->nom ?? 'Utilisateur', Auth::user()->prenom ?? '');
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $deposantName,
-                'prenom' => $deposantPrenom,
+                'nom' => $identity['nom'],
+                'prenom' => $identity['prenom'],
                 'motif' => 'Réapprovisionnement : '.$equipement->nom.' (Quantité: '.$actionData['quantite'].')',
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
@@ -498,7 +491,7 @@ final class AdminController extends Controller
 
     public function ShowBons()
     {
-        $bons = Bon::latest()->get();
+        $bons = Bon::with(['user:id,nom,prenom', 'collaborateurExterne:id,nom,prenom'])->latest()->get();
 
         return view('admin.list_bons', ['bons' => $bons]);
     }
@@ -530,11 +523,16 @@ final class AdminController extends Controller
         $validated = $request->validated();
         $result = $this->createExternalCollaboratorBonAction->handle(Auth::user(), $validated);
         $bon = $result['bon'];
+        $identity = $this->resolveBonIdentity(
+            $bon,
+            $result['collaborateur']->nom ?? 'Collaborateur',
+            $result['collaborateur']->prenom ?? ''
+        );
 
         $pdf = Pdf::loadView('pdf.bon', [
             'date' => now()->format('d/m/Y'),
-            'nom' => $result['collaborateur']->nom ?? 'Admin',
-            'prenom' => $result['collaborateur']->prenom ?? '',
+            'nom' => $identity['nom'],
+            'prenom' => $identity['prenom'],
             'motif' => $validated['motif'],
             'numero_bon' => $bon->id,
             'type' => $bon->statut,
@@ -560,12 +558,12 @@ final class AdminController extends Controller
             $result = $this->registerEquipmentReturnAction->handle($affectation, $validated);
             $affectation = $result['affectation'];
             $bon = $result['bon'];
-            $pdfPath = $result['pdf_path'];
+            $identity = $this->resolveBonIdentity($bon, $affectation->getNomDestinataire(), '');
 
             $this->generateBonPdf($bon, [
                 'date' => now()->format('d/m/Y'),
-                'nom' => $affectation->getNomDestinataire(),
-                'prenom' => '',
+                'nom' => $identity['nom'],
+                'prenom' => $identity['prenom'],
                 'motif' => $bon->motif,
                 'numero_bon' => $bon->id,
                 'type' => $bon->statut,
@@ -732,5 +730,18 @@ final class AdminController extends Controller
     {
         $pdf = Pdf::loadView('pdf.bon', $data);
         Storage::disk('public')->put($bon->fichier_pdf, $pdf->output());
+    }
+
+    /**
+     * @return array{nom: string, prenom: string}
+     */
+    private function resolveBonIdentity(Bon $bon, string $fallbackNom = 'Inconnu', string $fallbackPrenom = ''): array
+    {
+        $identity = $bon->getInterlocuteurIdentityParts();
+
+        return [
+            'nom' => $identity['nom'] !== '' ? $identity['nom'] : $fallbackNom,
+            'prenom' => $identity['prenom'] !== '' ? $identity['prenom'] : $fallbackPrenom,
+        ];
     }
 }

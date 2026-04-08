@@ -208,6 +208,18 @@
             });
         });
     </script>
+    @if (session('pdf'))
+        <script>
+            window.addEventListener('load', function() {
+                const link = document.createElement('a');
+                link.href = "{{ session('pdf') }}";
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        </script>
+    @endif
 @endpush
 
 @push('popups')
@@ -291,7 +303,7 @@
                                         <optgroup label="Collaborateurs externes">
                                             @forelse ($collaborateurs as $collab)
                                                 <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
-                                                    {{ $collab->nom }}
+                                                    {{ $collab->nom }} {{ $collab->prenom }}
                                                 </option>
                                             @empty
                                             @endforelse

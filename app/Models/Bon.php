@@ -83,11 +83,40 @@ final class Bon extends Model
      */
     public function getInterlocuteurNom(): string
     {
+        $interlocuteur = $this->getInterlocuteur();
+
         return match ($this->interlocuteur_type) {
-            'user' => ($this->getInterlocuteur()?->nom ?? '').' '.($this->getInterlocuteur()?->prenom ?? ''),
-            'collaborateur_externe' => $this->getInterlocuteur()?->nom ?? '',
-            'libre' => $this->interlocuteur_nom_libre ?? 'Inconnu',
+            'user' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
+            'collaborateur_externe' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
+            'libre' => mb_trim($this->interlocuteur_nom_libre ?? '') ?: 'Inconnu',
             default => 'Inconnu',
+        };
+    }
+
+    /**
+     * @return array{nom: string, prenom: string}
+     */
+    public function getInterlocuteurIdentityParts(): array
+    {
+        $interlocuteur = $this->getInterlocuteur();
+
+        return match ($this->interlocuteur_type) {
+            'user' => [
+                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'prenom' => (string) ($interlocuteur?->prenom ?? ''),
+            ],
+            'collaborateur_externe' => [
+                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'prenom' => (string) ($interlocuteur?->prenom ?? ''),
+            ],
+            'libre' => [
+                'nom' => mb_trim((string) ($this->interlocuteur_nom_libre ?? '')) ?: 'Inconnu',
+                'prenom' => '',
+            ],
+            default => [
+                'nom' => 'Inconnu',
+                'prenom' => '',
+            ],
         };
     }
 }

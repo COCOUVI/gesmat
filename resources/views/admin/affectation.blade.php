@@ -201,7 +201,7 @@
                                     @forelse ($collaborateurs as $collab)
                                         <option value="{{ $collab->id }}"
                                             @selected((string) old('collaborateur_externe_id') === (string) $collab->id)>
-                                            {{ $collab->nom }}
+                                            {{ $collab->nom }} {{ $collab->prenom }}
                                         </option>
                                     @empty
                                         <option disabled>Aucun collaborateur externe disponible</option>
@@ -343,6 +343,9 @@
                 function addEquipementField() {
                     const clone = template.content.firstElementChild.cloneNode(true);
                     wrapper.appendChild(clone);
+                    if (window.initEnhancedSelects) {
+                        window.initEnhancedSelects(clone);
+                    }
                     updateStockInfo(clone);
                     refreshRemoveButtons();
                 }

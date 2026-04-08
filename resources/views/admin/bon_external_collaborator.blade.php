@@ -339,6 +339,9 @@
             function addEquipementField() {
                 const clone = template.content.firstElementChild.cloneNode(true);
                 wrapper.appendChild(clone);
+                if (window.initEnhancedSelects) {
+                    window.initEnhancedSelects(clone);
+                }
                 updateStockInfo(clone);
                 refreshRemoveButtons();
             }

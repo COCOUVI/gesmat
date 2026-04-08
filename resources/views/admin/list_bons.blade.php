@@ -42,6 +42,8 @@
                     <th>Numéro</th>
                     <th>Date de création</th>
                     <th>Type</th>
+                    <th>Interlocuteur</th>
+                    <th>Motif</th>
                     <th>Téléchargement</th>
                 </tr>
             </thead>
@@ -51,6 +53,8 @@
                         <td>{{ $bon->id }}</td>
                         <td>{{ $bon->created_at->format('d/m/Y H:i') }}</td>
                         <td>{{ $bon->statut }}</td>
+                        <td>{{ $bon->getInterlocuteurNom() }}</td>
+                        <td>{{ $bon->motif }}</td>
                         <td>
                             @if ($bon->fichier_pdf)
                                 <a href="{{ route('bons.download', ['bon' => $bon->id]) }}" class="btn btn-sm btn-primary"
@@ -64,7 +68,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5"><span>Aucun bon disponible pour le moment</span></td>
+                        <td colspan="6"><span>Aucun bon disponible pour le moment</span></td>
                     </tr>
                 @endforelse
             </tbody>

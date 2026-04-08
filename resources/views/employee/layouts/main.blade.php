@@ -5,6 +5,83 @@
             background-color: #f8f9fa;
         }
 
+        .employee-stat-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            border-left: 5px solid #0f8b4c;
+            box-shadow: 0 0.5rem 1.25rem rgba(15, 23, 42, 0.08);
+            padding: 1.1rem 1.15rem;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            height: 100%;
+        }
+
+        .employee-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.9rem 1.8rem rgba(15, 23, 42, 0.12);
+        }
+
+        .employee-stat-card .stat-label {
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .employee-stat-card .stat-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1;
+        }
+
+        .employee-stat-card .stat-icon-wrap {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .employee-stat-card.stat-assign {
+            border-left-color: #0f8b4c;
+        }
+
+        .employee-stat-card.stat-assign .stat-icon-wrap {
+            background: rgba(15, 139, 76, 0.14);
+            color: #0f8b4c;
+        }
+
+        .employee-stat-card.stat-waiting {
+            border-left-color: #d97706;
+        }
+
+        .employee-stat-card.stat-waiting .stat-icon-wrap {
+            background: rgba(217, 119, 6, 0.14);
+            color: #d97706;
+        }
+
+        .employee-stat-card.stat-accepted {
+            border-left-color: #166534;
+        }
+
+        .employee-stat-card.stat-accepted .stat-icon-wrap {
+            background: rgba(22, 101, 52, 0.14);
+            color: #166534;
+        }
+
+        .employee-stat-card.stat-broken {
+            border-left-color: #dc2626;
+        }
+
+        .employee-stat-card.stat-broken .stat-icon-wrap {
+            background: rgba(220, 38, 38, 0.14);
+            color: #dc2626;
+        }
+
         .dashboard-card {
             border-radius: 0.5rem;
             box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.075);
@@ -116,39 +193,55 @@
 
             <!-- Statistiques principales -->
             <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="stat-card stat-primary shadow-sm">
-                        <i class="mdi mdi-desktop-mac stat-icon"></i>
-                        <div>
-                            <h5>Unités assignées</h5>
-                            <h3>{{$nbr_assign}}</h3>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="employee-stat-card stat-assign">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="stat-label">Unités assignées</p>
+                                <p class="stat-value mb-0">{{ $nbr_assign }}</p>
+                            </div>
+                            <div class="stat-icon-wrap">
+                                <i class="fas fa-box-open fa-lg"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stat-card stat-warning shadow-sm">
-                        <i class="mdi mdi-file-document stat-icon"></i>
-                        <div>
-                            <h5>Demandes en attente</h5>
-                            <h3>{{ $nbr_en_attente }}</h3>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="employee-stat-card stat-waiting">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="stat-label">Demandes en attente</p>
+                                <p class="stat-value mb-0">{{ $nbr_en_attente }}</p>
+                            </div>
+                            <div class="stat-icon-wrap">
+                                <i class="fas fa-hourglass-half fa-lg"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stat-card stat-success shadow-sm">
-                        <i class="mdi mdi-check-circle stat-icon"></i>
-                        <div>
-                            <h5>Demandes acceptées</h5>
-                            <h3>{{ $nbr_accept }}</h3>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="employee-stat-card stat-accepted">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="stat-label">Demandes acceptées</p>
+                                <p class="stat-value mb-0">{{ $nbr_accept }}</p>
+                            </div>
+                            <div class="stat-icon-wrap">
+                                <i class="fas fa-check-circle fa-lg"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stat-card stat-danger shadow-sm">
-                        <i class="mdi mdi-bug stat-icon"></i>
-                        <div>
-                            <h5>Unités en panne</h5>
-                            <h3>{{$nbr_non_resolue}}</h3>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="employee-stat-card stat-broken">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="stat-label">Unités en panne</p>
+                                <p class="stat-value mb-0">{{ $nbr_non_resolue }}</p>
+                            </div>
+                            <div class="stat-icon-wrap">
+                                <i class="fas fa-triangle-exclamation fa-lg"></i>
+                            </div>
                         </div>
                     </div>
                 </div>

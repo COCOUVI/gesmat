@@ -69,7 +69,7 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
             $collabId = (int) str_replace('collab_', '', $deposantId);
             $collab = \App\Models\CollaborateurExterne::find($collabId);
 
-            return $collab ? $collab->nom : null;
+            return $collab ? mb_trim("{$collab->nom} {$collab->prenom}") : null;
         }
 
         return null;

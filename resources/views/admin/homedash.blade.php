@@ -46,11 +46,11 @@
                 <div class="card bg-gradient-toolzy-success card-img-holder text-white">
                     <div class="card-body">
                         <img src="images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Utilisateurs actifs
+                        <h4 class="font-weight-normal mb-3">Utilisateurs
                             <i class="mdi mdi-account-multiple mdi-24px float-right"></i>
                         </h4>
                         <h2 class="mb-5">{{ $nbr_user }}</h2>
-                        <h6 class="card-text">Augmentation de {{$growth<0?-$growth:$growth}} % ce mois</h6>
+                        <h6 class="card-text">Variation de {{ number_format($growth, 1, ',', ' ') }} % par rapport au mois précédent</h6>
                     </div>
                 </div>
             </div>
