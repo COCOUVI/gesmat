@@ -32,6 +32,13 @@
                     <form action="{{ route('profile.update') }}" method="POST">
                         @csrf
                         @method('PATCH')
+                        @php
+                            $isAdministrator = auth()->user()->role === 'admin';
+                            $selectedRole = old('role', $user->role);
+                            if (in_array($selectedRole, ['employe', 'employé', 'employée'], true)) {
+                                $selectedRole = 'employé';
+                            }
+                        @endphp
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -62,22 +69,39 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Rôle</label>
-                                <input type="text" class="form-control" value="{{ ucfirst($user->role) }}" disabled>
+                                <select name="role" class="form-select @error('role') is-invalid @enderror" @disabled(!$isAdministrator)>
+                                    @foreach ($roleOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected($selectedRole === $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('role')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Poste</label>
-                                <input type="text" name="poste"
-                                    class="form-control @error('poste') is-invalid @enderror"
-                                    value="{{ old('poste', $user->poste) }}" required>
+                                <select name="poste" class="form-select @error('poste') is-invalid @enderror" @disabled(!$isAdministrator)>
+                                    @foreach ($posteOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('poste', $user->poste) === $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('poste')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Service</label>
-                                <input type="text" name="service"
-                                    class="form-control @error('service') is-invalid @enderror"
-                                    value="{{ old('service', $user->service) }}">
+                                <select name="service" class="form-select @error('service') is-invalid @enderror" @disabled(!$isAdministrator)>
+                                    @foreach ($serviceOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('service', $user->service) === $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('service')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

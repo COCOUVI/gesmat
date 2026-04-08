@@ -147,7 +147,7 @@
             return;
           }
 
-          if (select.closest('.dataTables_wrapper') || select.classList.contains('choices__input')) {
+          if (select.classList.contains('choices__input')) {
             return;
           }
 
@@ -163,7 +163,7 @@
           new Choices(select, {
             shouldSort: false,
             itemSelectText: '',
-            searchEnabled: select.multiple || optionCount >= 8 || select.dataset.search === 'true',
+            searchEnabled: true,
             removeItemButton: select.multiple,
             allowHTML: false,
             noResultsText: 'Aucun résultat',
@@ -219,6 +219,10 @@
               url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
             },
           });
+
+          if (window.initEnhancedSelects) {
+            window.initEnhancedSelects(table.closest('.dataTables_wrapper').get(0) || document);
+          }
         });
       });
     </script>

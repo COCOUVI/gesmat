@@ -1,6 +1,9 @@
 @extends('employee.homedash')
 
 @section('content')
+    @php
+        $selectedRole = in_array($user->role, ['employe', 'employé', 'employée'], true) ? 'employé' : $user->role;
+    @endphp
     <div class="container py-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
@@ -57,25 +60,27 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Poste</label>
-                                    <input type="text" name="poste"
-                                        class="form-control @error('poste') is-invalid @enderror"
-                                        value="{{ old('poste', $user->poste) }}" required>
-                                    @error('poste')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <select class="form-select" disabled>
+                                        @foreach ($posteOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($user->poste === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Service</label>
-                                    <input type="text" name="service"
-                                        class="form-control @error('service') is-invalid @enderror"
-                                        value="{{ old('service', $user->service) }}">
-                                    @error('service')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <select class="form-select" disabled>
+                                        @foreach ($serviceOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($user->service === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Rôle</label>
-                                    <input type="text" class="form-control" value="{{ ucfirst($user->role) }}" disabled>
+                                    <select class="form-select" disabled>
+                                        @foreach ($roleOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($selectedRole === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
 

@@ -27,9 +27,9 @@
             <li class="nav-item nav-profile dropdown">
                 <a class="nav-link dropdown-toggle" id="profileDropdown" href="#" data-toggle="dropdown"
                     aria-expanded="false">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center gap-2">
                         <div class="profile-initials">{{ $initials }}</div>
-                        <div class="nav-profile-text">
+                        <div class="nav-profile-text ms-1">
                             <p class="mb-1 text-black">{{ auth()->user()->nom }} {{ auth()->user()->prenom }}</p>
                         </div>
                     </div>

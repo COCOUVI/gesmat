@@ -24,13 +24,29 @@ final class ProfileController extends Controller
 
         return view($view, [
             'user' => $request->user(),
+            'roleOptions' => $this->roleOptions(),
+            'posteOptions' => $this->posteOptions(),
+            'serviceOptions' => $this->serviceOptions(),
         ]);
     }
 
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->validated());
+        $validated = $request->validated();
+        $data = [
+            'nom' => $validated['nom'],
+            'prenom' => $validated['prenom'],
+            'email' => $validated['email'],
+        ];
+
+        if ($user->role === 'admin') {
+            $data['role'] = $validated['role'];
+            $data['poste'] = $validated['poste'];
+            $data['service'] = $validated['service'];
+        }
+
+        $user->fill($data);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -66,5 +82,53 @@ final class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function roleOptions(): array
+    {
+        return [
+            'admin' => 'Administrateur',
+            'gestionnaire' => 'Gestionnaire',
+            'employé' => 'Employé',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function posteOptions(): array
+    {
+        return [
+            'stagiaire' => 'Stagiaire',
+            'technicien' => 'Technicien',
+            'electricien' => 'Électricien',
+            'rigger' => 'Rigger',
+            'support_technique' => 'Support technique',
+            'secretariat' => 'Secrétariat',
+            'comptabilite' => 'Comptabilité',
+            'team_leader' => 'Team Leader',
+            'directeur_technique' => 'Directeur Technique',
+            'directeur_general' => 'Directeur Général',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function serviceOptions(): array
+    {
+        return [
+            'secretariat' => 'Secrétariat',
+            'comptabilite' => 'Comptabilité',
+            'deploiement_ftth' => 'Déploiement FTTH',
+            'deploiement_fttr' => 'Déploiement FTTR',
+            'deploiement_reseaux' => 'Déploiement Réseaux',
+            'deploiement_securise_video' => 'Déploiement Sécurisé et Vidéo Surveillance',
+            'service_informatique' => 'Service Informatique',
+            'direction' => 'Direction',
+        ];
     }
 }
