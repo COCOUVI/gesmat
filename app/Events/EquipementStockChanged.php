@@ -10,8 +10,8 @@ use Illuminate\Queue\SerializesModels;
 
 final class EquipementStockChanged implements ShouldDispatchAfterCommit
 {
-    use Dispatchable, SerializesModels;
-
+    use Dispatchable;
+    use SerializesModels;
     public function __construct(
         public readonly int $equipementId,
         public readonly ?int $previousAvailable = null,

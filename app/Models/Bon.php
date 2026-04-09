@@ -29,10 +29,15 @@ final class Bon extends Model
         'motif',
         'statut',
         'fichier_pdf',
+        'interlocuteur_type',
+        'interlocuteur_id',
+        'interlocuteur_nom_libre',
     ];
 
     /**
      * Relation avec l'utilisateur (employé)
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -41,6 +46,8 @@ final class Bon extends Model
 
     /**
      * Relation avec le collaborateur externe
+     *
+     * @return BelongsTo<CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -49,11 +56,67 @@ final class Bon extends Model
 
     /**
      * Relation avec les équipements du bon
+     *
+     * @return BelongsToMany<Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function equipements(): BelongsToMany
     {
         return $this->belongsToMany(Equipement::class, 'bon_equipement')
             ->withPivot('quantite')
             ->withTimestamps();
+    }
+
+    /**
+     * Récupère l'interlocuteur (user, collaborateur externe ou libre)
+     */
+    public function getInterlocuteur(): ?Model
+    {
+        return match ($this->interlocuteur_type) {
+            'user' => User::find($this->interlocuteur_id),
+            'collaborateur_externe' => CollaborateurExterne::find($this->interlocuteur_id),
+            default => null,
+        };
+    }
+
+    /**
+     * Récupère le nom complet de l'interlocuteur
+     */
+    public function getInterlocuteurNom(): string
+    {
+        $interlocuteur = $this->getInterlocuteur();
+
+        return match ($this->interlocuteur_type) {
+            'user' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
+            'collaborateur_externe' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
+            'libre' => mb_trim($this->interlocuteur_nom_libre ?? '') ?: 'Inconnu',
+            default => 'Inconnu',
+        };
+    }
+
+    /**
+     * @return array{nom: string, prenom: string}
+     */
+    public function getInterlocuteurIdentityParts(): array
+    {
+        $interlocuteur = $this->getInterlocuteur();
+
+        return match ($this->interlocuteur_type) {
+            'user' => [
+                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'prenom' => (string) ($interlocuteur?->prenom ?? ''),
+            ],
+            'collaborateur_externe' => [
+                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'prenom' => (string) ($interlocuteur?->prenom ?? ''),
+            ],
+            'libre' => [
+                'nom' => mb_trim((string) ($this->interlocuteur_nom_libre ?? '')) ?: 'Inconnu',
+                'prenom' => '',
+            ],
+            default => [
+                'nom' => 'Inconnu',
+                'prenom' => '',
+            ],
+        };
     }
 }

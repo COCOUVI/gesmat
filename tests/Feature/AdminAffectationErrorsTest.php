@@ -8,7 +8,7 @@ use App\Models\Equipement;
 use App\Models\Panne;
 use App\Models\User;
 
-test('admin affectation fails with insufficient stock', function () {
+test('admin affectation fails with insufficient stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -47,7 +47,7 @@ test('admin affectation fails with insufficient stock', function () {
     expect($affectation)->toBeNull();
 });
 
-test('admin affectation fails when employee is missing', function () {
+test('admin affectation fails when employee is missing', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
 
     $categorie = Categorie::create(['nom' => 'Test']);
@@ -78,7 +78,7 @@ test('admin affectation fails when employee is missing', function () {
     $response->assertRedirect();
 });
 
-test('admin affectation fails when cumulative duplicated lines exceed available stock', function () {
+test('admin affectation fails when cumulative duplicated lines exceed available stock', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -109,7 +109,7 @@ test('admin affectation fails when cumulative duplicated lines exceed available 
     expect(Affectation::where('user_id', $employee->id)->count())->toBe(0);
 });
 
-test('admin affectation fails when target user is not an employee', function () {
+test('admin affectation fails when target user is not an employee', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $gestionnaire = User::factory()->create(['role' => 'gestionnaire']);
 
@@ -140,7 +140,7 @@ test('admin affectation fails when target user is not an employee', function () 
     expect(Affectation::where('user_id', $gestionnaire->id)->count())->toBe(0);
 });
 
-test('admin cannot cancel affectation after partial return', function () {
+test('admin cannot cancel affectation after partial return', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -174,7 +174,7 @@ test('admin cannot cancel affectation after partial return', function () {
     expect(Affectation::find($affectation->id))->not->toBeNull();
 });
 
-test('admin cannot cancel affectation with panne history', function () {
+test('admin cannot cancel affectation with panne history', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 

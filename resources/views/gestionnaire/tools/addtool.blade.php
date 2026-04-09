@@ -120,10 +120,71 @@
                                 <div class="mb-3">
                                     <label for="equipmentQuantity" class="form-label required-label">Quantité disponible</label>
                                     <input type="number" class="form-control" id="equipmentQuantity"
-                                        name="quantite-" min="1" required placeholder="Ex : 10"
-                                        value="{{ old('quantite') ?? $equipement->quantite_disponible ?? '' }}">
+                                        name="quantite" min="1" required placeholder="Ex : 10"
+                                        value="{{ old('quantite') ?? $equipement->quantite ?? '' }}">
                                     @error('quantite')
                                         <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="equipmentThreshold" class="form-label">Seuil critique</label>
+                                    <input type="number" class="form-control" id="equipmentThreshold"
+                                        name="seuil_critique" min="0" placeholder="Ex : 5"
+                                        value="{{ old('seuil_critique') ?? $equipement->seuil_critique ?? '' }}">
+                                    @error('seuil_critique')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="border-top pt-4">
+                                    <h6 class="mb-3"><i class="mdi mdi-account-check me-2"></i>Qui dépose cet équipement ? (Optionnel)</h6>
+                                    <p class="text-muted small">Renseignez la provenance du matériel pour traçabilité</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="deposantSelect" class="form-label">Sélectionner un déposant</label>
+                                    <select class="form-select" name="deposant_id" id="deposantSelect">
+                                        <option value="">-- Aucun (libre/anonyme) --</option>
+                                        <optgroup label="Employés">
+                                            @forelse ($employes as $emp)
+                                                <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
+                                                    {{ $emp->nom }} {{ $emp->prenom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                        <optgroup label="Collaborateurs externes">
+                                            @forelse ($collaborateurs as $collab)
+                                                <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
+                                                    {{ $collab->nom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                    </select>
+                                    @error('deposant_id')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="deposantNomLibre" class="form-label">Ou renseigner le nom</label>
+                                    <input type="text" class="form-control" name="deposant_nom_libre" id="deposantNomLibre"
+                                        placeholder="Ex: Fournisseur XYZ, Jean Dupont..." value="{{ old('deposant_nom_libre') }}">
+                                    <small class="text-muted">À remplir si la personne n'est pas dans la liste</small>
+                                    @error('deposant_nom_libre')
+                                        <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>

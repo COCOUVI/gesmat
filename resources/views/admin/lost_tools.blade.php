@@ -30,6 +30,7 @@
                                     <th>Quantité active</th>
                                     <th>Dont en panne</th>
                                     <th>Date prévue de retour</th>
+                                    <th>Échéance</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -41,6 +42,13 @@
                                         <td>{{ $affectation->getQuantiteActive() }}</td>
                                         <td>{{ $affectation->getQuantitePannesNonResolues() }}</td>
                                         <td>{{ \Carbon\Carbon::parse($affectation->date_retour)->format('d/m/Y') }}</td>
+                                        <td>
+                                            @if ($affectation->date_retour && $affectation->date_retour->isPast())
+                                                <span class="badge bg-danger">En retard</span>
+                                            @else
+                                                <span class="badge bg-info text-dark">À venir</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <button type="button" class="btn btn-success btn-sm"
                                                 data-bs-toggle="modal"

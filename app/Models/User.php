@@ -26,8 +26,8 @@ use Illuminate\Notifications\Notifiable;
  */
 final class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
+    use HasFactory;
+    use Notifiable;
     protected $fillable = [
         'nom',
         'email',
@@ -54,6 +54,7 @@ final class User extends Authenticatable
 
     /**
      * Relation avec les équipements affectés à cet utilisateur
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function equipements(): BelongsToMany
     {
@@ -64,6 +65,7 @@ final class User extends Authenticatable
 
     /**
      * Relation avec les pannes signalées par cet utilisateur
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
      */
     public function pannes(): HasMany
     {
@@ -72,6 +74,7 @@ final class User extends Authenticatable
 
     /**
      * Relation avec les demandes d'équipement de cet utilisateur
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Demande, $this>
      */
     public function demandes(): HasMany
     {
@@ -80,6 +83,7 @@ final class User extends Authenticatable
 
     /**
      * Relation avec les bons associés à cet utilisateur
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Bon, $this>
      */
     public function bons(): HasMany
     {
@@ -88,6 +92,7 @@ final class User extends Authenticatable
 
     /**
      * Relation avec les demandes assignées à cet utilisateur (gestionnaire)
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Demande, $this>
      */
     public function demandesAssignees(): HasMany
     {

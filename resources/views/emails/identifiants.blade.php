@@ -69,25 +69,27 @@
 </head>
 <body>
     @php
-        $logoDataUri = null;
-        if (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
-            $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
+        $logoSrc = null;
+        if (isset($message, $logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = $message->embed($logoPath);
+        } elseif (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
         }
     @endphp
 
     <div class="email-container">
         <div class="email-header">
-            @if ($logoDataUri)
-                <img src="{{ $logoDataUri }}" alt="J-Tools Logo" style="max-width: 150px; height: auto; margin-bottom: 15px; display: block;">
+            @if ($logoSrc)
+                <img src="{{ $logoSrc }}" alt="J-MAT Logo" style="max-width: 150px; height: auto; margin-bottom: 15px; display: block;">
             @else
-                <i class="fas fa-tools"></i> <strong>J-Tools</strong>
+                <i class="fas fa-tools"></i> <strong>J-MAT</strong>
             @endif
         </div>
 
         <div class="email-body">
             <h2>Bienvenue {{ $user->prenom }} {{ $user->nom }},</h2>
 
-            <p>Un compte a été créé pour vous sur la plateforme <strong>J-Tools</strong>.</p>
+            <p>Un compte a été créé pour vous sur la plateforme <strong>J-MAT</strong>.</p>
 
             <p>Voici vos identifiants de connexion :</p>
 
@@ -106,11 +108,11 @@
                 </a>
             </div>
 
-            <p>Cordialement,<br>L'équipe J-Tools</p>
+            <p>Cordialement,<br>L'équipe J-MAT</p>
         </div>
 
         <div class="footer">
-            &copy; {{ date('Y') }} J-Tools. Tous droits réservés.
+            &copy; {{ date('Y') }} J-MAT. Tous droits réservés.
         </div>
     </div>
 </body>

@@ -48,9 +48,6 @@
                                 @foreach ($pannes as $panne)
                                     @php
                                         $quantiteRemplacable = $panne->getQuantiteRemplacable();
-                                        $stockDisponiblePourRemplacement = $panne->affectation
-                                            ? $panne->equipement->getQuantiteDisponible()
-                                            : 0;
                                     @endphp
                                     <tr>
                                         <td>{{ $panne->equipement->nom }}</td>
@@ -70,7 +67,7 @@
                                         <td>{{ $panne->user->nom }} {{ $panne->user->prenom }}</td>
                                         <td>{{ $panne->created_at->format('d/m/Y H:i') }}</td>
                                         <td class="text-center">
-                                            <div class="d-flex flex-column gap-2">
+                                            <div class="d-flex flex-wrap justify-content-center gap-2">
                                                 @if ($panne->getQuantiteResolvable() > 0)
                                                     <button type="button" class="btn btn-sm btn-success"
                                                         data-bs-toggle="modal"
@@ -87,14 +84,6 @@
                                                         data-bs-target="#replaceModal{{ $panne->id }}">
                                                         Remplacer
                                                     </button>
-                                                @elseif ($panne->affectation && $panne->getQuantiteEncoreChezEmploye() > 0)
-                                                    <span class="small text-muted">Pas de stock pour remplacer</span>
-                                                @endif
-
-                                                @if ($panne->affectation)
-                                                    <span class="small text-muted">
-                                                        Stock dispo pour remplacement : {{ $stockDisponiblePourRemplacement }}
-                                                    </span>
                                                 @endif
                                             </div>
                                         </td>

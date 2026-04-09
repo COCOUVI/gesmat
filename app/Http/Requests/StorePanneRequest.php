@@ -16,9 +16,9 @@ final class StorePanneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'affectation_id' => 'required|exists:affectations,id',
-            'quantite' => 'required|integer|min:1',
-            'description' => 'required|string|min:10|max:1000',
+            'affectation_id' => ['required', 'exists:affectations,id'],
+            'quantite' => ['required', 'integer', 'min:1'],
+            'description' => ['required', 'string', 'min:10', 'max:1000'],
         ];
     }
 

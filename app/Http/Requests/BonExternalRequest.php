@@ -16,9 +16,9 @@ final class BonExternalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'collaborateur_id' => 'required|exists:collaborateur_externes,id',
-            'motif' => 'required|string|max:500',
-            'type' => 'required|in:entrée,sortie',
+            'collaborateur_id' => ['required', 'exists:collaborateur_externes,id'],
+            'motif' => ['required', 'string', 'max:500'],
+            'type' => ['required', 'in:entrée,sortie'],
         ];
     }
 

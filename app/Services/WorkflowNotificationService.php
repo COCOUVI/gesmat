@@ -337,7 +337,7 @@ final class WorkflowNotificationService
             return;
         }
 
-        $daysLeft = max(0, now()->startOfDay()->diffInDays($affectation->date_retour->copy()->startOfDay(), false));
+        $daysLeft = max(0, today()->diffInDays($affectation->date_retour->copy()->startOfDay(), false));
 
         $details = [
             ['label' => 'Équipement', 'value' => (string) $affectation->equipement?->nom],
@@ -429,12 +429,13 @@ final class WorkflowNotificationService
 
     private function safeSend(User $recipient, WorkflowActionMail $mail): void
     {
-        if (! filled($recipient->email)) {
+        if (blank($recipient->email)) {
             return;
         }
 
         try {
-            Mail::to($recipient->email)->send($mail);
+            $mail->afterCommit();
+            Mail::to($recipient->email)->queue($mail);
         } catch (Throwable $throwable) {
             Log::error('Erreur lors de l’envoi d’un email workflow.', [
                 'recipient_id' => $recipient->id,
@@ -451,7 +452,7 @@ final class WorkflowNotificationService
 
     private function attachmentNameForBon(?Bon $bon): ?string
     {
-        if ($bon === null || $bon->fichier_pdf === null) {
+        if (!$bon instanceof \App\Models\Bon || $bon->fichier_pdf === null) {
             return null;
         }
 

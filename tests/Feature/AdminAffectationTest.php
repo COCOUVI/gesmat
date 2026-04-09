@@ -7,10 +7,9 @@ use App\Models\Bon;
 use App\Models\Categorie;
 use App\Models\Demande;
 use App\Models\Equipement;
-use App\Models\Panne;
 use App\Models\User;
 
-test('admin can performaffectation', function () {
+test('admin can performaffectation', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -53,7 +52,7 @@ test('admin can performaffectation', function () {
     expect($affectation->quantite_affectee)->toBe(3);
 });
 
-test('admin affectation creates active direct affectation with return date and bon', function () {
+test('admin affectation creates active direct affectation with return date and bon', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -98,7 +97,7 @@ test('admin affectation creates active direct affectation with return date and b
     expect(Bon::where('user_id', $employee->id)->where('statut', 'sortie')->exists())->toBeTrue();
 });
 
-test('admin affectation merges duplicated lines with same return date', function () {
+test('admin affectation merges duplicated lines with same return date', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -137,7 +136,7 @@ test('admin affectation merges duplicated lines with same return date', function
     expect($affectations->first()->date_retour?->toDateString())->toBe($returnDate);
 });
 
-test('admin affectation keeps separate lines when return dates differ', function () {
+test('admin affectation keeps separate lines when return dates differ', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -174,7 +173,7 @@ test('admin affectation keeps separate lines when return dates differ', function
     expect($affectations->pluck('quantite_affectee')->all())->toBe([1, 2]);
 });
 
-test('admin can cancel an affectation without returns or pannes', function () {
+test('admin can cancel an affectation without returns or pannes', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 
@@ -211,7 +210,7 @@ test('admin can cancel an affectation without returns or pannes', function () {
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(4);
 });
 
-test('cancelling a demande affectation recalculates demande status', function () {
+test('cancelling a demande affectation recalculates demande status', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $employee = User::factory()->create(['role' => 'employe']);
 

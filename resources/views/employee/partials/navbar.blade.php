@@ -44,7 +44,7 @@
                 <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
                     <a class="navbar-brand d-flex align-items-center" href="index.html">
                         <i class="fas fa-tools me-2" style="color: var(--primary);"></i>
-                        <span class="logo-text  d-sm-inline">J-Tools</span>
+                        <span class="logo-text  d-sm-inline">J-MAT</span>
                     </a>
                 </div>
 
@@ -57,6 +57,11 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                <i class="mdi mdi-account-circle text-primary"></i>
+                                Mon profil
+                            </a>
+                            <div class="dropdown-divider"></div>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
                                 <button type="submit" class="dropdown-item"
@@ -118,5 +123,4 @@
     </nav>
 
 </div>
-
 

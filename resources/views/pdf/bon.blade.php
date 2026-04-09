@@ -153,10 +153,16 @@
             <p><strong>Date :</strong> {{ $date ?? now()->format('d/m/Y') }}</p>
             <p><strong>Numéro :</strong> {{ $numero_bon ?? '...' }}</p>
             <p><strong style="display:inline-block; min-width:130px;">Nom & Prénoms:</strong><span
-                    style="display:inline-block;">{{ ($nom ?? 'Nom') . ' ' . ($prenom ?? '') }}</span></p>
+                    style="display:inline-block;">{{ trim(($nom ?? 'Nom') . ' ' . ($prenom ?? '')) }}</span></p>
         </div>
 
         <!-- ... autres sections du bon -->
+
+        @php
+            $afficheDateRetour = ! empty($equipements) && collect($equipements)->contains(
+                fn ($eq) => ! empty($eq['date_retour'])
+            );
+        @endphp
 
         @if (!empty($equipements) && count($equipements) > 0)
             <h3 style="margin-top: 20px;">Détails des équipements affectés</h3>
@@ -166,6 +172,9 @@
                         <th style="border: 1px solid #aaa; padding: 5px; background: #eee;">N°</th>
                         <th style="border: 1px solid #aaa; padding: 5px; background: #eee;">Désignation</th>
                         <th style="border: 1px solid #aaa; padding: 5px; background: #eee;">Quantité</th>
+                        @if ($afficheDateRetour)
+                            <th style="border: 1px solid #aaa; padding: 5px; background: #eee;">Date de retour</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -176,6 +185,11 @@
                             <td style="border: 1px solid #ccc; padding: 4px; text-align:center;">
                                 {{ $eq['quantite'] ?? '' }}
                             </td>
+                            @if ($afficheDateRetour)
+                                <td style="border: 1px solid #ccc; padding: 4px; text-align:center;">
+                                    {{ !empty($eq['date_retour']) ? \Illuminate\Support\Carbon::parse($eq['date_retour'])->format('d/m/Y') : '-' }}
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>

@@ -4,30 +4,23 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-final class IdentifiantsEnvoyes extends Mailable
+final class IdentifiantsEnvoyes extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
-
-    public $user;
-
-    public $password;
-
-    /**
-     * Créer une nouvelle instance de mail.
-     */
-    public function __construct($user, $password)
-    {
-        $this->user = $user;
-        $this->password = $password;
+    use Queueable;
+    use SerializesModels;
+    public function __construct(
+        public readonly User $user,
+        public readonly string $password,
+    ) {
+        $this->afterCommit();
     }
 
-    /**
-     * Construire le message.
-     */
     public function build()
     {
         return $this->subject('Vos identifiants de connexion')

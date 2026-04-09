@@ -30,7 +30,7 @@ final class EquipementController extends Controller
     {
         $categories = Categorie::all();
 
-        return view('gestionnaire.tools.addtool', compact('categories'));
+        return view('gestionnaire.tools.addtool', ['categories' => $categories]);
     }
 
     /**
@@ -40,7 +40,7 @@ final class EquipementController extends Controller
     {
         $equipements = Equipement::with('categorie')->paginate(10);
 
-        return view('gestionnaire.tools.listtools', compact('equipements'));
+        return view('gestionnaire.tools.listtools', ['equipements' => $equipements]);
     }
 
     /**
@@ -51,7 +51,7 @@ final class EquipementController extends Controller
         $equipement = Equipement::findOrFail($id);
         $categories = Categorie::all();
 
-        return view('gestionnaire.tools.addtool', compact('equipement', 'categories'));
+        return view('gestionnaire.tools.addtool', ['equipement' => $equipement, 'categories' => $categories]);
     }
 
     /**
@@ -60,14 +60,14 @@ final class EquipementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'etat' => 'required',
-            'categorie_id' => 'required|integer|exists:categories,id',
-            'description' => 'nullable|string',
-            'marque' => 'nullable|string',
-            'quantite' => 'required|integer|min:1',
-            'date_acquisition' => 'nullable|date',
-            'image_path' => 'nullable|image|max:2048',
+            'nom' => ['required', 'string', 'max:255'],
+            'etat' => ['required'],
+            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
+            'description' => ['nullable', 'string'],
+            'marque' => ['nullable', 'string'],
+            'quantite' => ['required', 'integer', 'min:1'],
+            'date_acquisition' => ['nullable', 'date'],
+            'image_path' => ['nullable', 'image', 'max:2048'],
         ]);
 
         try {
@@ -87,11 +87,11 @@ final class EquipementController extends Controller
                 'image_path' => $imagePath,
             ]);
 
-            return redirect()->back()->with('success', 'Équipement ajouté avec succès !');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la création d'équipement : ".$e->getMessage());
+            return back()->with('success', 'Équipement ajouté avec succès !');
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la création d'équipement : ".$exception->getMessage());
 
-            return redirect()->back()
+            return back()
                 ->with('error', 'Erreur lors de l\'ajout de l\'équipement.')
                 ->withInput();
         }
@@ -105,14 +105,14 @@ final class EquipementController extends Controller
         $equipement = Equipement::findOrFail($id);
 
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'etat' => 'required',
-            'categorie_id' => 'required|integer|exists:categories,id',
-            'description' => 'nullable|string',
-            'marque' => 'nullable|string',
-            'quantite' => 'required|integer|min:0',
-            'date_acquisition' => 'nullable|date',
-            'image_path' => 'nullable|image|max:2048',
+            'nom' => ['required', 'string', 'max:255'],
+            'etat' => ['required'],
+            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
+            'description' => ['nullable', 'string'],
+            'marque' => ['nullable', 'string'],
+            'quantite' => ['required', 'integer', 'min:0'],
+            'date_acquisition' => ['nullable', 'date'],
+            'image_path' => ['nullable', 'image', 'max:2048'],
         ]);
 
         try {
@@ -125,12 +125,12 @@ final class EquipementController extends Controller
 
             $equipement->update($data);
 
-            return redirect()->route('gestionnaire.tools.list')
+            return to_route('gestionnaire.tools.list')
                 ->with('success', 'Équipement modifié avec succès.');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la mise à jour d'équipement : ".$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la mise à jour d'équipement : ".$exception->getMessage());
 
-            return redirect()->back()
+            return back()
                 ->with('error', 'Erreur lors de la modification de l\'équipement.')
                 ->withInput();
         }
@@ -150,11 +150,11 @@ final class EquipementController extends Controller
 
             $equipement->delete();
 
-            return redirect()->back()->with('success', 'Équipement supprimé avec succès.');
-        } catch (Exception $e) {
-            Log::error("Erreur lors de la suppression d'équipement : ".$e->getMessage());
+            return back()->with('success', 'Équipement supprimé avec succès.');
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la suppression d'équipement : ".$exception->getMessage());
 
-            return redirect()->back()
+            return back()
                 ->with('error', 'Erreur lors de la suppression de l\'équipement.');
         }
     }
@@ -169,7 +169,7 @@ final class EquipementController extends Controller
             ->orderByDesc('created_at')
             ->paginate(10);
 
-        return view('gestionnaire.tools.pannelist', compact('pannes'));
+        return view('gestionnaire.tools.pannelist', ['pannes' => $pannes]);
     }
 
     // ============================================================================

@@ -20,7 +20,7 @@ final class CategorieFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom' => $this->faker->unique()->words(2, true),
+            'nom' => fake()->unique()->words(2, true),
         ];
     }
 }

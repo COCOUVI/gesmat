@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\ReportPanneAction;
+use App\Actions\SubmitDemandeAction;
+use App\Http\Requests\StoreDemandeRequest;
+use App\Http\Requests\StoreHelpRequest;
+use App\Http\Requests\StorePanneRequest;
+use App\Mail\HelpRequestMail;
 use App\Models\Affectation;
 use App\Models\Categorie;
 use App\Models\Demande;
-use App\Models\EquipementDemandé;
 use App\Models\Panne;
 use App\Models\User;
-use App\Services\WorkflowNotificationService;
+use App\Services\DashboardMetricsService;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
@@ -30,7 +34,9 @@ use Throwable;
 final class EmployeController extends Controller
 {
     public function __construct(
-        private readonly WorkflowNotificationService $workflowNotificationService,
+        private readonly SubmitDemandeAction $submitDemandeAction,
+        private readonly ReportPanneAction $reportPanneAction,
+        private readonly DashboardMetricsService $dashboardMetricsService,
     ) {}
 
     /**
@@ -39,31 +45,11 @@ final class EmployeController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // Récupération optimisée des statistiques
+        $metrics = $this->dashboardMetricsService->getEmployeeMetrics((int) $user->id);
         $demandes = Demande::where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->take(3)
             ->get();
-
-        $nbr_accept = Demande::where('user_id', $user->id)
-            ->where('statut', 'acceptee')
-            ->count();
-
-        $nbr_en_attente = Demande::where('user_id', $user->id)
-            ->where('statut', 'en_attente')
-            ->count();
-
-        $nbr_non_resolue = (int) Panne::with(['equipement', 'affectation'])
-            ->where('user_id', $user->id)
-            ->where('statut', '!=', 'resolu')
-            ->get()
-            ->sum(fn (Panne $panne) => $panne->getQuantiteNonResolue());
-
-        $nbr_assign = (int) Affectation::with('pannes')
-            ->where('user_id', $user->id)
-            ->get()
-            ->sum(fn (Affectation $affectation) => $affectation->getQuantiteActive());
 
         $affectations = Affectation::with(['equipement', 'equipement.categorie'])
             ->where('user_id', $user->id)
@@ -73,21 +59,16 @@ final class EmployeController extends Controller
             ->get();
 
         $pannes = Panne::with('equipement')
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+            ->where('user_id', $user->id)->latest()
             ->take(2)
             ->get();
 
-        return view('employee.layouts.main', compact(
-            'user',
-            'demandes',
-            'affectations',
-            'pannes',
-            'nbr_accept',
-            'nbr_en_attente',
-            'nbr_non_resolue',
-            'nbr_assign'
-        ));
+        $nbr_accept = $metrics['nbr_accept'];
+        $nbr_en_attente = $metrics['nbr_en_attente'];
+        $nbr_non_resolue = $metrics['nbr_non_resolue'];
+        $nbr_assign = $metrics['nbr_assign'];
+
+        return view('employee.layouts.main', ['user' => $user, 'demandes' => $demandes, 'affectations' => $affectations, 'pannes' => $pannes, 'nbr_accept' => $nbr_accept, 'nbr_en_attente' => $nbr_en_attente, 'nbr_non_resolue' => $nbr_non_resolue, 'nbr_assign' => $nbr_assign]);
     }
 
     /**
@@ -97,65 +78,26 @@ final class EmployeController extends Controller
     {
         // Charger les catégories avec UNIQUEMENT les équipements en stock (quantite > 0)
         $equipements_par_categorie = Categorie::with([
-            'equipements' => function ($query) {
+            'equipements' => function ($query): void {
                 $query->withStock();
             },
         ])->get();
 
         $user = Auth::user();
 
-        return view('employee.layouts.askpage', compact('user', 'equipements_par_categorie'));
+        return view('employee.layouts.askpage', ['user' => $user, 'equipements_par_categorie' => $equipements_par_categorie]);
     }
 
-    public function SubmitAsk(Request $request)
+    public function SubmitAsk(StoreDemandeRequest $request)
     {
-        $validated = $request->validate([
-            'lieu' => 'required|string|max:255',
-            'motif' => 'required|string|min:3|max:2000',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|integer|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
-        ], [
-            'equipements.required' => 'Veuillez sélectionner au moins un équipement.',
-            'quantites.required' => 'Veuillez indiquer la quantité demandée.',
-        ]);
+        $validated = $request->validated();
 
         try {
-            DB::beginTransaction();
-            $user = Auth::user();
-            $demande = Demande::create([
-                'lieu' => $validated['lieu'],
-                'motif' => $validated['motif'],
-                'user_id' => $user->id,
-                'statut' => 'en_attente',
-            ]);
-
-            $quantitesParEquipement = [];
-
-            foreach ($validated['equipements'] as $index => $equipementId) {
-                $quantite = (int) ($validated['quantites'][$index] ?? 0);
-                $quantitesParEquipement[$equipementId] = ($quantitesParEquipement[$equipementId] ?? 0) + $quantite;
-            }
-
-            foreach ($quantitesParEquipement as $equipementId => $quantite) {
-                $equipements_ask = new EquipementDemandé();
-                $equipements_ask->demande_id = $demande->id;
-                $equipements_ask->equipement_id = $equipementId;
-                $equipements_ask->nbr_equipement = $quantite;
-                $equipements_ask->save();
-            }
-
-            DB::commit();
-
-            $this->workflowNotificationService->notifyDemandeSubmitted(
-                $demande->fresh(['user', 'equipements'])
-            );
+            $this->submitDemandeAction->handle(Auth::user(), $validated);
 
             return back()->with('success', 'Demande envoyé avec succès');
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Log::error('Erreur lors de la soumission de la demande : '.$e->getMessage());
+        } catch (Throwable $throwable) {
+            Log::error('Erreur lors de la soumission de la demande : '.$throwable->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de l’envoi de la demande.');
         }
@@ -173,7 +115,7 @@ final class EmployeController extends Controller
             ->active()
             ->with([
                 'equipement',
-                'pannes' => function ($query) {
+                'pannes' => function ($query): void {
                     $query->where('statut', '!=', 'resolu');
                 },
             ])
@@ -183,7 +125,7 @@ final class EmployeController extends Controller
             ->filter(fn (Affectation $affectation) => $affectation->getQuantiteDisponiblePourPanne() > 0)
             ->values();
 
-        return view('employee.layouts.panne', compact('user', 'affectations'));
+        return view('employee.layouts.panne', ['user' => $user, 'affectations' => $affectations]);
     }
 
     /**
@@ -193,82 +135,20 @@ final class EmployeController extends Controller
      * Signale une panne d'équipement
      * Valide d'abord que l'employé a reçu cet équipement et pas déjà signalé tout
      */
-    public function HandlePanne(Request $request)
+    public function HandlePanne(StorePanneRequest $request)
     {
-        $validated = $request->validate([
-            'affectation_id' => 'required|integer|exists:affectations,id',
-            'quantite' => 'required|integer|min:1',
-            'description' => 'required|string|min:10|max:1000',
-        ], [
-            'affectation_id.required' => 'Affectation requise',
-            'affectation_id.exists' => 'Affectation inexistante',
-            'quantite.required' => 'Quantité requise',
-            'quantite.min' => 'Quantité minimale : 1',
-            'quantite.integer' => 'La quantité doit être un nombre',
-            'description.required' => 'Description requise',
-            'description.min' => 'Description minimum 10 caractères',
-            'description.max' => 'Description maximum 1000 caractères',
-        ]);
+        $validated = $request->validated();
 
         try {
-            DB::beginTransaction();
-            $user = Auth::user();
-            $affectation = Affectation::with('equipement')
-                ->active()
-                ->findOrFail($validated['affectation_id']);
-
-            if ($affectation->user_id !== $user->id) {
-                DB::rollBack();
-
-                return back()->withErrors([
-                    'affectation_id' => 'Vous ne pouvez signaler une panne que sur vos propres affectations.',
-                ])->withInput();
-            }
-
-            $equipement = $affectation->equipement;
-            $quantiteAffectee = $affectation->quantite_affectee;
-            $quantiteEnPanneSignalee = $affectation->pannes()
-                ->where('statut', '!=', 'resolu')
-                ->sum('quantite');
-
-            // Vérifier que la quantité à signaler ne dépasse pas ce qui reste
-            $quantiteRestante = $quantiteAffectee - $quantiteEnPanneSignalee;
-
-            if ($validated['quantite'] > $quantiteRestante) {
-                DB::rollBack();
-
-                return back()->withErrors([
-                    'quantite' => sprintf(
-                        'Vous ne pouvez signaler que %d équipement(s) en panne pour cette affectation (affecté: %d, déjà signalé: %d).',
-                        $quantiteRestante,
-                        $quantiteAffectee,
-                        $quantiteEnPanneSignalee
-                    ),
-                ])->withInput();
-            }
-
-            // Créer la panne liée à l'affectation concernée
-            $panne = Panne::create([
-                'equipement_id' => $equipement->id,
-                'affectation_id' => $affectation->id,
-                'user_id' => $user->id,
-                'quantite' => $validated['quantite'],
-                'description' => $validated['description'],
-                'statut' => 'en_attente',
-            ]);
-
-            DB::commit();
-
-            $this->workflowNotificationService->notifyPanneReported(
-                $panne->fresh(['user', 'equipement', 'affectation'])
-            );
+            $this->reportPanneAction->handle(Auth::user(), $validated);
 
             return back()->with('success', sprintf(
                 '%d équipement(s) marqué(es) en panne et signalé(e)s avec succès.',
                 $validated['quantite']
             ));
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
-            DB::rollBack();
             Log::error('Erreur signalement panne employé: '.$e->getMessage());
 
             return back()->withErrors([
@@ -286,7 +166,7 @@ final class EmployeController extends Controller
         $affectations = Affectation::with([
             'equipement',
             'demande',
-            'pannes' => function ($query) {
+            'pannes' => function ($query): void {
                 $query->where('statut', '!=', 'resolu');
             },
         ])
@@ -294,7 +174,7 @@ final class EmployeController extends Controller
             ->latest()
             ->get();
 
-        return view('employee.layouts.assign', compact('user', 'affectations'));
+        return view('employee.layouts.assign', ['user' => $user, 'affectations' => $affectations]);
     }
 
     /**
@@ -304,37 +184,27 @@ final class EmployeController extends Controller
     {
         $user = Auth::user();
 
-        return view('employee.layouts.help', compact('user'));
+        return view('employee.layouts.help', ['user' => $user]);
     }
 
     /**
      * Traite la soumission d'une demande d'aide
      */
-    public function HandleHelp(Request $request)
+    public function HandleHelp(StoreHelpRequest $request)
     {
-        $validated = $request->validate([
-            'message' => 'required|string|min:10|max:2000',
-        ], [
-            'message.required' => 'Le message est requis',
-            'message.min' => 'Le message doit contenir au moins 10 caractères',
-        ]);
+        $validated = $request->validated();
 
         try {
             $adminEmail = config('mail.from.address', 'admin@gesmat.local');
-
-            Mail::send('emails.aide', [
-                'email' => Auth::user()->email,
-                'body' => $validated['message'],
-            ], function ($mail) use ($adminEmail) {
-                $mail->to($adminEmail)
-                    ->subject('Demande d\'aide d\'un employé');
-            });
+            $mailable = new HelpRequestMail(Auth::user()->email, $validated['message']);
+            $mailable->afterCommit();
+            Mail::to($adminEmail)->queue($mailable);
 
             return back()->with('success', 'Votre message a été envoyé à l\'administrateur.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'envoi d\'aide: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de l'envoi d'aide: ".$exception->getMessage());
 
-            return back()->with('error', 'Une erreur est survenue lors de l\'envoi du message.');
+            return back()->with('error', "Une erreur est survenue lors de l'envoi du message.");
         }
     }
 
@@ -349,8 +219,8 @@ final class EmployeController extends Controller
             $panne->delete();
 
             return back()->with('success', 'Panne supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression de panne: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur lors de la suppression de panne: '.$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -367,8 +237,8 @@ final class EmployeController extends Controller
             $affectation->delete();
 
             return back()->with('success', 'Affectation supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression d\'affectation: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error("Erreur lors de la suppression d'affectation: ".$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -385,8 +255,8 @@ final class EmployeController extends Controller
             $demande->delete();
 
             return back()->with('success', 'Demande supprimée avec succès.');
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la suppression de demande: '.$e->getMessage());
+        } catch (Exception $exception) {
+            Log::error('Erreur lors de la suppression de demande: '.$exception->getMessage());
 
             return back()->with('error', 'Une erreur est survenue lors de la suppression.');
         }
@@ -398,12 +268,11 @@ final class EmployeController extends Controller
     public function ShowPannes()
     {
         $user = Auth::user();
-        $pannes = Panne::with('equipement')
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+        $pannes = Panne::with('equipement:id,nom')
+            ->where('user_id', $user->id)->latest()
             ->get();
 
-        return view('employee.layouts.pannelist', compact('pannes', 'user'));
+        return view('employee.layouts.pannelist', ['pannes' => $pannes, 'user' => $user]);
     }
 
     /**
@@ -412,12 +281,14 @@ final class EmployeController extends Controller
     public function ShowDemandes()
     {
         $user = Auth::user();
-        $demandes = Demande::with(['equipements', 'affectations'])
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
+        $demandes = Demande::with([
+            'equipements:id,nom',
+            'affectations:id,demande_id,equipement_id,quantite_affectee',
+        ])
+            ->where('user_id', $user->id)->latest()
             ->get();
 
-        return view('employee.layouts.list_demandes', compact('user', 'demandes'));
+        return view('employee.layouts.list_demandes', ['user' => $user, 'demandes' => $demandes]);
     }
 
     /**
@@ -429,8 +300,6 @@ final class EmployeController extends Controller
      */
     private function authorizeDelete($model, User $user): void
     {
-        if ($model->user_id !== $user->id) {
-            abort(403, 'Non autorisé à supprimer cette ressource.');
-        }
+        abort_if($model->user_id !== $user->id, 403, 'Non autorisé à supprimer cette ressource.');
     }
 }

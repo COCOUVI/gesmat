@@ -16,13 +16,15 @@ final class StoreBonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'collaborateur_id' => 'required|exists:collaborateur_externes,id',
-            'motif' => 'required|string|max:1000',
-            'type' => 'required|in:entrée,sortie',
-            'equipements' => 'required|array|min:1',
-            'equipements.*' => 'required|exists:equipements,id',
-            'quantites' => 'required|array|min:1',
-            'quantites.*' => 'required|integer|min:1',
+            'collaborateur_id' => ['required', 'exists:collaborateur_externes,id'],
+            'motif' => ['required', 'string', 'max:1000'],
+            'type' => ['required', 'in:entrée,sortie'],
+            'equipements' => ['required', 'array', 'min:1'],
+            'equipements.*' => ['required', 'exists:equipements,id'],
+            'quantites' => ['required', 'array', 'min:1'],
+            'quantites.*' => ['required', 'integer', 'min:1'],
+            'dates_retour' => ['nullable', 'array'],
+            'dates_retour.*' => ['nullable', 'date'],
         ];
     }
 
@@ -45,6 +47,8 @@ final class StoreBonRequest extends FormRequest
             'quantites.*.required' => 'Chaque ligne doit contenir une quantité.',
             'quantites.*.integer' => 'Chaque quantité doit être un nombre entier.',
             'quantites.*.min' => 'Chaque quantité doit être supérieure ou égale à 1.',
+            'dates_retour.array' => 'La liste des dates de retour est invalide.',
+            'dates_retour.*.date' => 'Chaque date de retour doit être une date valide.',
         ];
     }
 }

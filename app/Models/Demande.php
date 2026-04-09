@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -26,6 +25,7 @@ final class Demande extends Model
 
     /**
      * Relation avec l'employé (celui qui a fait la demande)
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
     {
@@ -34,6 +34,7 @@ final class Demande extends Model
 
     /**
      * Relation avec les équipements demandés via table pivot equipement_demandés
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function equipements(): BelongsToMany
     {
@@ -44,6 +45,7 @@ final class Demande extends Model
 
     /**
      * Relation avec le gestionnaire assigné
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function gestionnaire(): BelongsTo
     {
@@ -52,6 +54,7 @@ final class Demande extends Model
 
     /**
      * Affectations créées à partir de cette demande.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Affectation, $this>
      */
     public function affectations(): HasMany
     {

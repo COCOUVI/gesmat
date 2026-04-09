@@ -1,14 +1,16 @@
+@php
+    $initials = strtoupper(substr(auth()->user()->nom, 0, 1) . substr(auth()->user()->prenom, 0, 1));
+@endphp
+
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
         <li class="nav-item nav-profile">
-            <a href="#" class="nav-link">
+            <a href="{{ route('admin.homedash') }}" class="nav-link">
                 <div class="d-flex align-items-center">
-                    <div class="profile-initials">AT</div>
+                    <div class="profile-initials">{{ $initials }}</div>
                     <div class="nav-profile-text d-flex flex-column">
-                        <span class="font-weight-bold mb-2">JASPETools</span>
-                        <span class="text-secondary text-small">
-                            <p>Gestionnaire</>
-                        </span>
+                        <span class="font-weight-bold mb-1">{{ auth()->user()->nom }} {{ auth()->user()->prenom }}</span>
+                        <span class="text-secondary text-small">{{ ucfirst(auth()->user()->role) }}</span>
                     </div>
                 </div>
             </a>
@@ -17,15 +19,17 @@
         @php
             // Variables pour chaque section
             $dashboardActive = request()->routeIs('dashboard.gestionnaire') || request()->is('dashboard/gestionnaire');
-            $equipActive = request()->routeIs('gestionnaire.tools.*') || request()->routeIs('liste.bons');
-            $pannesActive = request()->routeIs('gestionnaire.pannes.*');
-            $perdusActive = request()->routeIs('gestionnaire.equipements.perdus');
-            $demandesActive = request()->routeIs('gestionnaire.demandes.*');
-            $affectActive = request()->routeIs('gestionnaire.affectations.*');
-            $rapportActive = request()->routeIs('gestionnaire.rapports.*');
-            $collabActive =
-                request()->routeIs('gestionnaire.collaborateurs.*') ||
+            $stockActive =
+                request()->routeIs('gestionnaire.tools.*') ||
+                request()->routeIs('gestionnaire.pannes.*') ||
+                request()->routeIs('gestionnaire.equipements.perdus');
+            $mouvementsActive =
+                request()->routeIs('gestionnaire.demandes.*') ||
+                request()->routeIs('gestionnaire.affectations.*') ||
+                request()->routeIs('liste.bons') ||
                 request()->routeIs('gestionnaire.bons.bon_external_collaborator');
+            $rapportActive = request()->routeIs('gestionnaire.rapports.*');
+            $collabActive = request()->routeIs('gestionnaire.collaborateurs.*');
         @endphp
 
         <!-- Tableau de bord -->
@@ -36,76 +40,84 @@
             </a>
         </li>
 
-        <!-- Gestion Équipements -->
         <li class="nav-item ">
             <a class="nav-link" data-toggle="collapse" href="#equipment-management"
-                aria-expanded="{{ $equipActive ? 'true' : 'false' }}" aria-controls="equipment-management">
-                <span class="menu-title">Gestion Équipements</span>
+                aria-expanded="{{ $stockActive ? 'true' : 'false' }}" aria-controls="equipment-management">
+                <span class="menu-title">Stock & inventaire</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-laptop menu-icon"></i>
             </a>
-            <div class="collapse {{ $equipActive ? 'show' : '' }}" id="equipment-management">
+            <div class="collapse {{ $stockActive ? 'show' : '' }}" id="equipment-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item">
                         <a class="nav-link"
                             href="{{ route('gestionnaire.tools.list') }}">
-                            Inventaire
+                            <i class="mdi mdi-clipboard-text-outline"></i>
+                            <span>Inventaire</span>
                         </a>
                     </li>
 
                     <li class="nav-item {{ request()->routeIs('gestionnaire.tools.add') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.tools.add') }}">Ajouter un équipement</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.tools.add') }}">
+                            <i class="mdi mdi-plus-box-outline"></i>
+                            <span>Ajouter un équipement</span>
+                        </a>
                     </li>
-                    <li
-                        class="nav-item {{ request()->routeIs('liste.bons') || request()->routeIs('gestionnaire.bons.bon_external') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.bons.bon_external') }}">BONS</a>
+                    <li class="nav-item {{ request()->routeIs('gestionnaire.pannes.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('gestionnaire.pannes.index') }}">
+                            <i class="mdi mdi-alert-circle-outline"></i>
+                            <span>Pannes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ request()->routeIs('gestionnaire.equipements.perdus') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('gestionnaire.equipements.perdus') }}">
+                            <i class="mdi mdi-emoticon-sad-outline"></i>
+                            <span>Équipements non retournés</span>
+                        </a>
                     </li>
                 </ul>
             </div>
         </li>
 
-        <!-- Equipements en Pannes -->
-        <li class="nav-item {{ $pannesActive ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('gestionnaire.pannes.index') }}">
-                <span class="menu-title">Equipements en Pannes</span>
-                <i class="mdi mdi-alert-circle-outline menu-icon"></i>
-            </a>
-        </li>
-
-        <!-- Equipements Perdus -->
-        <li class="nav-item {{ $perdusActive ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('gestionnaire.equipements.perdus') }}">
-                <span class="menu-title">Equipements Perdus</span>
-                <i class="mdi mdi-emoticon-sad-outline menu-icon"></i>
-            </a>
-        </li>
-
-        <!-- Les demandes -->
-        <li class="nav-item {{ $demandesActive ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('gestionnaire.demandes.index') }}">
-                <span class="menu-title">Les demandes</span>
-                <i class="mdi mdi-cart-outline menu-icon"></i>
-            </a>
-        </li>
-
-        <!-- Affectation Équipement -->
-        <li class="nav-item {{ $affectActive ? 'active' : '' }}">
+        <li class="nav-item {{ $mouvementsActive ? 'active' : '' }}">
             <a class="nav-link" data-toggle="collapse" href="#affectation-management"
-                aria-expanded="{{ $affectActive ? 'true' : 'false' }}" aria-controls="affectation-management">
-                <span class="menu-title">Affectation Équipement</span>
+                aria-expanded="{{ $mouvementsActive ? 'true' : 'false' }}" aria-controls="affectation-management">
+                <span class="menu-title">Mouvements</span>
                 <i class="menu-arrow"></i>
                 <i class="mdi mdi-swap-horizontal menu-icon"></i>
             </a>
-            <div class="collapse {{ $affectActive ? 'show' : '' }}" id="affectation-management">
+            <div class="collapse {{ $mouvementsActive ? 'show' : '' }}" id="affectation-management">
                 <ul class="nav flex-column sub-menu">
+                    <li class="nav-item {{ request()->routeIs('gestionnaire.demandes.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('gestionnaire.demandes.index') }}">
+                            <i class="mdi mdi-cart-outline"></i>
+                            <span>Demandes d'équipement</span>
+                        </a>
+                    </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.affectations.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.affectations.index') }}">Liste des
-                            affectations</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.affectations.index') }}">
+                            <i class="mdi mdi-format-list-checks"></i>
+                            <span>Liste des affectations</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.affectations.create') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.affectations.create') }}">Nouvelle
-                            affectation</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.affectations.create') }}">
+                            <i class="mdi mdi-plus-circle-outline"></i>
+                            <span>Nouvelle affectation</span>
+                        </a>
                     </li>
+                    <li class="nav-item {{ request()->routeIs('liste.bons') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('liste.bons') }}">
+                            <i class="mdi mdi-file-document-outline"></i>
+                            <span>Bons</span>
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item {{ request()->routeIs('gestionnaire.bons.bon_external_collaborator') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('gestionnaire.bons.bon_external_collaborator') }}">
+                            <i class="mdi mdi-truck-delivery-outline"></i>
+                            <span>Mouvement collaborateur externe</span>
+                        </a>
+                    </li> --}}
                 </ul>
             </div>
         </li>
@@ -121,10 +133,16 @@
             <div class="collapse {{ $rapportActive ? 'show' : '' }}" id="rapport-management">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item {{ request()->routeIs('gestionnaire.rapports.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.rapports.index') }}">Liste des rapports</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.rapports.index') }}">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            <span>Liste des rapports</span>
+                        </a>
                     </li>
                     <li class="nav-item {{ request()->routeIs('gestionnaire.rapports.create') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.rapports.create') }}">Générer un rapport</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.rapports.create') }}">
+                            <i class="mdi mdi-file-plus-outline"></i>
+                            <span>Générer un rapport</span>
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -142,15 +160,17 @@
                 <ul class="nav flex-column sub-menu">
                     <li
                         class="nav-item {{ request()->routeIs('gestionnaire.collaborateurs.create') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.collaborateurs.create') }}">Ajouter</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.collaborateurs.create') }}">
+                            <i class="mdi mdi-account-plus-outline"></i>
+                            <span>Ajouter</span>
+                        </a>
                     </li>
                     <li
                         class="nav-item {{ request()->routeIs('gestionnaire.collaborateurs.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.collaborateurs.index') }}">Liste</a>
-                    </li>
-                    <li
-                        class="nav-item {{ request()->routeIs('gestionnaire.bons.bon_external_collaborator') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('gestionnaire.bons.bon_external_collaborator') }}">Bon</a>
+                        <a class="nav-link" href="{{ route('gestionnaire.collaborateurs.index') }}">
+                            <i class="mdi mdi-account-multiple-outline"></i>
+                            <span>Liste</span>
+                        </a>
                     </li>
                 </ul>
             </div>

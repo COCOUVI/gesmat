@@ -14,7 +14,7 @@ use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('guest')->group(function () {
+Route::middleware('guest')->group(function (): void {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('Postlogin');
@@ -32,7 +32,7 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

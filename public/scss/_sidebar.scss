@@ -13,7 +13,7 @@
   -ms-transition: width $action-transition-duration $action-transition-timing-function, background $action-transition-duration $action-transition-timing-function;
 
   .nav {
-    overflow: hidden;
+    overflow: visible;
     flex-wrap: nowrap;
     flex-direction: column;
     margin-bottom: 60px;
@@ -25,6 +25,8 @@
       -webkit-transition-property: background;
       .collapse {
         z-index: 999;
+        position: relative;
+        overflow: visible;
       }
 
       .nav-link {
@@ -94,7 +96,7 @@
         > .nav-link {
           .menu-title {
             color: $sidebar-light-menu-active-color;
-            font-family: $type1-medium;            
+            font-family: $type1-medium;
           }
           i {
             color: theme-color(primary);
@@ -157,27 +159,32 @@
     }
     &.sub-menu {
       margin-bottom: 20px;
-      margin-top:0;
+      margin-top: 0;
       list-style: none;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
 
       .nav-item {
         padding: 0;
+        width: 100%;
         .nav-link {
           color: $sidebar-light-submenu-color;
           padding: $sidebar-submenu-item-padding;
           position: relative;
           font-size: $sidebar-submenu-font-size;
-          line-height: 1;
+          line-height: 1.5;
           height: auto;
           border-top: 0;
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          word-break: break-word;
           &:before {
             content: "\F054";
             font-family: "Material Design Icons";
-            display: block;
-            position: absolute;
-            left:0px;
-            top:50%;
-            @include transform(translateY(-50%));
+            display: inline-block;
+            margin-right: 8px;
             color: lighten($sidebar-light-submenu-color, 10%);
             font-size: .75rem;
           }

@@ -24,7 +24,7 @@ final class SendUpcomingReturnReminders extends Command
 
     public function handle(): int
     {
-        $today = Carbon::today();
+        $today = \Illuminate\Support\Facades\Date::today();
         $limitDate = $today->copy()->addDays(3);
         $sentCount = 0;
 
@@ -40,7 +40,7 @@ final class SendUpcomingReturnReminders extends Command
             $cacheKey = sprintf(
                 'return-reminder:%d:%s:%s',
                 $affectation->id,
-                optional($affectation->date_retour)->format('Y-m-d'),
+                $affectation->date_retour?->format('Y-m-d'),
                 $today->format('Y-m-d')
             );
 

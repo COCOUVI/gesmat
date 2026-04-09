@@ -52,6 +52,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'équipement affecté
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
      */
     public function equipement(): BelongsTo
     {
@@ -60,6 +61,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'utilisateur ayant l'affectation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
     {
@@ -68,6 +70,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec le collaborateur externe ayant l'affectation (polymorphe)
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -76,6 +79,7 @@ final class Affectation extends Model
 
     /**
      * Demande d'origine, si l'affectation découle d'une demande.
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Demande, $this>
      */
     public function demande(): BelongsTo
     {
@@ -84,6 +88,7 @@ final class Affectation extends Model
 
     /**
      * Relation avec les pannes liées à cette affectation
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
      */
     public function pannes(): HasMany
     {
@@ -93,7 +98,7 @@ final class Affectation extends Model
     /**
      * Scope des affectations toujours en circulation.
      */
-    public function scopeActive($query)
+    protected function scopeActive($query)
     {
         return $query->whereRaw('quantite_affectee > COALESCE(quantite_retournee, 0)');
     }
@@ -103,6 +108,10 @@ final class Affectation extends Model
      */
     public function aPannesNonResolues(): bool
     {
+        if ($this->relationLoaded('pannes')) {
+            return $this->pannes->contains(fn (Panne $panne) => $panne->statut !== 'resolu');
+        }
+
         return $this->pannes()
             ->where('statut', '!=', 'resolu')
             ->exists();
@@ -113,6 +122,12 @@ final class Affectation extends Model
      */
     public function getQuantitePannesNonResolues(): int
     {
+        if ($this->relationLoaded('pannes')) {
+            return (int) $this->pannes
+                ->where('statut', '!=', 'resolu')
+                ->sum(fn (Panne $panne) => $panne->getQuantiteEncoreChezEmploye());
+        }
+
         return (int) $this->pannes()
             ->where('statut', '!=', 'resolu')
             ->get()
@@ -191,7 +206,7 @@ final class Affectation extends Model
             return mb_trim(($collab->prenom ?? '').' '.($collab->nom ?? ''));
         }
 
-        return $this->user?->name ?? 'Inconnu';
+        return mb_trim(($this->user?->nom ?? '').' '.($this->user?->prenom ?? '')) ?: 'Inconnu';
     }
 
     /**
@@ -239,6 +254,10 @@ final class Affectation extends Model
     {
         if (array_key_exists('pannes_count', $this->attributes)) {
             return (int) $this->attributes['pannes_count'];
+        }
+
+        if ($this->relationLoaded('pannes')) {
+            return $this->pannes->count();
         }
 
         return $this->pannes()->count();

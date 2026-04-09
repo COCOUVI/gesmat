@@ -16,7 +16,7 @@ final class StoreRapportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contenu' => 'required|string',
+            'contenu' => ['required', 'string'],
         ];
     }
 

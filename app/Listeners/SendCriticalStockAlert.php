@@ -7,9 +7,13 @@ namespace App\Listeners;
 use App\Events\EquipementStockChanged;
 use App\Models\Equipement;
 use App\Services\WorkflowNotificationService;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-final class SendCriticalStockAlert
+final class SendCriticalStockAlert implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function __construct(
         private readonly WorkflowNotificationService $workflowNotificationService,
     ) {}

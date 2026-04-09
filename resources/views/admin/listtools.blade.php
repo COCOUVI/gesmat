@@ -135,6 +135,12 @@
                                                     <i class="mdi mdi-pencil edit-icon action-icon fs-5"
                                                         title="Modifier"></i>
                                                 </a>
+                                                <a href="#" class="text-decoration-none"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#replenishModal{{ $equip->id }}"
+                                                    title="Réapprovisionner">
+                                                    <i class="mdi mdi-plus-box action-icon fs-5" style="color: #28a745;"></i>
+                                                </a>
                                                 <a href="{{ route('DeleteTool', $equip->id) }}"
                                                     class="text-decoration-none">
                                                     <i class="mdi mdi-delete delete-icon action-icon fs-5"
@@ -159,7 +165,189 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle anonymous mode toggle with radio buttons
+            document.querySelectorAll('.mode-toggle').forEach(radio => {
+                const equipId = radio.id.match(/\d+$/)[0];
+                const selectGroup = document.getElementById('selectGroup' + equipId);
+                const manualGroup = document.getElementById('manualGroup' + equipId);
+                const isAnonymousHidden = document.getElementById('isAnonymousHidden' + equipId);
+                const deposantSelect = document.getElementById('deposantSelect' + equipId);
+
+                function updateDisplay() {
+                    const isAnonymous = document.getElementById('modeAnonym' + equipId).checked;
+                    if (isAnonymous) {
+                        selectGroup.style.display = 'none';
+                        manualGroup.classList.remove('d-none');
+                        isAnonymousHidden.value = '1';
+                        deposantSelect.value = '';
+                        deposantSelect.name = '';
+                    } else {
+                        selectGroup.style.display = 'block';
+                        manualGroup.classList.add('d-none');
+                        isAnonymousHidden.value = '0';
+                        deposantSelect.name = 'deposant_id';
+                        const nomInput = manualGroup.querySelector('input[name="deposant_anonymous_nom"]');
+                        const prenomInput = manualGroup.querySelector('input[name="deposant_anonymous_prenom"]');
+                        if (nomInput) nomInput.value = '';
+                        if (prenomInput) prenomInput.value = '';
+                    }
+                }
+
+                radio.addEventListener('change', updateDisplay);
+            });
+
+            // Initialize on page load
+            document.querySelectorAll('.mode-toggle').forEach(radio => {
+                if (radio.checked) {
+                    radio.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    </script>
+    @if (session('pdf'))
+        <script>
+            window.addEventListener('load', function() {
+                const link = document.createElement('a');
+                link.href = "{{ session('pdf') }}";
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        </script>
+    @endif
+@endpush
+
 @push('popups')
+    {{-- Modales de réapprovisionnement pour chaque équipement --}}
+    @forelse ($equipements as $equip)
+        <div class="modal fade" id="replenishModal{{ $equip->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="mdi mdi-plus-box me-2"></i>Réapprovisionner : {{ $equip->nom }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="{{ route('replenish.equipment') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="equipement_id" value="{{ $equip->id }}">
+                        
+                        <div class="modal-body">
+                            {{-- Information équipement (readonly) --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Équipement</label>
+                                <input type="text" class="form-control" 
+                                       value="{{ $equip->nom }} - {{ $equip->marque }}" disabled>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Stock actuel</label>
+                                <input type="number" class="form-control" 
+                                       value="{{ $equip->quantite }}" disabled>
+                            </div>
+
+                            {{-- Quantité à ajouter --}}
+                            <div class="mb-3">
+                                <label for="quantiteReplenish{{ $equip->id }}" class="form-label fw-semibold required-label">
+                                    Quantité à ajouter
+                                </label>
+                                <input type="number" name="quantite" id="quantiteReplenish{{ $equip->id }}" 
+                                       class="form-control @error('quantite') is-invalid @enderror"
+                                       min="1" required placeholder="Ex: 5" value="{{ old('quantite') }}">
+                                @error('quantite')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Qui dépose le matériel --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold mb-3">
+                                    Qui dépose le matériel ? <span class="badge bg-info">Optionnel</span>
+                                </label>
+
+                                {{-- Mode toggle: Select or Anonymous --}}
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <input type="radio" class="btn-check mode-toggle" name="deposit_mode" id="modeSelect{{ $equip->id }}" value="select" checked>
+                                    <label class="btn btn-outline-primary" for="modeSelect{{ $equip->id }}">
+                                        <i class="mdi mdi-account me-1"></i> Sélectionner une personne
+                                    </label>
+
+                                    <input type="radio" class="btn-check mode-toggle" name="deposit_mode" id="modeAnonym{{ $equip->id }}" value="anonym">
+                                    <label class="btn btn-outline-primary" for="modeAnonym{{ $equip->id }}">
+                                        <i class="mdi mdi-incognito me-1"></i> Anonyme
+                                    </label>
+                                </div>
+
+                                {{-- Hidden field for checkbox compatibility --}}
+                                <input type="hidden" name="is_anonymous" value="0" id="isAnonymousHidden{{ $equip->id }}">
+
+                                {{-- Mode: Sélection (par défaut) --}}
+                                <div class="deposant-select-group" id="selectGroup{{ $equip->id }}">
+                                    <select name="deposant_id" class="form-select deposant-select @error('deposant_id') is-invalid @enderror"
+                                            id="deposantSelect{{ $equip->id }}">
+                                        <option value="">-- Choisir une personne --</option>
+                                        <optgroup label="Employés">
+                                            @forelse ($employes as $emp)
+                                                <option value="user_{{ $emp->id }}" @selected(old('deposant_id') === "user_$emp->id")>
+                                                    {{ $emp->nom }} {{ $emp->prenom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                        <optgroup label="Collaborateurs externes">
+                                            @forelse ($collaborateurs as $collab)
+                                                <option value="collab_{{ $collab->id }}" @selected(old('deposant_id') === "collab_$collab->id")>
+                                                    {{ $collab->nom }} {{ $collab->prenom }}
+                                                </option>
+                                            @empty
+                                            @endforelse
+                                        </optgroup>
+                                    </select>
+                                    @error('deposant_id')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Mode: Entrée manuelle (anonyme) --}}
+                                <div class="deposant-manual-group d-none" id="manualGroup{{ $equip->id }}">
+                                    <input type="text" name="deposant_anonymous_nom" placeholder="Nom (au moins l'un des deux requis)" 
+                                           class="form-control mb-2 @error('deposant_anonymous_nom') is-invalid @enderror"
+                                           value="{{ old('deposant_anonymous_nom') }}">
+                                    <input type="text" name="deposant_anonymous_prenom" placeholder="Prénom" 
+                                           class="form-control @error('deposant_anonymous_prenom') is-invalid @enderror"
+                                           value="{{ old('deposant_anonymous_prenom') }}">
+                                    @error('deposant_anonymous_nom')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                    @error('deposant_anonymous_prenom')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Ou renseigner le nom --}}
+                            {{-- REMOVED: Functionality moved to anonymous mode toggle --}}
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="mdi mdi-check me-1"></i>Confirmer réappro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @empty
+    @endforelse
+
     <div class="image-popup" id="imagePopup">
         <div class="image-popup-content">
             <span class="close-popup" onclick="closeImagePopup()">&times;</span>

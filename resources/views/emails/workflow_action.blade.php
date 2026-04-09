@@ -7,11 +7,13 @@
 </head>
 <body style="margin:0; padding:24px 0; background-color:#f3f6f4; font-family:Arial, Helvetica, sans-serif; color:#111111;">
     @php
-        $logoDataUri = null;
+        $logoSrc = null;
         $actionLinks = $actionLinks ?? [];
 
-        if (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
-            $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
+        if (isset($message, $logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = $message->embed($logoPath);
+        } elseif (isset($logoPath) && is_string($logoPath) && file_exists($logoPath)) {
+            $logoSrc = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
         }
     @endphp
 
@@ -21,8 +23,8 @@
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px; border-collapse:collapse; background-color:#ffffff; border:1px solid #d7e4db; border-radius:18px; overflow:hidden;">
                     <tr>
                         <td style="background-color:#0f7b3a; padding:24px 32px; text-align:center;">
-                            @if ($logoDataUri)
-                                <img src="{{ $logoDataUri }}" alt="Jaspe Technologies" style="max-width:180px; width:100%; height:auto; display:block; margin:0 auto 16px auto;">
+                            @if ($logoSrc)
+                                <img src="{{ $logoSrc }}" alt="Jaspe Technologies" style="max-width:180px; width:100%; height:auto; display:block; margin:0 auto 16px auto;">
                             @endif
                             <div style="font-size:24px; line-height:32px; font-weight:700; color:#ffffff;">{{ $title }}</div>
                         </td>

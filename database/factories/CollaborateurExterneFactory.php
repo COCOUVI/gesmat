@@ -20,9 +20,9 @@ final class CollaborateurExterneFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom' => $this->faker->lastName(),
-            'prenom' => $this->faker->firstName(),
-            'carte_chemin' => $this->faker->randomNumber(5),
+            'nom' => fake()->lastName(),
+            'prenom' => fake()->firstName(),
+            'carte_chemin' => fake()->randomNumber(5),
         ];
     }
 }

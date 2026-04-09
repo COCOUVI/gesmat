@@ -74,6 +74,32 @@
         border-radius: 10px;
     }
 
+    .sidebar .nav .nav-item .nav-link {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .sidebar .nav .menu-title {
+        white-space: normal;
+        line-height: 1.35;
+    }
+
+    .sidebar .nav.sub-menu .nav-link {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        white-space: normal;
+        line-height: 1.35;
+        padding-right: 0.75rem;
+    }
+
+    .sidebar .nav.sub-menu .nav-link i {
+        font-size: 1rem;
+        margin-top: 0.1rem;
+        flex-shrink: 0;
+    }
+
    
     .sidebar .nav .nav-item.active>.nav-link {
         background: linear-gradient(to right, var(--toolzy-primary), var(--toolzy-secondary));
@@ -219,7 +245,7 @@
     .profile-initials {
         width: 40px;
         height: 40px;
-        border-radius: 8px;
+        border-radius: 50%;
         background: linear-gradient(to right, var(--toolzy-primary), var(--toolzy-secondary));
         color: white;
         display: flex;
@@ -238,6 +264,18 @@
     .nav-profile-text {
         display: flex;
         flex-direction: column;
+        min-width: 0;
+        gap: 0.2rem;
+    }
+
+    .nav-profile .nav-link {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .nav-profile .d-flex.align-items-center {
+        gap: 0.8rem;
+        align-items: center !important;
     }
 
     .dataTables_wrapper .dataTables_filter input,
@@ -256,6 +294,23 @@
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {
         margin-bottom: 12px;
+    }
+
+    .choices {
+        margin-bottom: 0;
+    }
+
+    .choices__inner {
+        min-height: 38px;
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+        background-color: #fff;
+        padding: 0.4375rem 0.75rem;
+    }
+
+    .choices__list--dropdown,
+    .choices__list[aria-expanded] {
+        z-index: 1085;
     }
 
     /* Amélioration des boutons d'action */
