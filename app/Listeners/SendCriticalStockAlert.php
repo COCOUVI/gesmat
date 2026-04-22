@@ -16,7 +16,8 @@ final class SendCriticalStockAlert implements ShouldQueue
 
     public function __construct(
         private readonly WorkflowNotificationService $workflowNotificationService,
-    ) {}
+    ) {
+    }
 
     public function handle(EquipementStockChanged $event): void
     {
@@ -24,7 +25,7 @@ final class SendCriticalStockAlert implements ShouldQueue
             ->with('categorie')
             ->find($event->equipementId);
 
-        if (! $equipement instanceof Equipement) {
+        if (!$equipement instanceof Equipement) {
             return;
         }
 

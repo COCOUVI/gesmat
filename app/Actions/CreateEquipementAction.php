@@ -24,6 +24,7 @@ final readonly class CreateEquipementAction
      *     deposant_id?: string|null,
      *     deposant_nom_libre?: string|null
      * }  $validated
+     *
      * @return array{equipement: Equipement, bon: Bon, pdf_path: string}
      */
     public function handle(User $actor, array $validated, ?UploadedFile $image = null): array
@@ -40,14 +41,14 @@ final readonly class CreateEquipementAction
             }
 
             $equipement = Equipement::create([
-                'nom' => $validated['nom'],
-                'marque' => $validated['marque'],
-                'description' => $validated['description'],
+                'nom'              => $validated['nom'],
+                'marque'           => $validated['marque'],
+                'description'      => $validated['description'],
                 'date_acquisition' => $validated['date_acquisition'],
-                'quantite' => (int) $validated['quantite'],
-                'seuil_critique' => (int) $validated['seuil_critique'],
-                'image_path' => $imagePath,
-                'categorie_id' => (int) $validated['categorie_id'],
+                'quantite'         => (int) $validated['quantite'],
+                'seuil_critique'   => (int) $validated['seuil_critique'],
+                'image_path'       => $imagePath,
+                'categorie_id'     => (int) $validated['categorie_id'],
             ]);
 
             $pdfPath = 'bon_entree/bon_entree_'.$equipement->id.'.pdf';
@@ -57,7 +58,7 @@ final readonly class CreateEquipementAction
             $interlocuteurId = null;
             $interlocuteurNomLibre = null;
 
-            if (! empty($validated['deposant_id'])) {
+            if (!empty($validated['deposant_id'])) {
                 if (str_starts_with($validated['deposant_id'], 'user_')) {
                     $interlocuteurType = 'user';
                     $interlocuteurId = (int) str_replace('user_', '', $validated['deposant_id']);
@@ -67,24 +68,24 @@ final readonly class CreateEquipementAction
                 }
             }
 
-            if (! empty($validated['deposant_nom_libre'])) {
+            if (!empty($validated['deposant_nom_libre'])) {
                 $interlocuteurNomLibre = $validated['deposant_nom_libre'];
             }
 
             $bon = Bon::create([
-                'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
-                'user_id' => $actor->id,
-                'statut' => 'entrée',
-                'fichier_pdf' => $pdfPath,
-                'interlocuteur_type' => $interlocuteurType,
-                'interlocuteur_id' => $interlocuteurId,
+                'motif'                   => 'Ajout de nouvel équipement : '.$equipement->nom,
+                'user_id'                 => $actor->id,
+                'statut'                  => 'entrée',
+                'fichier_pdf'             => $pdfPath,
+                'interlocuteur_type'      => $interlocuteurType,
+                'interlocuteur_id'        => $interlocuteurId,
                 'interlocuteur_nom_libre' => $interlocuteurNomLibre,
             ]);
 
             return [
                 'equipement' => $equipement,
-                'bon' => $bon,
-                'pdf_path' => $pdfPath,
+                'bon'        => $bon,
+                'pdf_path'   => $pdfPath,
             ];
         });
 

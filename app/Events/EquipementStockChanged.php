@@ -12,9 +12,11 @@ final class EquipementStockChanged implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     public function __construct(
         public readonly int $equipementId,
         public readonly ?int $previousAvailable = null,
         public readonly ?int $previousThreshold = null,
-    ) {}
+    ) {
+    }
 }

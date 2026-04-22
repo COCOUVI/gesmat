@@ -21,7 +21,8 @@ final class CollaborateurExterne extends Model
     ];
 
     /**
-     * Relation avec les bons de ce collaborateur
+     * Relation avec les bons de ce collaborateur.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Bon, $this>
      */
     public function bons(): HasMany
@@ -30,7 +31,8 @@ final class CollaborateurExterne extends Model
     }
 
     /**
-     * Relation avec les affectations de ce collaborateur
+     * Relation avec les affectations de ce collaborateur.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Affectation, $this>
      */
     public function affectations(): HasMany

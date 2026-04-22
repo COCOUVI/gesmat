@@ -17,12 +17,13 @@ final class DirectAffectationCreated implements ShouldDispatchAfterCommit
     use SerializesModels;
 
     /**
-     * @param  array<int, array{nom: string, quantite: int, date_retour: ?string}>  $affectationsDetails
+     * @param array<int, array{nom: string, quantite: int, date_retour: ?string}> $affectationsDetails
      */
     public function __construct(
         public readonly User|CollaborateurExterne $employee,
         public readonly string $motif,
         public readonly array $affectationsDetails,
         public readonly ?Bon $bon = null,
-    ) {}
+    ) {
+    }
 }

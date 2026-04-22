@@ -32,12 +32,12 @@ final class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'prenom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required'],
+            'nom'     => ['required', 'string', 'max:255'],
+            'prenom'  => ['required', 'string', 'max:255'],
+            'email'   => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'role'    => ['required'],
             'service' => ['required'],
-            'poste' => ['required'],
+            'poste'   => ['required'],
         ]);
 
         // Générer un mot de passe aléatoire
@@ -45,12 +45,12 @@ final class RegisteredUserController extends Controller
 
         // Créer l'utilisateur avec le mot de passe hashé
         $user = User::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'poste' => $request->poste,
-            'role' => $request->role,
-            'service' => $request->service,
-            'email' => $request->email,
+            'nom'      => $request->nom,
+            'prenom'   => $request->prenom,
+            'poste'    => $request->poste,
+            'role'     => $request->role,
+            'service'  => $request->service,
+            'email'    => $request->email,
             'password' => Hash::make($randomPassword),
         ]);
 

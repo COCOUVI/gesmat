@@ -21,14 +21,14 @@ final class EquipementFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom' => fake()->words(3, true),
-            'marque' => fake()->company(),
-            'description' => fake()->sentence(),
+            'nom'              => fake()->words(3, true),
+            'marque'           => fake()->company(),
+            'description'      => fake()->sentence(),
             'date_acquisition' => fake()->date(),
-            'quantite' => fake()->numberBetween(50, 200),
-            'seuil_critique' => fake()->numberBetween(5, 20),
-            'image_path' => 'images/equipment_'.uniqid().'.jpg',
-            'categorie_id' => Categorie::factory(),
+            'quantite'         => fake()->numberBetween(50, 200),
+            'seuil_critique'   => fake()->numberBetween(5, 20),
+            'image_path'       => 'images/equipment_'.uniqid().'.jpg',
+            'categorie_id'     => Categorie::factory(),
         ];
     }
 }

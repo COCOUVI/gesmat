@@ -35,7 +35,7 @@ final readonly class ReplacePanneEquipmentAction
         $result = DB::transaction(function () use ($actor, $panne, $quantiteRemplacement): array {
             $panne->load(['equipement', 'affectation.user']);
 
-            throw_if($panne->estInterne() || ! $panne->affectation, Exception::class, 'Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
+            throw_if($panne->estInterne() || !$panne->affectation, Exception::class, 'Le remplacement ne peut se faire que sur une panne liée à une affectation active.');
 
             $quantiteRemplacable = $panne->getQuantiteRemplacable();
 
@@ -58,35 +58,35 @@ final readonly class ReplacePanneEquipmentAction
             $nouvelleQuantiteRetournee = $affectationOrigine->getQuantiteRetournee() + $quantiteRemplacement;
             $affectationOrigine->update([
                 'quantite_retournee' => $nouvelleQuantiteRetournee,
-                'statut' => $nouvelleQuantiteRetournee >= $affectationOrigine->quantite_affectee ? 'retourné' : 'retour_partiel',
+                'statut'             => $nouvelleQuantiteRetournee >= $affectationOrigine->quantite_affectee ? 'retourné' : 'retour_partiel',
             ]);
 
             $affectationRemplacement = Affectation::create([
-                'equipement_id' => $panne->equipement_id,
-                'user_id' => $utilisateur->id,
-                'demande_id' => null,
-                'date_retour' => $affectationOrigine->date_retour,
-                'created_by' => $actor->nom.' '.$actor->prenom,
-                'quantite_affectee' => $quantiteRemplacement,
+                'equipement_id'      => $panne->equipement_id,
+                'user_id'            => $utilisateur->id,
+                'demande_id'         => null,
+                'date_retour'        => $affectationOrigine->date_retour,
+                'created_by'         => $actor->nom.' '.$actor->prenom,
+                'quantite_affectee'  => $quantiteRemplacement,
                 'quantite_retournee' => 0,
-                'statut' => 'active',
+                'statut'             => 'active',
             ]);
 
             $pdfName = 'bon_sortie_remplacement_'.$panne->id.'_'.now()->timestamp.'.pdf';
             $pdfPath = 'bon_sortie/'.$pdfName;
 
             $bon = Bon::create([
-                'user_id' => $utilisateur->id,
-                'motif' => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
-                'statut' => 'sortie',
+                'user_id'     => $utilisateur->id,
+                'motif'       => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
+                'statut'      => 'sortie',
                 'fichier_pdf' => $pdfPath,
             ]);
 
             return [
-                'panne' => $panne->fresh(['equipement', 'affectation.user', 'user']),
-                'bon' => $bon,
-                'pdf_path' => $pdfPath,
-                'replacement_quantity' => $quantiteRemplacement,
+                'panne'                   => $panne->fresh(['equipement', 'affectation.user', 'user']),
+                'bon'                     => $bon,
+                'pdf_path'                => $pdfPath,
+                'replacement_quantity'    => $quantiteRemplacement,
                 'replacement_affectation' => $affectationRemplacement,
             ];
         });

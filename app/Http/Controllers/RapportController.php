@@ -20,7 +20,6 @@ final class RapportController extends Controller
         $rapports = Rapport::where('user_id', $user->id)->latest()->get();
 
         return view('gestionnaire.rapports.index', ['rapports' => $rapports]);
-
     }
 
     /**
@@ -54,8 +53,8 @@ final class RapportController extends Controller
 
         // Enregistrer dans la base de données
         Rapport::create([
-            'contenu' => $contenu,
-            'user_id' => $user->id,
+            'contenu'   => $contenu,
+            'user_id'   => $user->id,
             'file_path' => $path,
         ]);
 
@@ -90,12 +89,11 @@ final class RapportController extends Controller
 
         $pdf = Pdf::loadView('gestionnaire.rapports.pdf', [
             'contenu' => $rapport->contenu, // 🔥 ajout ici
-            'user' => $user,
+            'user'    => $user,
         ]);
 
         // return $pdf->download('rapport_'.$rapport->id.'.pdf');
         return $pdf->stream('rapport_'.$rapport->id.'.pdf'); // Forcer le téléchargement dans le navigateur
-
     }
 
     public function destroy($id)

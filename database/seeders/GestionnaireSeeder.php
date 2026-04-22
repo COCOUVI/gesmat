@@ -15,12 +15,12 @@ final class GestionnaireSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'aden@gmail.com'],
             [
-                'nom' => 'Aden',
-                'prenom' => 'Gest',
-                'password' => bcrypt('aden123@'),
-                'role' => 'gestionnaire',
-                'service' => 'Informatique',
-                'poste' => 'Responsable IT',
+                'nom'               => 'Aden',
+                'prenom'            => 'Gest',
+                'password'          => bcrypt('aden123@'),
+                'role'              => 'gestionnaire',
+                'service'           => 'Informatique',
+                'poste'             => 'Responsable IT',
                 'email_verified_at' => now(),
             ]
         );

@@ -30,7 +30,7 @@ final class GestionnaireDemandeController extends Controller
         ]);
 
         $demande->update([
-            'statut' => 'en_cours',
+            'statut'          => 'en_cours',
             'gestionnaire_id' => $request->gestionnaire_id, // Ajoutez cette colonne si elle n'existe pas
         ]);
 

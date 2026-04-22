@@ -11,7 +11,8 @@ final class DemandeObserver
 {
     public function __construct(
         private readonly DashboardCacheService $dashboardCacheService,
-    ) {}
+    ) {
+    }
 
     public function created(Demande $demande): void
     {

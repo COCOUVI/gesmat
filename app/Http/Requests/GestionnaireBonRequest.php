@@ -17,8 +17,8 @@ final class GestionnaireBonRequest extends FormRequest
     {
         return [
             'collaborateur_id' => ['required', 'exists:collaborateur_externes,id'],
-            'motif' => ['required', 'string', 'max:500'],
-            'type' => ['required', 'in:entrée,sortie'],
+            'motif'            => ['required', 'string', 'max:500'],
+            'type'             => ['required', 'in:entrée,sortie'],
         ];
     }
 
@@ -26,12 +26,12 @@ final class GestionnaireBonRequest extends FormRequest
     {
         return [
             'collaborateur_id.required' => 'Le collaborateur est requis.',
-            'collaborateur_id.exists' => 'Le collaborateur sélectionné est invalide.',
-            'motif.required' => 'Le motif est requis.',
-            'motif.string' => 'Le motif doit être une chaîne de caractères.',
-            'motif.max' => 'Le motif ne doit pas dépasser 500 caractères.',
-            'type.required' => 'Le type est requis.',
-            'type.in' => 'Le type doit être entrée ou sortie.',
+            'collaborateur_id.exists'   => 'Le collaborateur sélectionné est invalide.',
+            'motif.required'            => 'Le motif est requis.',
+            'motif.string'              => 'Le motif doit être une chaîne de caractères.',
+            'motif.max'                 => 'Le motif ne doit pas dépasser 500 caractères.',
+            'type.required'             => 'Le type est requis.',
+            'type.in'                   => 'Le type doit être entrée ou sortie.',
         ];
     }
 }

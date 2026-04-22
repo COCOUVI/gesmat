@@ -16,13 +16,13 @@ final class StoreDirectAffectationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employe_id' => ['required', 'exists:users,id'],
-            'motif' => ['required', 'string', 'max:500'],
-            'equipements' => ['required', 'array', 'min:1'],
-            'equipements.*' => ['required', 'exists:equipements,id'],
-            'quantites' => ['required', 'array', 'min:1'],
-            'quantites.*' => ['required', 'integer', 'min:1'],
-            'dates_retour' => ['nullable', 'array'],
+            'employe_id'     => ['required', 'exists:users,id'],
+            'motif'          => ['required', 'string', 'max:500'],
+            'equipements'    => ['required', 'array', 'min:1'],
+            'equipements.*'  => ['required', 'exists:equipements,id'],
+            'quantites'      => ['required', 'array', 'min:1'],
+            'quantites.*'    => ['required', 'integer', 'min:1'],
+            'dates_retour'   => ['nullable', 'array'],
             'dates_retour.*' => ['nullable', 'date'],
         ];
     }
@@ -31,7 +31,7 @@ final class StoreDirectAffectationRequest extends FormRequest
     {
         return [
             'equipements.required' => 'le champ equipement est requis',
-            'quantites.required' => 'le champ quantité est requis',
+            'quantites.required'   => 'le champ quantité est requis',
         ];
     }
 }

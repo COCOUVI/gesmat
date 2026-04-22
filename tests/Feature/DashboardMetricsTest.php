@@ -17,32 +17,32 @@ test('admin dashboard returns aggregated metrics from optimized queries', functi
     $employee = User::factory()->create(['role' => 'employe']);
     $categorie = Categorie::create(['nom' => 'Dashboard']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Serveur',
-        'marque' => 'HP',
-        'description' => 'Serveur rack',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Serveur',
+        'marque'           => 'HP',
+        'description'      => 'Serveur rack',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
-        'seuil_critique' => 1,
+        'image_path'       => 'test.jpg',
+        'seuil_critique'   => 1,
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'quantite_affectee' => 5,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'quantite_affectee'  => 5,
         'quantite_retournee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'retour_partiel',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retour_partiel',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'quantite' => 3,
+        'equipement_id'    => $equipement->id,
+        'user_id'          => $employee->id,
+        'quantite'         => 3,
         'quantite_resolue' => 1,
-        'description' => 'Panne dashboard',
-        'statut' => 'en_attente',
+        'description'      => 'Panne dashboard',
+        'statut'           => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->get(route('admin.homedash'));
@@ -60,47 +60,47 @@ test('employee dashboard returns cached aggregated personal metrics', function (
     $employee = User::factory()->create(['role' => 'employe']);
     $categorie = Categorie::create(['nom' => 'Employee Dashboard']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Laptop',
-        'marque' => 'Dell',
-        'description' => 'Portable',
-        'quantite' => 8,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Laptop',
+        'marque'           => 'Dell',
+        'description'      => 'Portable',
+        'quantite'         => 8,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
-        'seuil_critique' => 1,
+        'image_path'       => 'test.jpg',
+        'seuil_critique'   => 1,
     ]);
 
     Demande::create([
-        'lieu' => 'Bureau',
-        'motif' => 'Besoin 1',
-        'statut' => 'acceptee',
+        'lieu'    => 'Bureau',
+        'motif'   => 'Besoin 1',
+        'statut'  => 'acceptee',
         'user_id' => $employee->id,
     ]);
 
     Demande::create([
-        'lieu' => 'Bureau',
-        'motif' => 'Besoin 2',
-        'statut' => 'en_attente',
+        'lieu'    => 'Bureau',
+        'motif'   => 'Besoin 2',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'quantite_affectee' => 4,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'quantite_affectee'  => 4,
         'quantite_retournee' => 1,
-        'created_by' => 'Admin Test',
-        'statut' => 'retour_partiel',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retour_partiel',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 2,
+        'equipement_id'    => $equipement->id,
+        'affectation_id'   => $affectation->id,
+        'user_id'          => $employee->id,
+        'quantite'         => 2,
         'quantite_resolue' => 1,
-        'description' => 'Panne employee dashboard',
-        'statut' => 'en_attente',
+        'description'      => 'Panne employee dashboard',
+        'statut'           => 'en_attente',
     ]);
 
     $response = $this->actingAs($employee)->get(route('dashboard.employee'));

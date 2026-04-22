@@ -6,15 +6,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Exécute la migration.
      */
     public function up(): void
     {
         Schema::table('equipements', function (Blueprint $table) {
-            if (! Schema::hasColumn('equipements', 'quantite')) {
+            if (!Schema::hasColumn('equipements', 'quantite')) {
                 $table->integer('quantite')->default(0);
             }
         });

@@ -6,11 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Supprime la colonne etat de la table equipements
-     * La gestion de l'état est maintenant centralisée dans la table pannes
+     * La gestion de l'état est maintenant centralisée dans la table pannes.
      */
     public function up(): void
     {
@@ -20,7 +19,7 @@ return new class extends Migration
     }
 
     /**
-     * Restaure la colonne etat
+     * Restaure la colonne etat.
      */
     public function down(): void
     {

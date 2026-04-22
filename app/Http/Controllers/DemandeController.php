@@ -14,6 +14,5 @@ final class DemandeController extends Controller
 
         // $demandes = Demande::with('equipements')->where("statut", "=", "en_attente")->latest()->get();
         return view('gestionnaire.demandes.index', ['demandes' => $demandes]);
-
     }
 }

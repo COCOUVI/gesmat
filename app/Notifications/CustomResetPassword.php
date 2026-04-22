@@ -28,10 +28,10 @@ final class CustomResetPassword extends Notification
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('🔐 Réinitialisation de mot de passe - J-Tools')
             ->view('emails.reset-password', [
-                'url' => $url,
+                'url'  => $url,
                 'user' => $notifiable,
             ]);
     }

@@ -31,6 +31,7 @@ final readonly class CreateUnifiedAffectationAction
      *     quantites: array<int, int|string>,
      *     dates_retour?: array<int, string|null>
      * }  $validated
+     *
      * @return array{
      *     bon: Bon,
      *     interlocuteur: User|CollaborateurExterne,
@@ -78,7 +79,7 @@ final readonly class CreateUnifiedAffectationAction
                 $rawDate = $ligneAffectation['date_retour'];
                 $equipement = $equipements->get($equipementId);
 
-                if (! $equipement) {
+                if (!$equipement) {
                     throw new Exception(sprintf('Équipement ID %d introuvable.', $equipementId));
                 }
 
@@ -90,11 +91,11 @@ final readonly class CreateUnifiedAffectationAction
 
                 // Crée l'affectation
                 $affectationData = [
-                    'equipement_id' => $equipementId,
-                    'date_retour' => $rawDate ?: null,
-                    'created_by' => $actor->nom.' '.$actor->prenom,
+                    'equipement_id'     => $equipementId,
+                    'date_retour'       => $rawDate ?: null,
+                    'created_by'        => $actor->nom.' '.$actor->prenom,
                     'quantite_affectee' => $quantite,
-                    'statut' => 'active',
+                    'statut'            => 'active',
                 ];
 
                 if ($interlocuteurType === 'user') {
@@ -108,8 +109,8 @@ final readonly class CreateUnifiedAffectationAction
                 $quantitesReservees[$equipementId] = ($quantitesReservees[$equipementId] ?? 0) + $quantite;
 
                 $affectationsDetails[] = [
-                    'nom' => $equipement->nom,
-                    'quantite' => $quantite,
+                    'nom'         => $equipement->nom,
+                    'quantite'    => $quantite,
                     'date_retour' => $rawDate ?: null,
                 ];
             }
@@ -119,11 +120,11 @@ final readonly class CreateUnifiedAffectationAction
 
             // Prépare les données du bon
             $bonData = [
-                'motif' => $validated['motif'],
-                'statut' => 'sortie',
-                'fichier_pdf' => $pdfPath,
+                'motif'              => $validated['motif'],
+                'statut'             => 'sortie',
+                'fichier_pdf'        => $pdfPath,
                 'interlocuteur_type' => $interlocuteurType,
-                'interlocuteur_id' => $interlocuteurId,
+                'interlocuteur_id'   => $interlocuteurId,
             ];
 
             // Ajoute les anciens champs pour la rétro-compatibilité
@@ -136,10 +137,10 @@ final readonly class CreateUnifiedAffectationAction
             $bon = Bon::create($bonData);
 
             return [
-                'bon' => $bon,
-                'interlocuteur' => $interlocuteur,
-                'pdf_path' => $pdfPath,
-                'motif' => $validated['motif'],
+                'bon'                  => $bon,
+                'interlocuteur'        => $interlocuteur,
+                'pdf_path'             => $pdfPath,
+                'motif'                => $validated['motif'],
                 'affectations_details' => $affectationsDetails,
             ];
         });
@@ -148,9 +149,10 @@ final readonly class CreateUnifiedAffectationAction
     }
 
     /**
-     * @param  array<int, int|string>  $equipements
-     * @param  array<int, int|string>  $quantites
-     * @param  array<int, string|null>  $datesRetour
+     * @param array<int, int|string>  $equipements
+     * @param array<int, int|string>  $quantites
+     * @param array<int, string|null> $datesRetour
+     *
      * @return array<int, array{equipement_id: int, quantite: int, date_retour: string|null}>
      */
     private function normalizeLines(array $equipements, array $quantites, array $datesRetour = []): array
@@ -172,11 +174,11 @@ final readonly class CreateUnifiedAffectationAction
 
             $groupKey = $equipementId.'|'.($dateRetour ?? 'sans-date');
 
-            if (! array_key_exists($groupKey, $groupedLines)) {
+            if (!array_key_exists($groupKey, $groupedLines)) {
                 $groupedLines[$groupKey] = [
                     'equipement_id' => $equipementId,
-                    'quantite' => 0,
-                    'date_retour' => $dateRetour,
+                    'quantite'      => 0,
+                    'date_retour'   => $dateRetour,
                 ];
                 $orderedKeys[] = $groupKey;
             }

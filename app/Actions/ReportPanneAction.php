@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Events\PanneReported;
 use App\Models\Affectation;
 use App\Models\Panne;
 use App\Models\User;
@@ -14,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 final readonly class ReportPanneAction
 {
     /**
-     * @param  array{affectation_id: int|string, quantite: int|string, description: string}  $validated
+     * @param array{affectation_id: int|string, quantite: int|string, description: string} $validated
      *
      * @throws ValidationException
      */
@@ -51,12 +50,12 @@ final readonly class ReportPanneAction
             }
 
             $panne = Panne::create([
-                'equipement_id' => $affectation->equipement->id,
+                'equipement_id'  => $affectation->equipement->id,
                 'affectation_id' => $affectation->id,
-                'user_id' => $user->id,
-                'quantite' => $quantiteDemandee,
-                'description' => $validated['description'],
-                'statut' => 'en_attente',
+                'user_id'        => $user->id,
+                'quantite'       => $quantiteDemandee,
+                'description'    => $validated['description'],
+                'statut'         => 'en_attente',
             ]);
 
             event(new \App\Events\PanneReported($panne->fresh(['user', 'equipement', 'affectation'])));

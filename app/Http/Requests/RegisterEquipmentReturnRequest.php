@@ -17,8 +17,8 @@ final class RegisterEquipmentReturnRequest extends FormRequest
     {
         return [
             'quantite_saine_retournee' => ['nullable', 'integer', 'min:0'],
-            'pannes_retournees' => ['nullable', 'array'],
-            'pannes_retournees.*' => ['nullable', 'integer', 'min:0'],
+            'pannes_retournees'        => ['nullable', 'array'],
+            'pannes_retournees.*'      => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

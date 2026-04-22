@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class])->group(function (): void {
-
     Route::get('/rapports/create', [RapportController::class, 'create'])
         ->name('gestionnaire.rapports.create')
         ->middleware([GestionnaireMiddleware::class]);
@@ -36,7 +35,6 @@ Route::prefix('gestionnaire')->middleware(['auth', GestionnaireMiddleware::class
     Route::delete('/rapports/{rapport}', [RapportController::class, 'destroy'])->name('gestionnaire.rapports.destroy');
 
     Route::get('/gestionnaire/rapports/{id}', [RapportController::class, 'show'])->name('gestionnaire.rapports.show');
-
 });
 
 Route::get('/', function () {
@@ -57,7 +55,6 @@ Route::get('/redirect-by-role', function () {
     return match ($role) {
         'admin','gestionnaire' => redirect('/dashboard'),
         'employe', 'employé', 'employée' => redirect('/dashboard/employe'),
-
     };
 })->middleware(['auth'])->name('verifylogin');
 
@@ -128,7 +125,6 @@ Route::prefix('dashboard')->middleware(['auth', AdminOuGestionnaire::class])->gr
         ->name('affectation.retourner');
     Route::delete('/affectations/{affectation}', [AdminController::class, 'CancelAffectation'])
         ->name('affectation.annuler');
-
 });
 Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function (): void {
     Route::get('/list_users', [AdminController::class, 'showusers'])
@@ -146,7 +142,6 @@ Route::prefix('dashboard')->middleware(['auth', IsAdmin::class])->group(function
 });
 
 Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function (): void {
-
     Route::get('/demande-equipement', [EmployeController::class, 'ShowAskpage'])->name('demande.equipement');
     Route::post('/demande-equipement-soumise', [EmployeController::class, 'SubmitAsk'])->name('demande.soumise');
     Route::get('/signaler-panne', [EmployeController::class, 'signalerPanne'])->name('signaler.panne');
@@ -162,7 +157,6 @@ Route::prefix('employee')->middleware(['auth', Isemp::class])->group(function ()
     Route::delete('/delete_ask/{demande}', [EmployeController::class, 'DeleteAsk'])->name('delete.ask');
     Route::get('/panne_listes', [EmployeController::class, 'ShowPannes'])->name('historique.pannes');
     Route::get('/demandes_list', [EmployeController::class, 'ShowDemandes'])->name('listes.demandes');
-
 });
 
 Route::get('/test-mail', function () {
@@ -196,7 +190,7 @@ Route::get('/trigger-queue', function () {
     try {
         // Exécuter les jobs en attente
         \Illuminate\Support\Facades\Artisan::call('queue:work', [
-            '--once' => true,
+            '--once'     => true,
             '--max-time' => 55, // 55 secondes max (Hostinger limit ~60s)
             '--max-jobs' => 10, // Max 10 jobs par appel
         ]);
@@ -204,15 +198,15 @@ Route::get('/trigger-queue', function () {
         \Illuminate\Support\Facades\Log::info('Queue triggered successfully via webhook');
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Queue processed',
+            'status'    => 'success',
+            'message'   => 'Queue processed',
             'timestamp' => now(),
         ]);
     } catch (Exception $exception) {
-        \Illuminate\Support\Facades\Log::error('Queue trigger error: ' . $exception->getMessage());
+        \Illuminate\Support\Facades\Log::error('Queue trigger error: '.$exception->getMessage());
 
         return response()->json([
-            'status' => 'error',
+            'status'  => 'error',
             'message' => $exception->getMessage(),
         ], 500);
     }

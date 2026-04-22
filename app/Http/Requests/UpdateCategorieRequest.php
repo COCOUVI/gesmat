@@ -24,8 +24,8 @@ final class UpdateCategorieRequest extends FormRequest
     {
         return [
             'nom.required' => 'Le nom de la catégorie est requis.',
-            'nom.string' => 'Le nom doit être une chaîne de caractères.',
-            'nom.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'nom.string'   => 'Le nom doit être une chaîne de caractères.',
+            'nom.max'      => 'Le nom ne doit pas dépasser 255 caractères.',
         ];
     }
 }

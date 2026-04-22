@@ -24,7 +24,7 @@ final class StoreRapportRequest extends FormRequest
     {
         return [
             'contenu.required' => 'Le contenu du rapport est requis.',
-            'contenu.string' => 'Le contenu doit être une chaîne de caractères.',
+            'contenu.string'   => 'Le contenu doit être une chaîne de caractères.',
         ];
     }
 }

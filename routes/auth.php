@@ -15,7 +15,6 @@ use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
-
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('Postlogin');
 

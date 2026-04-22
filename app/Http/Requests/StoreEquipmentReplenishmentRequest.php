@@ -16,11 +16,11 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'equipement_id' => ['required', 'exists:equipements,id'],
-            'quantite' => ['required', 'integer', 'min:1'],
-            'is_anonymous' => ['sometimes', 'in:0,1'],
-            'deposant_id' => ['nullable', 'string'],
-            'deposant_anonymous_nom' => ['nullable', 'string', 'max:100'],
+            'equipement_id'             => ['required', 'exists:equipements,id'],
+            'quantite'                  => ['required', 'integer', 'min:1'],
+            'is_anonymous'              => ['sometimes', 'in:0,1'],
+            'deposant_id'               => ['nullable', 'string'],
+            'deposant_anonymous_nom'    => ['nullable', 'string', 'max:100'],
             'deposant_anonymous_prenom' => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -29,15 +29,15 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
     {
         return [
             'equipement_id.required' => 'L\'équipement est requis',
-            'equipement_id.exists' => 'L\'équipement sélectionné n\'existe pas',
-            'quantite.required' => 'La quantité est requise',
-            'quantite.integer' => 'La quantité doit être un nombre entier',
-            'quantite.min' => 'La quantité doit être au moins 1',
+            'equipement_id.exists'   => 'L\'équipement sélectionné n\'existe pas',
+            'quantite.required'      => 'La quantité est requise',
+            'quantite.integer'       => 'La quantité doit être un nombre entier',
+            'quantite.min'           => 'La quantité doit être au moins 1',
         ];
     }
 
     /**
-     * Get the deposant name for display on the bon
+     * Get the deposant name for display on the bon.
      */
     public function getDeposantName(): ?string
     {
@@ -54,7 +54,7 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
 
         // If deposant_id is set, resolve it
         $deposantId = $this->input('deposant_id');
-        if (! $deposantId) {
+        if (!$deposantId) {
             return null;
         }
 
@@ -76,7 +76,7 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
     }
 
     /**
-     * Get validated data formatted for CreateUnifiedStockEntryAction
+     * Get validated data formatted for CreateUnifiedStockEntryAction.
      */
     public function getActionData(): array
     {
@@ -107,11 +107,11 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
         }
 
         return [
-            'equipement_id' => (int) $data['equipement_id'],
-            'quantite' => (int) $data['quantite'],
-            'type' => 'reapprovisionnement',
-            'interlocuteur_type' => $interlocuteurType,
-            'interlocuteur_id' => $interlocuteurId,
+            'equipement_id'           => (int) $data['equipement_id'],
+            'quantite'                => (int) $data['quantite'],
+            'type'                    => 'reapprovisionnement',
+            'interlocuteur_type'      => $interlocuteurType,
+            'interlocuteur_id'        => $interlocuteurId,
             'interlocuteur_nom_libre' => $interlocuteurNomLibre,
         ];
     }
@@ -125,12 +125,12 @@ final class StoreEquipmentReplenishmentRequest extends FormRequest
             $anonymousPrenom = $this->input('deposant_anonymous_prenom');
 
             // If anonymous is checked, at least one of nom or prenom should be filled
-            if ($isAnonymous && ! $anonymousNom && ! $anonymousPrenom) {
+            if ($isAnonymous && !$anonymousNom && !$anonymousPrenom) {
                 $validator->errors()->add('deposant_anonymous_nom', 'Veuillez remplir au moins le nom ou le prénom de l\'anonyme.');
             }
 
             // If anonymous is not checked but a deposant is selected via select, it should not have anon values
-            if (! $isAnonymous && ($anonymousNom || $anonymousPrenom)) {
+            if (!$isAnonymous && ($anonymousNom || $anonymousPrenom)) {
                 // This shouldn't happen with JS, but validate anyway
                 $validator->errors()->add('deposant_id', 'Sélectionnez un mode: soit anonyme, soit une personne de la liste.');
             }

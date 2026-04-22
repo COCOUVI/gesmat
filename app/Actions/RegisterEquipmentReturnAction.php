@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 final readonly class RegisterEquipmentReturnAction
 {
     /**
-     * @param  array{quantite_saine_retournee?: int|string|null, pannes_retournees?: array<int, int|string|null>}  $validated
+     * @param array{quantite_saine_retournee?: int|string|null, pannes_retournees?: array<int, int|string|null>} $validated
+     *
      * @return array{
      *     affectation: Affectation,
      *     healthy_returned: int,
@@ -83,8 +84,8 @@ final readonly class RegisterEquipmentReturnAction
             $nouvelleQuantiteRetournee = $affectation->getQuantiteRetournee() + $quantiteRetourneeTotale;
             $updateData = [
                 'quantite_retournee' => $nouvelleQuantiteRetournee,
-                'statut' => $nouvelleQuantiteRetournee >= $affectation->quantite_affectee ? 'retourné' : 'retour_partiel',
-                'returned_at' => $affectation->returned_at ?? now(),
+                'statut'             => $nouvelleQuantiteRetournee >= $affectation->quantite_affectee ? 'retourné' : 'retour_partiel',
+                'returned_at'        => $affectation->returned_at ?? now(),
             ];
 
             $affectation->update($updateData);
@@ -100,7 +101,7 @@ final readonly class RegisterEquipmentReturnAction
                     $quantiteSaineRetournee,
                     $quantitePanneRetournee
                 ),
-                'statut' => 'entrée',
+                'statut'      => 'entrée',
                 'fichier_pdf' => $pdfPath,
             ];
 
@@ -117,12 +118,12 @@ final readonly class RegisterEquipmentReturnAction
             $bon = Bon::create($bonData);
 
             return [
-                'affectation' => $affectation->fresh(['user', 'collaborateurExterne', 'equipement', 'pannes']),
+                'affectation'      => $affectation->fresh(['user', 'collaborateurExterne', 'equipement', 'pannes']),
                 'healthy_returned' => $quantiteSaineRetournee,
-                'broken_returned' => $quantitePanneRetournee,
-                'total_returned' => $quantiteRetourneeTotale,
-                'bon' => $bon,
-                'pdf_path' => $pdfPath,
+                'broken_returned'  => $quantitePanneRetournee,
+                'total_returned'   => $quantiteRetourneeTotale,
+                'bon'              => $bon,
+                'pdf_path'         => $pdfPath,
             ];
         });
 

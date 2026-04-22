@@ -16,33 +16,33 @@ final class StoreUnifiedAffectationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'interlocuteur_type' => ['required', 'in:user,collaborateur_externe'],
-            'employe_id' => ['required_if:interlocuteur_type,user', 'nullable', 'exists:users,id'],
+            'interlocuteur_type'       => ['required', 'in:user,collaborateur_externe'],
+            'employe_id'               => ['required_if:interlocuteur_type,user', 'nullable', 'exists:users,id'],
             'collaborateur_externe_id' => ['required_if:interlocuteur_type,collaborateur_externe', 'nullable', 'exists:collaborateur_externes,id'],
-            'motif' => ['required', 'string', 'max:500'],
-            'equipements' => ['required', 'array', 'min:1'],
-            'equipements.*' => ['required', 'exists:equipements,id'],
-            'quantites' => ['required', 'array', 'min:1'],
-            'quantites.*' => ['required', 'integer', 'min:1'],
-            'dates_retour' => ['nullable', 'array'],
-            'dates_retour.*' => ['nullable', 'date'],
+            'motif'                    => ['required', 'string', 'max:500'],
+            'equipements'              => ['required', 'array', 'min:1'],
+            'equipements.*'            => ['required', 'exists:equipements,id'],
+            'quantites'                => ['required', 'array', 'min:1'],
+            'quantites.*'              => ['required', 'integer', 'min:1'],
+            'dates_retour'             => ['nullable', 'array'],
+            'dates_retour.*'           => ['nullable', 'date'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'interlocuteur_type.required' => 'Le type de destinataire est requis',
-            'interlocuteur_type.in' => 'Le type de destinataire doit être un employé ou un collaborateur externe',
-            'employe_id.required_if' => 'Un employé doit être sélectionné',
+            'interlocuteur_type.required'          => 'Le type de destinataire est requis',
+            'interlocuteur_type.in'                => 'Le type de destinataire doit être un employé ou un collaborateur externe',
+            'employe_id.required_if'               => 'Un employé doit être sélectionné',
             'collaborateur_externe_id.required_if' => 'Un collaborateur externe doit être sélectionné',
-            'equipements.required' => 'Au moins un équipement est requis',
-            'quantites.required' => 'Les quantités sont requises',
+            'equipements.required'                 => 'Au moins un équipement est requis',
+            'quantites.required'                   => 'Les quantités sont requises',
         ];
     }
 
     /**
-     * Get validated data in the format expected by CreateUnifiedAffectationAction
+     * Get validated data in the format expected by CreateUnifiedAffectationAction.
      */
     public function getActionData(): array
     {
@@ -55,16 +55,16 @@ final class StoreUnifiedAffectationRequest extends FormRequest
 
         return [
             'interlocuteur_type' => $interlocuteurType,
-            'interlocuteur_id' => (int) $interlocuteurId,
-            'motif' => $data['motif'],
-            'equipements' => $data['equipements'],
-            'quantites' => array_map('intval', $data['quantites']),
-            'dates_retour' => $data['dates_retour'] ?? [],
+            'interlocuteur_id'   => (int) $interlocuteurId,
+            'motif'              => $data['motif'],
+            'equipements'        => $data['equipements'],
+            'quantites'          => array_map('intval', $data['quantites']),
+            'dates_retour'       => $data['dates_retour'] ?? [],
         ];
     }
 
     /**
-     * Prepare data for validation/processing
+     * Prepare data for validation/processing.
      */
     protected function prepareForValidation(): void
     {
@@ -72,11 +72,11 @@ final class StoreUnifiedAffectationRequest extends FormRequest
         if ($this->input('interlocuteur_type') === 'collaborateur_externe') {
             $this->merge([
                 'collaborateur_externe_id' => $this->input('collaborateur_externe_id'),
-                'employe_id' => null,
+                'employe_id'               => null,
             ]);
         } else {
             $this->merge([
-                'employe_id' => $this->input('employe_id'),
+                'employe_id'               => $this->input('employe_id'),
                 'collaborateur_externe_id' => null,
             ]);
         }

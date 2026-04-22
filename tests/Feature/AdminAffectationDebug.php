@@ -13,13 +13,13 @@ test('debug affectation process', function (): void {
 
     $categorie = Categorie::create(['nom' => 'Test']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Test Equipment',
-        'marque' => 'Brand',
-        'description' => 'Test',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Test Equipment',
+        'marque'           => 'Brand',
+        'description'      => 'Test',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     // Try with middleware bypassed
@@ -28,10 +28,10 @@ test('debug affectation process', function (): void {
         ->post(
             route('handle.affectation'),
             [
-                'employe_id' => $employee->id,
-                'motif' => 'Test affectation',
-                'equipements' => [$equipement->id],
-                'quantites' => [3],
+                'employe_id'   => $employee->id,
+                'motif'        => 'Test affectation',
+                'equipements'  => [$equipement->id],
+                'quantites'    => [3],
                 'dates_retour' => [null],
             ]
         );

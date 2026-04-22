@@ -22,8 +22,8 @@ final class StoreHelpRequest extends FormRequest
     {
         return [
             'message.required' => 'Le message est requis',
-            'message.min' => 'Le message doit contenir au moins 10 caractères',
-            'message.max' => 'Le message ne doit pas dépasser 2000 caractères',
+            'message.min'      => 'Le message doit contenir au moins 10 caractères',
+            'message.max'      => 'Le message ne doit pas dépasser 2000 caractères',
         ];
     }
 }

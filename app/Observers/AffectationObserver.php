@@ -13,7 +13,8 @@ final class AffectationObserver
     public function __construct(
         private readonly CriticalStockMonitor $criticalStockMonitor,
         private readonly DashboardCacheService $dashboardCacheService,
-    ) {}
+    ) {
+    }
 
     public function created(Affectation $affectation): void
     {

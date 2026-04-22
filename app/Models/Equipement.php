@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Equipement - Modèle pour la gestion des équipements et du stock
+ * Equipement - Modèle pour la gestion des équipements et du stock.
  *
  * Attributs:
  * - nom: string
@@ -38,13 +38,14 @@ final class Equipement extends Model
     {
         return [
             'date_acquisition' => 'date',
-            'quantite' => 'integer',
-            'seuil_critique' => 'integer',
+            'quantite'         => 'integer',
+            'seuil_critique'   => 'integer',
         ];
     }
 
     /**
-     * Relation avec la catégorie
+     * Relation avec la catégorie.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Categorie, $this>
      */
     public function categorie(): BelongsTo
@@ -53,7 +54,8 @@ final class Equipement extends Model
     }
 
     /**
-     * Relation avec les demandes via table pivot equipement_demandés
+     * Relation avec les demandes via table pivot equipement_demandés.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Demande, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function demandes(): BelongsToMany
@@ -64,7 +66,8 @@ final class Equipement extends Model
     }
 
     /**
-     * Relation avec les utilisateurs via affectations
+     * Relation avec les utilisateurs via affectations.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\User, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function users(): BelongsToMany
@@ -74,7 +77,8 @@ final class Equipement extends Model
     }
 
     /**
-     * Relation avec les pannes
+     * Relation avec les pannes.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
      */
     public function pannes(): HasMany
@@ -83,7 +87,8 @@ final class Equipement extends Model
     }
 
     /**
-     * Relation avec les affectations
+     * Relation avec les affectations.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Affectation, $this>
      */
     public function affectations(): HasMany
@@ -93,6 +98,7 @@ final class Equipement extends Model
 
     /**
      * Relation avec les bons des collaborateurs externes portant sur cet équipement.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Bon, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function bonsCollaborateurs(): BelongsToMany
@@ -192,7 +198,7 @@ final class Equipement extends Model
 
     /**
      * Calcule la quantité disponible pour affectation
-     * Formule: quantite_totale - quantite_affectee_active - quantite_en_panne_interne - quantite_affectee_externe
+     * Formule: quantite_totale - quantite_affectee_active - quantite_en_panne_interne - quantite_affectee_externe.
      */
     public function getQuantiteDisponible(): int
     {
@@ -212,7 +218,7 @@ final class Equipement extends Model
     }
 
     /**
-     * Vérifie si la quantité demandée est disponible
+     * Vérifie si la quantité demandée est disponible.
      */
     public function peutAffecter(int $quantiteDemandee): bool
     {
@@ -220,7 +226,7 @@ final class Equipement extends Model
     }
 
     /**
-     * Retourne l'état réel de l'équipement basé sur les pannes
+     * Retourne l'état réel de l'équipement basé sur les pannes.
      */
     public function getEtat(): string
     {
@@ -240,7 +246,7 @@ final class Equipement extends Model
 
     /**
      * Scope pour obtenir uniquement les équipements avec du stock disponible
-     * Utilisé pour les demandes et assignations
+     * Utilisé pour les demandes et assignations.
      */
     protected function scopeWithStock($query)
     {

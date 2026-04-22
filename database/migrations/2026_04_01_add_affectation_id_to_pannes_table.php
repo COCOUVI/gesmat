@@ -6,11 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Ajoute la relation affectation_id à la table pannes
-     * Permet de tracer qui avait l'équipement quand la panne a été signalée
+     * Permet de tracer qui avait l'équipement quand la panne a été signalée.
      */
     public function up(): void
     {
@@ -20,7 +19,7 @@ return new class extends Migration
     }
 
     /**
-     * Supprime la colonne affectation_id
+     * Supprime la colonne affectation_id.
      */
     public function down(): void
     {

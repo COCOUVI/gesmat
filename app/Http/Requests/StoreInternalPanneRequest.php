@@ -17,8 +17,8 @@ final class StoreInternalPanneRequest extends FormRequest
     {
         return [
             'equipement_id' => ['required', 'integer', 'exists:equipements,id'],
-            'quantite' => ['required', 'integer', 'min:1'],
-            'description' => ['required', 'string', 'min:10', 'max:1000'],
+            'quantite'      => ['required', 'integer', 'min:1'],
+            'description'   => ['required', 'string', 'min:10', 'max:1000'],
         ];
     }
 }

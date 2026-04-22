@@ -17,10 +17,11 @@ final class WorkflowActionMail extends Mailable implements ShouldQueue
 {
     use Queueable;
     use SerializesModels;
+
     /**
-     * @param  array<int, array{label: string, value: string}>  $details
-     * @param  array<int, string>  $highlights
-     * @param  array<int, array{label: string, url: string}>  $actionLinks
+     * @param array<int, array{label: string, value: string}> $details
+     * @param array<int, string>                              $highlights
+     * @param array<int, array{label: string, url: string}>   $actionLinks
      */
     public function __construct(
         private readonly string $subjectLine,
@@ -49,15 +50,15 @@ final class WorkflowActionMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'emails.workflow_action',
             with: [
-                'title' => $this->title,
+                'title'         => $this->title,
                 'recipientName' => $this->recipientName,
-                'intro' => $this->intro,
-                'details' => $this->details,
-                'highlights' => $this->highlights,
-                'actionLinks' => $this->actionLinks,
-                'footerNote' => $this->footerNote,
+                'intro'         => $this->intro,
+                'details'       => $this->details,
+                'highlights'    => $this->highlights,
+                'actionLinks'   => $this->actionLinks,
+                'footerNote'    => $this->footerNote,
                 'hasAttachment' => $this->attachmentPath !== null,
-                'logoPath' => public_path('images/jaspe_logo_noir_web.png'),
+                'logoPath'      => public_path('images/jaspe_logo_noir_web.png'),
             ],
         );
     }
@@ -67,7 +68,7 @@ final class WorkflowActionMail extends Mailable implements ShouldQueue
      */
     public function attachments(): array
     {
-        if ($this->attachmentPath === null || ! Storage::disk('public')->exists($this->attachmentPath)) {
+        if ($this->attachmentPath === null || !Storage::disk('public')->exists($this->attachmentPath)) {
             return [];
         }
 

@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Hash;
 
 test('admin sees the shared profile page and can update personal information', function (): void {
     $admin = User::factory()->create([
-        'role' => 'admin',
-        'nom' => 'Akakpo',
-        'prenom' => 'Nadia',
-        'poste' => 'Administratrice',
+        'role'    => 'admin',
+        'nom'     => 'Akakpo',
+        'prenom'  => 'Nadia',
+        'poste'   => 'Administratrice',
         'service' => 'DSI',
     ]);
 
@@ -21,10 +21,10 @@ test('admin sees the shared profile page and can update personal information', f
     $response->assertSee('Modifier mon mot de passe');
 
     $updateResponse = $this->actingAs($admin)->patch(route('profile.update'), [
-        'nom' => 'Akakpo',
-        'prenom' => 'Nadine',
-        'email' => 'nadine@example.com',
-        'poste' => 'Administratrice système',
+        'nom'     => 'Akakpo',
+        'prenom'  => 'Nadine',
+        'email'   => 'nadine@example.com',
+        'poste'   => 'Administratrice système',
         'service' => 'Informatique',
     ]);
 
@@ -41,7 +41,7 @@ test('admin sees the shared profile page and can update personal information', f
 
 test('employee sees the dedicated profile page', function (): void {
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'poste' => 'Agent support',
     ]);
 
@@ -55,14 +55,14 @@ test('employee sees the dedicated profile page', function (): void {
 
 test('authenticated user can update password from profile page', function (): void {
     $user = User::factory()->create([
-        'role' => 'gestionnaire',
+        'role'     => 'gestionnaire',
         'password' => Hash::make('secret-old-password'),
-        'poste' => 'Gestionnaire',
+        'poste'    => 'Gestionnaire',
     ]);
 
     $response = $this->actingAs($user)->put(route('profile.password.update'), [
-        'current_password' => 'secret-old-password',
-        'password' => 'secret-new-password',
+        'current_password'      => 'secret-old-password',
+        'password'              => 'secret-new-password',
         'password_confirmation' => 'secret-new-password',
     ]);
 

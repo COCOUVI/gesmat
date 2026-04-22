@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Models\Affectation;
 use App\Services\WorkflowNotificationService;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
@@ -44,7 +43,7 @@ final class SendUpcomingReturnReminders extends Command
                 $today->format('Y-m-d')
             );
 
-            if (! Cache::add($cacheKey, true, now()->endOfDay())) {
+            if (!Cache::add($cacheKey, true, now()->endOfDay())) {
                 continue;
             }
 
