@@ -20,7 +20,7 @@ final class CriticalStockMonitor
     {
         $freshEquipement = $equipement->fresh();
 
-        if (! $freshEquipement instanceof Equipement) {
+        if (!$freshEquipement instanceof Equipement) {
             return;
         }
 
@@ -124,7 +124,7 @@ final class CriticalStockMonitor
     {
         $equipement = Equipement::query()->find($affectation->equipement_id);
 
-        if (! $equipement instanceof Equipement) {
+        if (!$equipement instanceof Equipement) {
             return;
         }
 
@@ -142,7 +142,7 @@ final class CriticalStockMonitor
     {
         $equipement = Equipement::query()->find($panne->equipement_id);
 
-        if (! $equipement instanceof Equipement) {
+        if (!$equipement instanceof Equipement) {
             return;
         }
 

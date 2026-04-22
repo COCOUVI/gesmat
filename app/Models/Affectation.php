@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Affectation - Modèle pour la gestion des affectations d'équipements
+ * Affectation - Modèle pour la gestion des affectations d'équipements.
  *
  * Attributs:
  * - equipement_id: foreignId
@@ -39,19 +39,20 @@ final class Affectation extends Model
     protected function casts(): array
     {
         return [
-            'date_retour' => 'datetime',
-            'returned_at' => 'datetime',
-            'equipement_id' => 'integer',
-            'user_id' => 'integer',
+            'date_retour'              => 'datetime',
+            'returned_at'              => 'datetime',
+            'equipement_id'            => 'integer',
+            'user_id'                  => 'integer',
             'collaborateur_externe_id' => 'integer',
-            'demande_id' => 'integer',
-            'quantite_affectee' => 'integer',
-            'quantite_retournee' => 'integer',
+            'demande_id'               => 'integer',
+            'quantite_affectee'        => 'integer',
+            'quantite_retournee'       => 'integer',
         ];
     }
 
     /**
-     * Relation avec l'équipement affecté
+     * Relation avec l'équipement affecté.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
      */
     public function equipement(): BelongsTo
@@ -60,7 +61,8 @@ final class Affectation extends Model
     }
 
     /**
-     * Relation avec l'utilisateur ayant l'affectation
+     * Relation avec l'utilisateur ayant l'affectation.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
@@ -69,7 +71,8 @@ final class Affectation extends Model
     }
 
     /**
-     * Relation avec le collaborateur externe ayant l'affectation (polymorphe)
+     * Relation avec le collaborateur externe ayant l'affectation (polymorphe).
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
@@ -79,6 +82,7 @@ final class Affectation extends Model
 
     /**
      * Demande d'origine, si l'affectation découle d'une demande.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Demande, $this>
      */
     public function demande(): BelongsTo
@@ -87,7 +91,8 @@ final class Affectation extends Model
     }
 
     /**
-     * Relation avec les pannes liées à cette affectation
+     * Relation avec les pannes liées à cette affectation.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
      */
     public function pannes(): HasMany
@@ -104,7 +109,7 @@ final class Affectation extends Model
     }
 
     /**
-     * Vérifie si cette affectation a des pannes non résolues
+     * Vérifie si cette affectation a des pannes non résolues.
      */
     public function aPannesNonResolues(): bool
     {
@@ -118,7 +123,7 @@ final class Affectation extends Model
     }
 
     /**
-     * Obtient le nombre de pannes non résolues
+     * Obtient le nombre de pannes non résolues.
      */
     public function getQuantitePannesNonResolues(): int
     {

@@ -18,9 +18,9 @@ final class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'nom' => ['required', 'string', 'max:255'],
+            'nom'    => ['required', 'string', 'max:255'],
             'prenom' => ['required', 'string', 'max:255'],
-            'email' => [
+            'email'  => [
                 'required',
                 'string',
                 'lowercase',
@@ -42,13 +42,13 @@ final class ProfileUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nom.required' => 'Le nom est requis.',
-            'prenom.required' => 'Le prénom est requis.',
-            'email.required' => "L'adresse e-mail est requise.",
-            'email.email' => "L'adresse e-mail n'est pas valide.",
-            'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
-            'role.required' => 'Le rôle est requis.',
-            'poste.required' => 'Le poste est requis.',
+            'nom.required'     => 'Le nom est requis.',
+            'prenom.required'  => 'Le prénom est requis.',
+            'email.required'   => "L'adresse e-mail est requise.",
+            'email.email'      => "L'adresse e-mail n'est pas valide.",
+            'email.unique'     => 'Cette adresse e-mail est déjà utilisée.',
+            'role.required'    => 'Le rôle est requis.',
+            'poste.required'   => 'Le poste est requis.',
             'service.required' => 'Le service est requis.',
         ];
     }

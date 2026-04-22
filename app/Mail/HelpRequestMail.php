@@ -15,6 +15,7 @@ final class HelpRequestMail extends Mailable implements ShouldQueue
 {
     use Queueable;
     use SerializesModels;
+
     public function __construct(
         private readonly string $senderEmail,
         private readonly string $body,
@@ -35,7 +36,7 @@ final class HelpRequestMail extends Mailable implements ShouldQueue
             view: 'emails.aide',
             with: [
                 'email' => $this->senderEmail,
-                'body' => $this->body,
+                'body'  => $this->body,
             ],
         );
     }

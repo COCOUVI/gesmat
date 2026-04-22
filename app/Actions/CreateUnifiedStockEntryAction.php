@@ -34,6 +34,7 @@ final readonly class CreateUnifiedStockEntryAction
      *     date_acquisition?: string,
      *     equipement_id?: int|string
      * }  $validated
+     *
      * @return array{
      *     type: 'nouvel_equipement'|'reapprovisionnement',
      *     equipement: Equipement,
@@ -93,14 +94,14 @@ final readonly class CreateUnifiedStockEntryAction
 
         // Crée le nouvel équipement
         $equipement = Equipement::create([
-            'categorie_id' => $categorieId,
-            'nom' => $validated['nom'],
-            'marque' => $validated['marque'],
-            'description' => $validated['description'],
-            'reference' => $validated['reference'] ?? null,
-            'quantite' => $quantite,
+            'categorie_id'     => $categorieId,
+            'nom'              => $validated['nom'],
+            'marque'           => $validated['marque'],
+            'description'      => $validated['description'],
+            'reference'        => $validated['reference'] ?? null,
+            'quantite'         => $quantite,
             'date_acquisition' => $validated['date_acquisition'] ?? now()->toDateString(),
-            'image_path' => null,
+            'image_path'       => null,
         ]);
 
         // Génère le bon d'entrée
@@ -108,11 +109,11 @@ final readonly class CreateUnifiedStockEntryAction
         $pdfPath = 'bon_entree/'.$pdfName;
 
         $bonData = [
-            'motif' => sprintf('Ajout de nouvel équipement : %s (%s), quantité : %d', $equipement->nom, $equipement->marque, $quantite),
-            'statut' => 'entrée',
-            'fichier_pdf' => $pdfPath,
-            'interlocuteur_type' => $validated['interlocuteur_type'] ?? 'libre',
-            'interlocuteur_id' => $validated['interlocuteur_id'] ?? null,
+            'motif'                   => sprintf('Ajout de nouvel équipement : %s (%s), quantité : %d', $equipement->nom, $equipement->marque, $quantite),
+            'statut'                  => 'entrée',
+            'fichier_pdf'             => $pdfPath,
+            'interlocuteur_type'      => $validated['interlocuteur_type'] ?? 'libre',
+            'interlocuteur_id'        => $validated['interlocuteur_id'] ?? null,
             'interlocuteur_nom_libre' => $validated['interlocuteur_nom_libre'] ?? null,
         ];
 
@@ -121,14 +122,14 @@ final readonly class CreateUnifiedStockEntryAction
         $bon->equipements()->attach($equipement->id, ['quantite' => $quantite]);
 
         return [
-            'type' => 'nouvel_equipement',
-            'equipement' => $equipement,
-            'bon' => $bon,
-            'pdf_path' => $pdfPath,
-            'quantite_added' => $quantite,
+            'type'                => 'nouvel_equipement',
+            'equipement'          => $equipement,
+            'bon'                 => $bon,
+            'pdf_path'            => $pdfPath,
+            'quantite_added'      => $quantite,
             'equipements_details' => [
                 [
-                    'nom' => $equipement->nom,
+                    'nom'      => $equipement->nom,
                     'quantite' => $quantite,
                 ],
             ],
@@ -161,11 +162,11 @@ final readonly class CreateUnifiedStockEntryAction
         $pdfPath = 'bon_entree/'.$pdfName;
 
         $bonData = [
-            'motif' => sprintf('Réapprovisionnement : %s, quantité ajoutée : %d', $equipement->nom, $quantite),
-            'statut' => 'entrée',
-            'fichier_pdf' => $pdfPath,
-            'interlocuteur_type' => $validated['interlocuteur_type'] ?? 'libre',
-            'interlocuteur_id' => $validated['interlocuteur_id'] ?? null,
+            'motif'                   => sprintf('Réapprovisionnement : %s, quantité ajoutée : %d', $equipement->nom, $quantite),
+            'statut'                  => 'entrée',
+            'fichier_pdf'             => $pdfPath,
+            'interlocuteur_type'      => $validated['interlocuteur_type'] ?? 'libre',
+            'interlocuteur_id'        => $validated['interlocuteur_id'] ?? null,
             'interlocuteur_nom_libre' => $validated['interlocuteur_nom_libre'] ?? null,
         ];
 
@@ -174,14 +175,14 @@ final readonly class CreateUnifiedStockEntryAction
         $bon->equipements()->attach($equipement->id, ['quantite' => $quantite]);
 
         return [
-            'type' => 'reapprovisionnement',
-            'equipement' => $equipement->fresh(),
-            'bon' => $bon,
-            'pdf_path' => $pdfPath,
-            'quantite_added' => $quantite,
+            'type'                => 'reapprovisionnement',
+            'equipement'          => $equipement->fresh(),
+            'bon'                 => $bon,
+            'pdf_path'            => $pdfPath,
+            'quantite_added'      => $quantite,
             'equipements_details' => [
                 [
-                    'nom' => $equipement->nom,
+                    'nom'      => $equipement->nom,
                     'quantite' => $quantite,
                 ],
             ],

@@ -14,4 +14,6 @@ namespace App\Http\Controllers;
  * Cette classe est conservée uniquement pour éviter une rupture si un ancien
  * import local existe encore pendant la transition.
  */
-final class GestionnaireController extends Controller {}
+final class GestionnaireController extends Controller
+{
+}

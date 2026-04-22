@@ -12,20 +12,20 @@ enum EquipementEtat: string
     case RÉPARÉ = 'réparé';
 
     /**
-     * Get all available states as key-value pairs for select options
+     * Get all available states as key-value pairs for select options.
      */
     public static function options(): array
     {
         return [
             self::DISPONIBLE->value => 'disponible',
-            self::USAGÉ->value => 'usagé',
-            self::EN_PANNE->value => 'en panne',
-            self::RÉPARÉ->value => 'réparé',
+            self::USAGÉ->value      => 'usagé',
+            self::EN_PANNE->value   => 'en panne',
+            self::RÉPARÉ->value     => 'réparé',
         ];
     }
 
     /**
-     * Get the French label for the status
+     * Get the French label for the status.
      */
     public function label(): string
     {
@@ -33,7 +33,7 @@ enum EquipementEtat: string
     }
 
     /**
-     * Check if the equipment is available for assignment
+     * Check if the equipment is available for assignment.
      */
     public function isAvailable(): bool
     {
@@ -41,7 +41,7 @@ enum EquipementEtat: string
     }
 
     /**
-     * Check if the equipment is broken
+     * Check if the equipment is broken.
      */
     public function isBroken(): bool
     {

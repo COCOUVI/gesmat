@@ -35,7 +35,7 @@ final readonly class ResolvePanneAction
             $panne->save();
 
             return [
-                'panne' => $panne->fresh(['equipement', 'affectation.user', 'user']),
+                'panne'             => $panne->fresh(['equipement', 'affectation.user', 'user']),
                 'resolved_quantity' => $quantiteResolue,
             ];
         });

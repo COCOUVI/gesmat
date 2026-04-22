@@ -14,12 +14,14 @@ final class DemandeServed implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     /**
-     * @param  array<int, array{nom: string, quantite: int, date_retour: ?string}>  $affectationsDetails
+     * @param array<int, array{nom: string, quantite: int, date_retour: ?string}> $affectationsDetails
      */
     public function __construct(
         public readonly Demande $demande,
         public readonly array $affectationsDetails,
         public readonly ?Bon $bon = null,
-    ) {}
+    ) {
+    }
 }

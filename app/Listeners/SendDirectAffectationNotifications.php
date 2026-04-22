@@ -15,7 +15,8 @@ final class SendDirectAffectationNotifications implements ShouldQueue
 
     public function __construct(
         private readonly WorkflowNotificationService $workflowNotificationService,
-    ) {}
+    ) {
+    }
 
     public function handle(DirectAffectationCreated $event): void
     {

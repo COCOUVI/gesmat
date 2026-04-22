@@ -15,8 +15,8 @@ it('can create an external collaborator with identity card', function (): void {
     $this->actingAs($admin);
 
     $response = $this->post(route('HandleCollaborator'), [
-        'nom' => 'Kouassi',
-        'prenom' => 'Brice',
+        'nom'          => 'Kouassi',
+        'prenom'       => 'Brice',
         'chemin_carte' => UploadedFile::fake()->image('carte.png'),
     ]);
 
@@ -36,18 +36,18 @@ it('can create affectation for external collaborator with sortie bon', function 
     $this->actingAs($admin);
 
     $collaborateur = CollaborateurExterne::factory()->create([
-        'nom' => 'Dupont',
+        'nom'    => 'Dupont',
         'prenom' => 'Jean',
     ]);
     $equipement = Equipement::factory()->create(['quantite' => 100]);
 
     $response = $this->post('/dashboard/post_bon_collaborator_external', [
         'collaborateur_id' => $collaborateur->id,
-        'motif' => 'Equipement pour chantier',
-        'type' => 'sortie',
-        'equipements' => [$equipement->id],
-        'quantites' => [10],
-        'dates_retour' => [now()->addDays(10)->toDateString()],
+        'motif'            => 'Equipement pour chantier',
+        'type'             => 'sortie',
+        'equipements'      => [$equipement->id],
+        'quantites'        => [10],
+        'dates_retour'     => [now()->addDays(10)->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -83,17 +83,17 @@ it('can create an entree bon for external collaborator and increase stock', func
     $this->actingAs($admin);
 
     $collaborateur = CollaborateurExterne::factory()->create([
-        'nom' => 'Kouadio',
+        'nom'    => 'Kouadio',
         'prenom' => 'Anne',
     ]);
     $equipement = Equipement::factory()->create(['quantite' => 12]);
 
     $response = $this->post('/dashboard/post_bon_collaborator_external', [
         'collaborateur_id' => $collaborateur->id,
-        'motif' => 'Livraison complémentaire',
-        'type' => 'entrée',
-        'equipements' => [$equipement->id],
-        'quantites' => [4],
+        'motif'            => 'Livraison complémentaire',
+        'type'             => 'entrée',
+        'equipements'      => [$equipement->id],
+        'quantites'        => [4],
     ]);
 
     $response->assertRedirect();
@@ -140,9 +140,9 @@ it('downloads bon through secure route', function (): void {
     $collaborateur = CollaborateurExterne::factory()->create();
     $bon = Bon::create([
         'collaborateur_externe_id' => $collaborateur->id,
-        'motif' => 'Bon de test',
-        'statut' => 'sortie',
-        'fichier_pdf' => 'bon_collaborateurs/bon_collab_test.pdf',
+        'motif'                    => 'Bon de test',
+        'statut'                   => 'sortie',
+        'fichier_pdf'              => 'bon_collaborateurs/bon_collab_test.pdf',
     ]);
 
     Storage::disk('public')->put($bon->fichier_pdf, 'test-pdf-content');
@@ -162,18 +162,18 @@ it('can return equipment from collaborator via BackTool', function (): void {
 
     // Create affectation
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'            => $equipement->id,
         'collaborateur_externe_id' => $collaborateur->id,
-        'quantite_affectee' => 10,
-        'quantite_retournee' => 0,
-        'statut' => 'active',
-        'created_by' => 'Test User',
+        'quantite_affectee'        => 10,
+        'quantite_retournee'       => 0,
+        'statut'                   => 'active',
+        'created_by'               => 'Test User',
     ]);
 
     // Return equipment via BackTool
     $response = $this->post('/dashboard/back_tool/'.$affectation->id, [
         'quantite_saine_retournee' => 8,
-        'pannes_retournees' => [],
+        'pannes_retournees'        => [],
     ]);
 
     $response->assertRedirect();
@@ -207,10 +207,10 @@ it('complete collaborator workflow creates two bons', function (): void {
     // Step 1: Assign equipment (creates sortie bon + affectation)
     $this->post('/dashboard/post_bon_collaborator_external', [
         'collaborateur_id' => $collaborateur->id,
-        'motif' => 'Travaux site A',
-        'type' => 'sortie',
-        'equipements' => [$equipement->id],
-        'quantites' => [5],
+        'motif'            => 'Travaux site A',
+        'type'             => 'sortie',
+        'equipements'      => [$equipement->id],
+        'quantites'        => [5],
     ]);
 
     $sortieBon = Bon::where('collaborateur_externe_id', $collaborateur->id)
@@ -225,7 +225,7 @@ it('complete collaborator workflow creates two bons', function (): void {
     // Step 2: Return equipment via BackTool (creates entrée bon)
     $this->post('/dashboard/back_tool/'.$affectation->id, [
         'quantite_saine_retournee' => 5,
-        'pannes_retournees' => [],
+        'pannes_retournees'        => [],
     ]);
 
     // Verify both bons exist
@@ -242,17 +242,17 @@ it('complete collaborator workflow creates two bons', function (): void {
 
 it('collaborator affectation uses correct polymorphic fields', function (): void {
     $collaborateur = CollaborateurExterne::factory()->create([
-        'nom' => 'Martin',
+        'nom'    => 'Martin',
         'prenom' => 'Pierre',
     ]);
     $equipement = Equipement::factory()->create();
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'            => $equipement->id,
         'collaborateur_externe_id' => $collaborateur->id,
-        'quantite_affectee' => 3,
-        'statut' => 'active',
-        'created_by' => 'Test User',
+        'quantite_affectee'        => 3,
+        'statut'                   => 'active',
+        'created_by'               => 'Test User',
     ]);
 
     expect($affectation->collaborateur_externe_id)->toBe($collaborateur->id);

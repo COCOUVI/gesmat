@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\DB;
 final readonly class ServeDemandeAction
 {
     /**
-     * @param  array<int, int|string|null>  $quantitesAAffecter
-     * @param  array<int, string|null>  $datesRetour
+     * @param array<int, int|string|null> $quantitesAAffecter
+     * @param array<int, string|null>     $datesRetour
+     *
      * @return array{
      *     demande: Demande,
      *     bon: Bon,
@@ -77,21 +78,21 @@ final readonly class ServeDemandeAction
                 );
 
                 Affectation::create([
-                    'equipement_id' => $equipement->id,
-                    'user_id' => $demande->user_id,
-                    'demande_id' => $demande->id,
-                    'date_retour' => $rawDate ?: null,
-                    'created_by' => $actor->nom.' '.$actor->prenom,
+                    'equipement_id'     => $equipement->id,
+                    'user_id'           => $demande->user_id,
+                    'demande_id'        => $demande->id,
+                    'date_retour'       => $rawDate ?: null,
+                    'created_by'        => $actor->nom.' '.$actor->prenom,
                     'quantite_affectee' => $quantite,
-                    'statut' => 'active',
+                    'statut'            => 'active',
                 ]);
 
                 $quantitesReservees[$equipement->id] = ($quantitesReservees[$equipement->id] ?? 0) + $quantite;
                 $assignedTotal += $quantite;
 
                 $affectationsDetails[] = [
-                    'nom' => $equipement->nom,
-                    'quantite' => $quantite,
+                    'nom'         => $equipement->nom,
+                    'quantite'    => $quantite,
                     'date_retour' => $rawDate ?: null,
                 ];
             }
@@ -102,9 +103,9 @@ final readonly class ServeDemandeAction
             $pdfPath = 'bon_sortie/'.$pdfName;
 
             $bon = Bon::create([
-                'user_id' => $demande->user_id,
-                'motif' => $demande->motif ?? 'Affectation automatique de demande',
-                'statut' => 'sortie',
+                'user_id'     => $demande->user_id,
+                'motif'       => $demande->motif ?? 'Affectation automatique de demande',
+                'statut'      => 'sortie',
                 'fichier_pdf' => $pdfPath,
             ]);
 
@@ -117,12 +118,12 @@ final readonly class ServeDemandeAction
             }
 
             return [
-                'demande' => $demande,
-                'bon' => $bon,
-                'pdf_path' => $pdfPath,
-                'assigned_total' => $assignedTotal,
+                'demande'              => $demande,
+                'bon'                  => $bon,
+                'pdf_path'             => $pdfPath,
+                'assigned_total'       => $assignedTotal,
                 'affectations_details' => $affectationsDetails,
-                'is_fully_served' => $isFullyServed,
+                'is_fully_served'      => $isFullyServed,
             ];
         });
 

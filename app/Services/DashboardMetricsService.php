@@ -16,7 +16,8 @@ final readonly class DashboardMetricsService
 {
     public function __construct(
         private DashboardCacheService $dashboardCacheService,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array{
@@ -71,12 +72,12 @@ final readonly class DashboardMetricsService
 
                 return [
                     'nbr_equipement' => $nbrEquipement,
-                    'nbr_user' => $nbrUser,
-                    'nbr_affect' => $nbrAffect,
-                    'nbr_panne' => $nbrPanne,
-                    'statsParMois' => $this->monthlyAffectationStats(),
-                    'distribution' => $this->categoryDistribution(),
-                    'growth' => $growth,
+                    'nbr_user'       => $nbrUser,
+                    'nbr_affect'     => $nbrAffect,
+                    'nbr_panne'      => $nbrPanne,
+                    'statsParMois'   => $this->monthlyAffectationStats(),
+                    'distribution'   => $this->categoryDistribution(),
+                    'growth'         => $growth,
                 ];
             }
         );
@@ -103,10 +104,10 @@ final readonly class DashboardMetricsService
                     ->first();
 
                 return [
-                    'nbr_accept' => (int) ($demandeStats?->nbr_accept ?? 0),
-                    'nbr_en_attente' => (int) ($demandeStats?->nbr_en_attente ?? 0),
+                    'nbr_accept'      => (int) ($demandeStats?->nbr_accept ?? 0),
+                    'nbr_en_attente'  => (int) ($demandeStats?->nbr_en_attente ?? 0),
                     'nbr_non_resolue' => $this->unresolvedPanneQuantity($userId),
-                    'nbr_assign' => $this->activeAffectationQuantity($userId),
+                    'nbr_assign'      => $this->activeAffectationQuantity($userId),
                 ];
             }
         );
@@ -156,7 +157,7 @@ final readonly class DashboardMetricsService
 
         $totalsByMonth = Affectation::query()
             ->whereYear('created_at', now()->year)
-            ->selectRaw($monthExpression . ' as month_number, COALESCE(SUM(quantite_affectee), 0) as total')
+            ->selectRaw($monthExpression.' as month_number, COALESCE(SUM(quantite_affectee), 0) as total')
             ->groupBy('month_number')
             ->pluck('total', 'month_number');
 

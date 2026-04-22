@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class StoreInternalPanneAction
 {
     /**
-     * @param  array{equipement_id: int|string, quantite: int|string, description: string}  $validated
+     * @param array{equipement_id: int|string, quantite: int|string, description: string} $validated
      */
     public function handle(User $actor, array $validated): Panne
     {
@@ -31,14 +31,14 @@ final readonly class StoreInternalPanneAction
             }
 
             return Panne::create([
-                'equipement_id' => $equipement->id,
-                'affectation_id' => null,
-                'user_id' => $actor->id,
-                'quantite' => $quantite,
+                'equipement_id'            => $equipement->id,
+                'affectation_id'           => null,
+                'user_id'                  => $actor->id,
+                'quantite'                 => $quantite,
                 'quantite_retournee_stock' => 0,
-                'quantite_resolue' => 0,
-                'description' => $validated['description'],
-                'statut' => 'en_attente',
+                'quantite_resolue'         => 0,
+                'description'              => $validated['description'],
+                'statut'                   => 'en_attente',
             ]);
         });
 

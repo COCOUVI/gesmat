@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * AdminController - Gère les opérations administratives du système
+ * AdminController - Gère les opérations administratives du système.
  *
  * Responsabilités:
  * - Gestion des utilisateurs et permissions
@@ -75,7 +75,8 @@ final class AdminController extends Controller
         private readonly CancelAffectationAction $cancelAffectationAction,
         private readonly CreateExternalCollaboratorBonAction $createExternalCollaboratorBonAction,
         private readonly DashboardMetricsService $dashboardMetricsService,
-    ) {}
+    ) {
+    }
 
     public function ShowHomePage()
     {
@@ -133,8 +134,8 @@ final class AdminController extends Controller
         $collaborateurs = CollaborateurExterne::all();
 
         return view('admin.addtool', [
-            'categories' => $categories,
-            'employes' => $employes,
+            'categories'     => $categories,
+            'employes'       => $employes,
             'collaborateurs' => $collaborateurs,
         ]);
     }
@@ -152,12 +153,12 @@ final class AdminController extends Controller
         $identity = $this->resolveBonIdentity($bon, Auth::user()->nom ?? 'Utilisateur', Auth::user()->prenom ?? '');
 
         $pdf = Pdf::loadView('pdf.bon', [
-            'date' => now()->format('d/m/Y'),
-            'nom' => $identity['nom'],
-            'prenom' => $identity['prenom'],
-            'motif' => 'Ajout de nouvel équipement : '.$equipement->nom,
+            'date'       => now()->format('d/m/Y'),
+            'nom'        => $identity['nom'],
+            'prenom'     => $identity['prenom'],
+            'motif'      => 'Ajout de nouvel équipement : '.$equipement->nom,
             'numero_bon' => $bon->id,
-            'type' => $bon->statut,
+            'type'       => $bon->statut,
         ]);
         Storage::disk('public')->put($bon->fichier_pdf, $pdf->output());
 
@@ -182,8 +183,8 @@ final class AdminController extends Controller
         $collaborateurs = CollaborateurExterne::all();
 
         return view('admin.listtools', [
-            'equipements' => $equipements,
-            'employes' => $employes,
+            'equipements'    => $equipements,
+            'employes'       => $employes,
             'collaborateurs' => $collaborateurs,
         ]);
     }
@@ -247,7 +248,7 @@ final class AdminController extends Controller
     }
 
     /**
-     * Accepte une demande et assigne automatiquement les équipements à l'employé
+     * Accepte une demande et assigne automatiquement les équipements à l'employé.
      */
     public function CheckAsk(ServeDemandeRequest $request, Demande $demande)
     {
@@ -270,12 +271,12 @@ final class AdminController extends Controller
                 $employe = $demande->user;
 
                 $this->generateBonPdf($result['bon'], [
-                    'date' => now()->format('d/m/Y'),
-                    'nom' => $employe->nom ?? 'Employé',
-                    'prenom' => $employe->prenom ?? '',
-                    'motif' => $demande->motif ?? 'Affectation via demande approuvée',
-                    'numero_bon' => $result['bon']->id,
-                    'type' => $result['bon']->statut,
+                    'date'        => now()->format('d/m/Y'),
+                    'nom'         => $employe->nom ?? 'Employé',
+                    'prenom'      => $employe->prenom ?? '',
+                    'motif'       => $demande->motif ?? 'Affectation via demande approuvée',
+                    'numero_bon'  => $result['bon']->id,
+                    'type'        => $result['bon']->statut,
                     'equipements' => $result['affectations_details'],
                 ]);
             }
@@ -297,7 +298,7 @@ final class AdminController extends Controller
     }
 
     /**
-     * Rejette une demande d'équipement
+     * Rejette une demande d'équipement.
      */
     public function CancelAsk(Demande $demande)
     {
@@ -329,8 +330,8 @@ final class AdminController extends Controller
 
         return view('admin.affectation', [
             'equipements_groupes' => $equipements_groupes,
-            'employes' => $employes,
-            'collaborateurs' => $collaborateurs,
+            'employes'            => $employes,
+            'collaborateurs'      => $collaborateurs,
         ]);
     }
 
@@ -351,12 +352,12 @@ final class AdminController extends Controller
             );
 
             $this->generateBonPdf($bon, [
-                'date' => now()->format('d/m/Y'),
-                'nom' => $identity['nom'],
-                'prenom' => $identity['prenom'],
-                'motif' => $result['motif'],
-                'numero_bon' => $bon->id,
-                'type' => $bon->statut,
+                'date'        => now()->format('d/m/Y'),
+                'nom'         => $identity['nom'],
+                'prenom'      => $identity['prenom'],
+                'motif'       => $result['motif'],
+                'numero_bon'  => $bon->id,
+                'type'        => $bon->statut,
                 'equipements' => $result['affectations_details'],
             ]);
 
@@ -385,12 +386,12 @@ final class AdminController extends Controller
             $identity = $this->resolveBonIdentity($bon, Auth::user()->nom ?? 'Utilisateur', Auth::user()->prenom ?? '');
 
             $this->generateBonPdf($bon, [
-                'date' => now()->format('d/m/Y'),
-                'nom' => $identity['nom'],
-                'prenom' => $identity['prenom'],
-                'motif' => 'Réapprovisionnement : '.$equipement->nom.' (Quantité: '.$actionData['quantite'].')',
-                'numero_bon' => $bon->id,
-                'type' => $bon->statut,
+                'date'        => now()->format('d/m/Y'),
+                'nom'         => $identity['nom'],
+                'prenom'      => $identity['prenom'],
+                'motif'       => 'Réapprovisionnement : '.$equipement->nom.' (Quantité: '.$actionData['quantite'].')',
+                'numero_bon'  => $bon->id,
+                'type'        => $bon->statut,
                 'equipements' => $result['equipements_details'] ?? [],
             ]);
 
@@ -460,7 +461,6 @@ final class AdminController extends Controller
 
     public function CollaboratorsPage()
     {
-
         return view('admin.collaborator_external');
     }
 
@@ -498,7 +498,7 @@ final class AdminController extends Controller
 
     public function downloadBon(Bon $bon)
     {
-        abort_if(! $bon->fichier_pdf || ! Storage::disk('public')->exists($bon->fichier_pdf), 404);
+        abort_if(!$bon->fichier_pdf || !Storage::disk('public')->exists($bon->fichier_pdf), 404);
 
         return response()->download(
             Storage::disk('public')->path($bon->fichier_pdf),
@@ -530,12 +530,12 @@ final class AdminController extends Controller
         );
 
         $pdf = Pdf::loadView('pdf.bon', [
-            'date' => now()->format('d/m/Y'),
-            'nom' => $identity['nom'],
-            'prenom' => $identity['prenom'],
-            'motif' => $validated['motif'],
-            'numero_bon' => $bon->id,
-            'type' => $bon->statut,
+            'date'        => now()->format('d/m/Y'),
+            'nom'         => $identity['nom'],
+            'prenom'      => $identity['prenom'],
+            'motif'       => $validated['motif'],
+            'numero_bon'  => $bon->id,
+            'type'        => $bon->statut,
             'equipements' => $result['equipements_info'],
         ]);
         $pdf->setPaper('A5', 'portrait');
@@ -561,14 +561,14 @@ final class AdminController extends Controller
             $identity = $this->resolveBonIdentity($bon, $affectation->getNomDestinataire(), '');
 
             $this->generateBonPdf($bon, [
-                'date' => now()->format('d/m/Y'),
-                'nom' => $identity['nom'],
-                'prenom' => $identity['prenom'],
-                'motif' => $bon->motif,
-                'numero_bon' => $bon->id,
-                'type' => $bon->statut,
+                'date'        => now()->format('d/m/Y'),
+                'nom'         => $identity['nom'],
+                'prenom'      => $identity['prenom'],
+                'motif'       => $bon->motif,
+                'numero_bon'  => $bon->id,
+                'type'        => $bon->statut,
                 'equipements' => [[
-                    'nom' => $affectation->equipement->nom,
+                    'nom'      => $affectation->equipement->nom,
                     'quantite' => $result['total_returned'],
                 ]],
             ]);
@@ -633,7 +633,7 @@ final class AdminController extends Controller
 
     /**
      * Résout une panne en la marquant comme résolue
-     * Implique que l'équipement est réparé ou remplacé
+     * Implique que l'équipement est réparé ou remplacé.
      */
     public function PutPanne(ResolvePanneRequest $request, Panne $panne)
     {
@@ -644,7 +644,7 @@ final class AdminController extends Controller
             $panne = $result['panne'];
 
             Log::info(sprintf('Panne %s résolue par admin', $panne->id), [
-                'equipement_id' => $panne->equipement_id,
+                'equipement_id'    => $panne->equipement_id,
                 'quantite_resolue' => $result['resolved_quantity'],
             ]);
 
@@ -678,15 +678,15 @@ final class AdminController extends Controller
             $destinataire = $affectationRemplacement->user;
 
             $this->generateBonPdf($bon, [
-                'date' => now()->format('d/m/Y'),
-                'nom' => $destinataire->nom ?? '',
-                'prenom' => $destinataire->prenom ?? '',
-                'motif' => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
-                'numero_bon' => $bon->id,
-                'type' => $bon->statut,
+                'date'        => now()->format('d/m/Y'),
+                'nom'         => $destinataire->nom ?? '',
+                'prenom'      => $destinataire->prenom ?? '',
+                'motif'       => 'Remplacement d’équipement en panne : '.$panne->equipement->nom,
+                'numero_bon'  => $bon->id,
+                'type'        => $bon->statut,
                 'equipements' => [[
-                    'nom' => $panne->equipement->nom,
-                    'quantite' => $affectationRemplacement->quantite_affectee,
+                    'nom'         => $panne->equipement->nom,
+                    'quantite'    => $affectationRemplacement->quantite_affectee,
                     'date_retour' => $affectationRemplacement->date_retour
                         ? $affectationRemplacement->date_retour->format('Y-m-d')
                         : null,
@@ -710,7 +710,7 @@ final class AdminController extends Controller
     // ============================================================================
 
     /**
-     * Stocke l'image de l'équipement localement
+     * Stocke l'image de l'équipement localement.
      */
     private function storeEquipementImage(\Illuminate\Http\Request $request): string
     {
@@ -724,7 +724,7 @@ final class AdminController extends Controller
     }
 
     /**
-     * Génère le PDF d'un bon
+     * Génère le PDF d'un bon.
      */
     private function generateBonPdf(Bon $bon, array $data): void
     {
@@ -740,7 +740,7 @@ final class AdminController extends Controller
         $identity = $bon->getInterlocuteurIdentityParts();
 
         return [
-            'nom' => $identity['nom'] !== '' ? $identity['nom'] : $fallbackNom,
+            'nom'    => $identity['nom'] !== '' ? $identity['nom'] : $fallbackNom,
             'prenom' => $identity['prenom'] !== '' ? $identity['prenom'] : $fallbackPrenom,
         ];
     }

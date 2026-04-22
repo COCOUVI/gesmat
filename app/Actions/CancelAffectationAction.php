@@ -23,7 +23,7 @@ final readonly class CancelAffectationAction
 
             $affectation->setAttribute('pannes_count', $affectation->pannes()->count());
 
-            if (! $affectation->peutEtreAnnulee()) {
+            if (!$affectation->peutEtreAnnulee()) {
                 throw new Exception($affectation->getMotifBlocageAnnulation() ?? 'Cette affectation ne peut pas être annulée.');
             }
 
@@ -42,7 +42,7 @@ final readonly class CancelAffectationAction
 
             return [
                 'equipement_nom' => $equipementNom,
-                'demande' => $demande,
+                'demande'        => $demande,
             ];
         });
 

@@ -24,7 +24,7 @@ final class CategoriesSeeder extends Seeder
 
         foreach ($categories as $category) {
             DB::table('categories')->insert([
-                'nom' => $category,
+                'nom'        => $category,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

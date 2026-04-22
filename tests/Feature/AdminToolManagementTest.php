@@ -15,14 +15,14 @@ test('admin can add an equipment with initial state and image', function (): voi
     $response = $this->actingAs($admin)
         ->withoutMiddleware()
         ->post(route('addTool'), [
-            'nom' => 'Onduleur',
-            'marque' => 'APC',
-            'categorie_id' => $categorie->id,
-            'description' => 'Onduleur pour serveurs',
+            'nom'              => 'Onduleur',
+            'marque'           => 'APC',
+            'categorie_id'     => $categorie->id,
+            'description'      => 'Onduleur pour serveurs',
             'date_acquisition' => now()->toDateString(),
-            'quantite' => 3,
-            'seuil_critique' => 1,
-            'image_path' => UploadedFile::fake()->image('onduleur.jpg'),
+            'quantite'         => 3,
+            'seuil_critique'   => 1,
+            'image_path'       => UploadedFile::fake()->image('onduleur.jpg'),
         ]);
 
     $response->assertRedirect();
@@ -42,25 +42,25 @@ test('admin can update an equipment critical threshold', function (): void {
     $admin = User::factory()->create(['role' => 'admin']);
     $categorie = Categorie::create(['nom' => 'Mises à jour']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'Brother',
-        'description' => 'Imprimante bureau',
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'Brother',
+        'description'      => 'Imprimante bureau',
         'date_acquisition' => now(),
-        'quantite' => 4,
-        'seuil_critique' => 1,
-        'image_path' => 'test.jpg',
+        'quantite'         => 4,
+        'seuil_critique'   => 1,
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)
         ->put(route('putTool', $equipement), [
-            'nom' => 'Imprimante',
-            'marque' => 'Brother',
-            'categorie_id' => $categorie->id,
-            'description' => 'Imprimante bureau',
+            'nom'              => 'Imprimante',
+            'marque'           => 'Brother',
+            'categorie_id'     => $categorie->id,
+            'description'      => 'Imprimante bureau',
             'date_acquisition' => now()->toDateString(),
-            'quantite' => 4,
-            'seuil_critique' => 2,
+            'quantite'         => 4,
+            'seuil_critique'   => 2,
         ]);
 
     $response->assertRedirect();
@@ -73,21 +73,21 @@ test('admin can replenish an equipment and receive an entry bon pdf link', funct
     $admin = User::factory()->create(['role' => 'admin']);
     $categorie = Categorie::create(['nom' => 'Réapprovisionnements']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Routeur',
-        'marque' => 'Cisco',
-        'description' => 'Routeur agence',
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Routeur',
+        'marque'           => 'Cisco',
+        'description'      => 'Routeur agence',
         'date_acquisition' => now(),
-        'quantite' => 6,
-        'seuil_critique' => 2,
-        'image_path' => 'test.jpg',
+        'quantite'         => 6,
+        'seuil_critique'   => 2,
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)->post(route('replenish.equipment'), [
-        'equipement_id' => $equipement->id,
-        'quantite' => 4,
-        'is_anonymous' => 1,
-        'deposant_anonymous_nom' => 'Fournisseur',
+        'equipement_id'             => $equipement->id,
+        'quantite'                  => 4,
+        'is_anonymous'              => 1,
+        'deposant_anonymous_nom'    => 'Fournisseur',
         'deposant_anonymous_prenom' => 'Jaspe',
     ]);
 

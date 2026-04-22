@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Centralizes affectations for both employees and external collaborators.
      * Affectations now support both user_id (employees) and collaborateur_externe_id (collaborators).
@@ -16,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('affectations', function (Blueprint $table) {
             // Add support for external collaborators
-            if (! Schema::hasColumn('affectations', 'collaborateur_externe_id')) {
+            if (!Schema::hasColumn('affectations', 'collaborateur_externe_id')) {
                 $table->foreignId('collaborateur_externe_id')
                     ->nullable()
                     ->after('user_id')
@@ -25,7 +24,7 @@ return new class extends Migration
             }
 
             // Add actual return timestamp (not just return date)
-            if (! Schema::hasColumn('affectations', 'returned_at')) {
+            if (!Schema::hasColumn('affectations', 'returned_at')) {
                 $table->timestamp('returned_at')
                     ->nullable()
                     ->after('date_retour')

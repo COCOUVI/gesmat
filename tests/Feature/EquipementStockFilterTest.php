@@ -15,24 +15,24 @@ test('employee demand page shows only equipements with stock', function (): void
 
     // Create equipment with stock
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Equipment With Stock',
-        'marque' => 'Brand A',
-        'description' => 'Test description',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Equipment With Stock',
+        'marque'           => 'Brand A',
+        'description'      => 'Test description',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     // Create equipment without stock
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Equipment Without Stock',
-        'marque' => 'Brand B',
-        'description' => 'Test description',
-        'quantite' => 0,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Equipment Without Stock',
+        'marque'           => 'Brand B',
+        'description'      => 'Test description',
+        'quantite'         => 0,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($employee)->get('/employee/demande-equipement');
@@ -51,24 +51,24 @@ test('admin affectation page shows only equipements with stock', function (): vo
 
     // Create equipment with stock
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Equipment With Stock',
-        'marque' => 'Brand A',
-        'description' => 'Test description',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Equipment With Stock',
+        'marque'           => 'Brand A',
+        'description'      => 'Test description',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     // Create equipment without stock
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Equipment Without Stock',
-        'marque' => 'Brand B',
-        'description' => 'Test description',
-        'quantite' => 0,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Equipment Without Stock',
+        'marque'           => 'Brand B',
+        'description'      => 'Test description',
+        'quantite'         => 0,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)->get('/dashboard/affectation');
@@ -84,23 +84,23 @@ test('equipement stock scope filters correctly', function (): void {
     $categorie = Categorie::create(['nom' => 'Test']);
 
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'With Stock',
-        'marque' => 'Brand',
-        'description' => 'Test',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'With Stock',
+        'marque'           => 'Brand',
+        'description'      => 'Test',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'No Stock',
-        'marque' => 'Brand',
-        'description' => 'Test',
-        'quantite' => 0,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'No Stock',
+        'marque'           => 'Brand',
+        'description'      => 'Test',
+        'quantite'         => 0,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $equipmentsWithStock = Equipement::withStock()->get();
@@ -115,55 +115,55 @@ test('employee demand page uses computed available stock and hides fully reserve
     $categorie = Categorie::create(['nom' => 'Category Stock Reel']);
 
     $visibleEquipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Visible Equipment',
-        'marque' => 'Brand A',
-        'description' => 'Test description',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Visible Equipment',
+        'marque'           => 'Brand A',
+        'description'      => 'Test description',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $hiddenEquipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Hidden Equipment',
-        'marque' => 'Brand B',
-        'description' => 'Test description',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Hidden Equipment',
+        'marque'           => 'Brand B',
+        'description'      => 'Test description',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Affectation::create([
-        'equipement_id' => $visibleEquipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $visibleEquipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     Panne::create([
         'equipement_id' => $visibleEquipement->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Panne visible equipment',
-        'statut' => 'en_attente',
+        'user_id'       => $employee->id,
+        'quantite'      => 1,
+        'description'   => 'Panne visible equipment',
+        'statut'        => 'en_attente',
     ]);
 
     Affectation::create([
-        'equipement_id' => $hiddenEquipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $hiddenEquipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 4,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     Panne::create([
         'equipement_id' => $hiddenEquipement->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Panne hidden equipment',
-        'statut' => 'en_attente',
+        'user_id'       => $employee->id,
+        'quantite'      => 1,
+        'description'   => 'Panne hidden equipment',
+        'statut'        => 'en_attente',
     ]);
 
     $response = $this->actingAs($employee)->get(route('demande.equipement'));
@@ -179,30 +179,30 @@ test('computed available stock does not double count pannes on active affectatio
     $categorie = Categorie::create(['nom' => 'Category No Double Count']);
 
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Shared Printer',
-        'marque' => 'Brand C',
-        'description' => 'Test description',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Shared Printer',
+        'marque'           => 'Brand C',
+        'description'      => 'Test description',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Panne sur equipement affecte',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Panne sur equipement affecte',
+        'statut'         => 'en_attente',
     ]);
 
     expect($equipement->fresh()->getQuantiteAffectee())->toBe(3);
@@ -217,31 +217,31 @@ test('computed available stock excludes unresolved pannes returned to internal s
     $categorie = Categorie::create(['nom' => 'Category Internal Panne']);
 
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Internal Broken Printer',
-        'marque' => 'Brand D',
-        'description' => 'Test description',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Internal Broken Printer',
+        'marque'           => 'Brand D',
+        'description'      => 'Test description',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
-        'statut' => 'retourné',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'retourné',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Panne retournee au stock',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Panne retournee au stock',
+        'statut'         => 'en_attente',
     ]);
 
     expect($equipement->fresh()->getQuantiteAffectee())->toBe(0);

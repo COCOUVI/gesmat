@@ -29,7 +29,7 @@ use Throwable;
  * - Demandes d'équipement
  * - Signalement de pannes
  * - Gestion des équipements assignés
- * - Demande d'aide
+ * - Demande d'aide.
  */
 final class EmployeController extends Controller
 {
@@ -37,10 +37,11 @@ final class EmployeController extends Controller
         private readonly SubmitDemandeAction $submitDemandeAction,
         private readonly ReportPanneAction $reportPanneAction,
         private readonly DashboardMetricsService $dashboardMetricsService,
-    ) {}
+    ) {
+    }
 
     /**
-     * Affiche le tableau de bord principal avec les statistiques
+     * Affiche le tableau de bord principal avec les statistiques.
      */
     public function index()
     {
@@ -72,7 +73,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la page de création de demande d'équipement
+     * Affiche la page de création de demande d'équipement.
      */
     public function ShowAskpage()
     {
@@ -104,7 +105,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la page de signalement de panne
+     * Affiche la page de signalement de panne.
      */
     public function signalerPanne()
     {
@@ -129,11 +130,11 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Traite le signalement de panne d'équipement
+     * Traite le signalement de panne d'équipement.
      */
     /**
      * Signale une panne d'équipement
-     * Valide d'abord que l'employé a reçu cet équipement et pas déjà signalé tout
+     * Valide d'abord que l'employé a reçu cet équipement et pas déjà signalé tout.
      */
     public function HandlePanne(StorePanneRequest $request)
     {
@@ -158,7 +159,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche les équipements assignés à l'utilisateur
+     * Affiche les équipements assignés à l'utilisateur.
      */
     public function equipementsAssignes()
     {
@@ -178,7 +179,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la page d'aide
+     * Affiche la page d'aide.
      */
     public function Helppage()
     {
@@ -188,7 +189,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Traite la soumission d'une demande d'aide
+     * Traite la soumission d'une demande d'aide.
      */
     public function HandleHelp(StoreHelpRequest $request)
     {
@@ -209,7 +210,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Supprime un signalement de panne
+     * Supprime un signalement de panne.
      */
     public function DeletePanne(Panne $panne)
     {
@@ -227,7 +228,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Supprime une affectation d'équipement
+     * Supprime une affectation d'équipement.
      */
     public function DeleteAffect(Affectation $affectation)
     {
@@ -245,7 +246,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Supprime une demande d'équipement
+     * Supprime une demande d'équipement.
      */
     public function DeleteAsk(Demande $demande)
     {
@@ -263,7 +264,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la liste des pannes
+     * Affiche la liste des pannes.
      */
     public function ShowPannes()
     {
@@ -276,7 +277,7 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Affiche la liste des demandes
+     * Affiche la liste des demandes.
      */
     public function ShowDemandes()
     {
@@ -292,9 +293,9 @@ final class EmployeController extends Controller
     }
 
     /**
-     * Vérifie l'autorisation pour supprimer une ressource
+     * Vérifie l'autorisation pour supprimer une ressource.
      *
-     * @param  mixed  $model
+     * @param mixed $model
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */

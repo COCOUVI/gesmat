@@ -15,7 +15,8 @@ final class SendDemandeSubmittedNotifications implements ShouldQueue
 
     public function __construct(
         private readonly WorkflowNotificationService $workflowNotificationService,
-    ) {}
+    ) {
+    }
 
     public function handle(DemandeSubmitted $event): void
     {

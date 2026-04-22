@@ -23,9 +23,9 @@ final class ProfileController extends Controller
             : 'profile.admin_edit';
 
         return view($view, [
-            'user' => $request->user(),
-            'roleOptions' => $this->roleOptions(),
-            'posteOptions' => $this->posteOptions(),
+            'user'           => $request->user(),
+            'roleOptions'    => $this->roleOptions(),
+            'posteOptions'   => $this->posteOptions(),
             'serviceOptions' => $this->serviceOptions(),
         ]);
     }
@@ -35,9 +35,9 @@ final class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
         $data = [
-            'nom' => $validated['nom'],
+            'nom'    => $validated['nom'],
             'prenom' => $validated['prenom'],
-            'email' => $validated['email'],
+            'email'  => $validated['email'],
         ];
 
         if ($user->role === 'admin') {
@@ -90,9 +90,9 @@ final class ProfileController extends Controller
     private function roleOptions(): array
     {
         return [
-            'admin' => 'Administrateur',
+            'admin'        => 'Administrateur',
             'gestionnaire' => 'Gestionnaire',
-            'employé' => 'Employé',
+            'employé'      => 'Employé',
         ];
     }
 
@@ -102,16 +102,16 @@ final class ProfileController extends Controller
     private function posteOptions(): array
     {
         return [
-            'stagiaire' => 'Stagiaire',
-            'technicien' => 'Technicien',
-            'electricien' => 'Électricien',
-            'rigger' => 'Rigger',
-            'support_technique' => 'Support technique',
-            'secretariat' => 'Secrétariat',
-            'comptabilite' => 'Comptabilité',
-            'team_leader' => 'Team Leader',
+            'stagiaire'           => 'Stagiaire',
+            'technicien'          => 'Technicien',
+            'electricien'         => 'Électricien',
+            'rigger'              => 'Rigger',
+            'support_technique'   => 'Support technique',
+            'secretariat'         => 'Secrétariat',
+            'comptabilite'        => 'Comptabilité',
+            'team_leader'         => 'Team Leader',
             'directeur_technique' => 'Directeur Technique',
-            'directeur_general' => 'Directeur Général',
+            'directeur_general'   => 'Directeur Général',
         ];
     }
 
@@ -121,14 +121,14 @@ final class ProfileController extends Controller
     private function serviceOptions(): array
     {
         return [
-            'secretariat' => 'Secrétariat',
-            'comptabilite' => 'Comptabilité',
-            'deploiement_ftth' => 'Déploiement FTTH',
-            'deploiement_fttr' => 'Déploiement FTTR',
-            'deploiement_reseaux' => 'Déploiement Réseaux',
+            'secretariat'                => 'Secrétariat',
+            'comptabilite'               => 'Comptabilité',
+            'deploiement_ftth'           => 'Déploiement FTTH',
+            'deploiement_fttr'           => 'Déploiement FTTR',
+            'deploiement_reseaux'        => 'Déploiement Réseaux',
             'deploiement_securise_video' => 'Déploiement Sécurisé et Vidéo Surveillance',
-            'service_informatique' => 'Service Informatique',
-            'direction' => 'Direction',
+            'service_informatique'       => 'Service Informatique',
+            'direction'                  => 'Direction',
         ];
     }
 }

@@ -14,9 +14,11 @@ final class PanneReplacementCompleted implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     public function __construct(
         public readonly Panne $panne,
         public readonly int $replacementQuantity,
         public readonly ?Bon $bon = null,
-    ) {}
+    ) {
+    }
 }

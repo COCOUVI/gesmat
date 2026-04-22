@@ -6,15 +6,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('affectations', function (Blueprint $table) {
-            if (! Schema::hasColumn('affectations', 'quantite_retournee')) {
+            if (!Schema::hasColumn('affectations', 'quantite_retournee')) {
                 $table->integer('quantite_retournee')
                     ->default(0)
                     ->after('quantite_affectee');
@@ -22,7 +21,7 @@ return new class extends Migration
         });
 
         Schema::table('pannes', function (Blueprint $table) {
-            if (! Schema::hasColumn('pannes', 'quantite_retournee_stock')) {
+            if (!Schema::hasColumn('pannes', 'quantite_retournee_stock')) {
                 $table->integer('quantite_retournee_stock')
                     ->default(0)
                     ->after('quantite');

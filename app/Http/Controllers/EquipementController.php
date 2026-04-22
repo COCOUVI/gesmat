@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * EquipementController - Gère les opérations CRUD sur les équipements
+ * EquipementController - Gère les opérations CRUD sur les équipements.
  *
  * Responsabilités:
  * - Listing et recherche d'équipements
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Log;
 final class EquipementController extends Controller
 {
     /**
-     * Affiche le formulaire d'ajout ou de modification
+     * Affiche le formulaire d'ajout ou de modification.
      */
     public function create()
     {
@@ -34,7 +34,7 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Affiche la liste des équipements avec pagination
+     * Affiche la liste des équipements avec pagination.
      */
     public function index()
     {
@@ -44,7 +44,7 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Affiche le formulaire de modification d'un équipement
+     * Affiche le formulaire de modification d'un équipement.
      */
     public function edit($id)
     {
@@ -55,19 +55,19 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Enregistre un nouvel équipement avec validation et gestion d'image
+     * Enregistre un nouvel équipement avec validation et gestion d'image.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'etat' => ['required'],
-            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'marque' => ['nullable', 'string'],
-            'quantite' => ['required', 'integer', 'min:1'],
+            'nom'              => ['required', 'string', 'max:255'],
+            'etat'             => ['required'],
+            'categorie_id'     => ['required', 'integer', 'exists:categories,id'],
+            'description'      => ['nullable', 'string'],
+            'marque'           => ['nullable', 'string'],
+            'quantite'         => ['required', 'integer', 'min:1'],
             'date_acquisition' => ['nullable', 'date'],
-            'image_path' => ['nullable', 'image', 'max:2048'],
+            'image_path'       => ['nullable', 'image', 'max:2048'],
         ]);
 
         try {
@@ -77,14 +77,14 @@ final class EquipementController extends Controller
             }
 
             $equipement = Equipement::create([
-                'nom' => $validated['nom'],
-                'etat' => $validated['etat'],
-                'marque' => $validated['marque'] ?? null,
-                'description' => $validated['description'] ?? null,
-                'quantite' => $validated['quantite'],
+                'nom'              => $validated['nom'],
+                'etat'             => $validated['etat'],
+                'marque'           => $validated['marque'] ?? null,
+                'description'      => $validated['description'] ?? null,
+                'quantite'         => $validated['quantite'],
                 'date_acquisition' => $validated['date_acquisition'] ?? null,
-                'categorie_id' => $validated['categorie_id'],
-                'image_path' => $imagePath,
+                'categorie_id'     => $validated['categorie_id'],
+                'image_path'       => $imagePath,
             ]);
 
             return back()->with('success', 'Équipement ajouté avec succès !');
@@ -98,21 +98,21 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Met à jour un équipement existant
+     * Met à jour un équipement existant.
      */
     public function update(Request $request, $id)
     {
         $equipement = Equipement::findOrFail($id);
 
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'etat' => ['required'],
-            'categorie_id' => ['required', 'integer', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'marque' => ['nullable', 'string'],
-            'quantite' => ['required', 'integer', 'min:0'],
+            'nom'              => ['required', 'string', 'max:255'],
+            'etat'             => ['required'],
+            'categorie_id'     => ['required', 'integer', 'exists:categories,id'],
+            'description'      => ['nullable', 'string'],
+            'marque'           => ['nullable', 'string'],
+            'quantite'         => ['required', 'integer', 'min:0'],
             'date_acquisition' => ['nullable', 'date'],
-            'image_path' => ['nullable', 'image', 'max:2048'],
+            'image_path'       => ['nullable', 'image', 'max:2048'],
         ]);
 
         try {
@@ -137,7 +137,7 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Supprime un équipement et son image
+     * Supprime un équipement et son image.
      */
     public function destroy($id)
     {
@@ -160,7 +160,7 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Affiche les équipements en panne
+     * Affiche les équipements en panne.
      */
     public function showPanne()
     {
@@ -177,7 +177,7 @@ final class EquipementController extends Controller
     // ============================================================================
 
     /**
-     * Stocke l'image de l'équipement localement et retourne le chemin
+     * Stocke l'image de l'équipement localement et retourne le chemin.
      */
     private function storeImage(Request $request): string
     {
@@ -189,7 +189,7 @@ final class EquipementController extends Controller
     }
 
     /**
-     * Supprime un fichier image s'il existe
+     * Supprime un fichier image s'il existe.
      */
     private function deleteImage(?string $imagePath): void
     {

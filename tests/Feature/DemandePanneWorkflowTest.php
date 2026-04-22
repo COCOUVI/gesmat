@@ -17,27 +17,27 @@ test('demande validation is blocked when computed available stock is insufficien
 
     $categorie = Categorie::create(['nom' => 'Demandes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'HP',
-        'description' => 'Imprimante reseau',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'HP',
+        'description'      => 'Imprimante reseau',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 4,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Bureau',
-        'motif' => 'Besoin pour impression',
-        'statut' => 'en_attente',
+        'lieu'    => 'Bureau',
+        'motif'   => 'Besoin pour impression',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -45,7 +45,7 @@ test('demande validation is blocked when computed available stock is insufficien
 
     $response = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 2],
-        'dates_retour' => [now()->addWeek()->toDateString()],
+        'dates_retour'         => [now()->addWeek()->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -61,36 +61,36 @@ test('demande validation does not double count pannes on active affectations', f
 
     $categorie = Categorie::create(['nom' => 'Demandes Active Panne']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante reseau',
-        'marque' => 'Brother',
-        'description' => 'Imprimante reseau test',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante reseau',
+        'marque'           => 'Brother',
+        'description'      => 'Imprimante reseau test',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Une unite en panne dans une affectation active',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Une unite en panne dans une affectation active',
+        'statut'         => 'en_attente',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Atelier',
-        'motif' => 'Besoin standard',
-        'statut' => 'en_attente',
+        'lieu'    => 'Atelier',
+        'motif'   => 'Besoin standard',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -98,7 +98,7 @@ test('demande validation does not double count pannes on active affectations', f
 
     $response = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 7],
-        'dates_retour' => [now()->addWeek()->toDateString()],
+        'dates_retour'         => [now()->addWeek()->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -117,37 +117,37 @@ test('demande validation is blocked by unresolved pannes returned to internal st
 
     $categorie = Categorie::create(['nom' => 'Demandes Internal Panne']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Scanner casse',
-        'marque' => 'Xerox',
-        'description' => 'Scanner avec panne interne',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Scanner casse',
+        'marque'           => 'Xerox',
+        'description'      => 'Scanner avec panne interne',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectationRetournee = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now(),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now(),
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
-        'statut' => 'retourné',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'retourné',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => $affectationRetournee->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Une unite retournee en panne non resolue',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Une unite retournee en panne non resolue',
+        'statut'         => 'en_attente',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Siege',
-        'motif' => 'Demande bloquee par panne interne',
-        'statut' => 'en_attente',
+        'lieu'    => 'Siege',
+        'motif'   => 'Demande bloquee par panne interne',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -155,7 +155,7 @@ test('demande validation is blocked by unresolved pannes returned to internal st
 
     $response = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 10],
-        'dates_retour' => [now()->addWeek()->toDateString()],
+        'dates_retour'         => [now()->addWeek()->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -171,19 +171,19 @@ test('demande validation creates linked affectation with return date and generat
 
     $categorie = Categorie::create(['nom' => 'Demandes OK']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Scanner',
-        'marque' => 'Canon',
-        'description' => 'Scanner de bureau',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Scanner',
+        'marque'           => 'Canon',
+        'description'      => 'Scanner de bureau',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Direction',
-        'motif' => 'Besoin temporaire',
-        'statut' => 'en_attente',
+        'lieu'    => 'Direction',
+        'motif'   => 'Besoin temporaire',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -193,7 +193,7 @@ test('demande validation creates linked affectation with return date and generat
 
     $response = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 2],
-        'dates_retour' => [$equipement->id => $returnDate],
+        'dates_retour'         => [$equipement->id => $returnDate],
     ]);
 
     $response->assertRedirect();
@@ -218,19 +218,19 @@ test('demande can be partially served then completed later', function (): void {
 
     $categorie = Categorie::create(['nom' => 'Demandes Partielles']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Ordinateur portable',
-        'marque' => 'Dell',
-        'description' => 'Portable test',
-        'quantite' => 8,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Ordinateur portable',
+        'marque'           => 'Dell',
+        'description'      => 'Portable test',
+        'quantite'         => 8,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Service finance',
-        'motif' => 'Dotation progressive',
-        'statut' => 'en_attente',
+        'lieu'    => 'Service finance',
+        'motif'   => 'Dotation progressive',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -238,7 +238,7 @@ test('demande can be partially served then completed later', function (): void {
 
     $firstResponse = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 3],
-        'dates_retour' => [$equipement->id => now()->addDays(7)->toDateString()],
+        'dates_retour'         => [$equipement->id => now()->addDays(7)->toDateString()],
     ]);
 
     $firstResponse->assertRedirect();
@@ -253,7 +253,7 @@ test('demande can be partially served then completed later', function (): void {
 
     $secondResponse = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 2],
-        'dates_retour' => [$equipement->id => now()->addDays(14)->toDateString()],
+        'dates_retour'         => [$equipement->id => now()->addDays(14)->toDateString()],
     ]);
 
     $secondResponse->assertRedirect();
@@ -271,35 +271,35 @@ test('employee can report breakdowns by affectation and quantity remaining', fun
 
     $categorie = Categorie::create(['nom' => 'Pannes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'Epson',
-        'description' => 'Imprimante multifonction',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'Epson',
+        'description'      => 'Imprimante multifonction',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation1 = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     $affectation2 = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 1,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     $firstResponse = $this->actingAs($employee)->post(route('post.HandlePanne'), [
         'affectation_id' => $affectation1->id,
-        'quantite' => 1,
-        'description' => 'Premiere panne sur la premiere affectation',
+        'quantite'       => 1,
+        'description'    => 'Premiere panne sur la premiere affectation',
     ]);
 
     $firstResponse->assertRedirect();
@@ -307,8 +307,8 @@ test('employee can report breakdowns by affectation and quantity remaining', fun
 
     $secondResponse = $this->actingAs($employee)->post(route('post.HandlePanne'), [
         'affectation_id' => $affectation2->id,
-        'quantite' => 1,
-        'description' => 'Panne sur la deuxieme affectation',
+        'quantite'       => 1,
+        'description'    => 'Panne sur la deuxieme affectation',
     ]);
 
     $secondResponse->assertRedirect();
@@ -316,8 +316,8 @@ test('employee can report breakdowns by affectation and quantity remaining', fun
 
     $thirdResponse = $this->actingAs($employee)->from(route('signaler.panne'))->post(route('post.HandlePanne'), [
         'affectation_id' => $affectation1->id,
-        'quantite' => 2,
-        'description' => 'Cette quantite depasse le restant de la premiere affectation',
+        'quantite'       => 2,
+        'description'    => 'Cette quantite depasse le restant de la premiere affectation',
     ]);
 
     $thirdResponse->assertRedirect(route('signaler.panne'));
@@ -332,28 +332,28 @@ test('employee can report a breakdown from string form values without crashing s
 
     $categorie = Categorie::create(['nom' => 'Pannes formulaire']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'Brother',
-        'description' => 'Imprimante bureau',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'Brother',
+        'description'      => 'Imprimante bureau',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $response = $this->actingAs($employee)->post(route('post.HandlePanne'), [
         'affectation_id' => (string) $affectation->id,
-        'quantite' => '1',
-        'description' => 'Signalement envoyé depuis un formulaire HTML classique',
+        'quantite'       => '1',
+        'description'    => 'Signalement envoyé depuis un formulaire HTML classique',
     ]);
 
     $response->assertRedirect();
@@ -368,21 +368,21 @@ test('partial healthy return increases available stock and keeps affectation act
 
     $categorie = Categorie::create(['nom' => 'Retours sains']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Projecteur',
-        'marque' => 'Sony',
-        'description' => 'Projecteur HD',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Projecteur',
+        'marque'           => 'Sony',
+        'description'      => 'Projecteur HD',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDay(),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDay(),
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(2);
@@ -411,37 +411,37 @@ test('returning unresolved broken quantity keeps available stock unchanged and m
 
     $categorie = Categorie::create(['nom' => 'Retours panne']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante laser',
-        'marque' => 'HP',
-        'description' => 'Imprimante laser reseau',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante laser',
+        'marque'           => 'HP',
+        'description'      => 'Imprimante laser reseau',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDay(),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDay(),
         'quantite_affectee' => 3,
-        'created_by' => 'Admin Test',
+        'created_by'        => 'Admin Test',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Une unite en panne chez lemploye',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Une unite en panne chez lemploye',
+        'statut'         => 'en_attente',
     ]);
 
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(7);
 
     $response = $this->actingAs($admin)->post(route('affectation.retourner', $affectation), [
         'quantite_saine_retournee' => 0,
-        'pannes_retournees' => [
+        'pannes_retournees'        => [
             $panne->id => 1,
         ],
     ]);
@@ -466,21 +466,21 @@ test('admin can declare an internal breakdown from available stock', function ()
 
     $categorie = Categorie::create(['nom' => 'Pannes internes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Routeur',
-        'marque' => 'Cisco',
-        'description' => 'Routeur coeur',
-        'quantite' => 6,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Routeur',
+        'marque'           => 'Cisco',
+        'description'      => 'Routeur coeur',
+        'quantite'         => 6,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(6);
 
     $response = $this->actingAs($admin)->post(route('pannes.store-interne'), [
         'equipement_id' => $equipement->id,
-        'quantite' => 2,
-        'description' => 'Deux unites detectees en panne au magasin',
+        'quantite'      => 2,
+        'description'   => 'Deux unites detectees en panne au magasin',
     ]);
 
     $response->assertRedirect();
@@ -499,24 +499,24 @@ test('admin can partially resolve an internal breakdown and restore available st
 
     $categorie = Categorie::create(['nom' => 'Resolution partielle']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Switch',
-        'marque' => 'Netgear',
-        'description' => 'Switch reseau',
-        'quantite' => 8,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Switch',
+        'marque'           => 'Netgear',
+        'description'      => 'Switch reseau',
+        'quantite'         => 8,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => null,
-        'user_id' => $admin->id,
-        'quantite' => 3,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => null,
+        'user_id'                  => $admin->id,
+        'quantite'                 => 3,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Trois unites en panne interne',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Trois unites en panne interne',
+        'statut'                   => 'en_attente',
     ]);
 
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(5);
@@ -543,33 +543,33 @@ test('admin can resolve a breakdown still held by the employee without replaceme
 
     $categorie = Categorie::create(['nom' => 'Resolution employe']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante mobile',
-        'marque' => 'Canon',
-        'description' => 'Imprimante transportable',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante mobile',
+        'marque'           => 'Canon',
+        'description'      => 'Imprimante transportable',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectation->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Une unite en panne chez lemploye',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Une unite en panne chez lemploye',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->put(route('pannes.resolu', $panne), [
@@ -595,33 +595,33 @@ test('admin can replace a broken assigned unit and create a new replacement affe
 
     $categorie = Categorie::create(['nom' => 'Remplacement']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Telephone IP',
-        'marque' => 'Yealink',
-        'description' => 'Telephone bureau',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Telephone IP',
+        'marque'           => 'Yealink',
+        'description'      => 'Telephone bureau',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDays(20),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDays(20),
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectation->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Une unite en panne chez lemploye',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Une unite en panne chez lemploye',
+        'statut'                   => 'en_attente',
     ]);
 
     expect($equipement->fresh()->getQuantiteDisponible())->toBe(3);
@@ -661,34 +661,34 @@ test('panne list shows replace action only when employee-linked breakdown has re
 
     $categorie = Categorie::create(['nom' => 'Affichage pannes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Tablette',
-        'marque' => 'Samsung',
-        'description' => 'Tablette terrain',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Tablette',
+        'marque'           => 'Samsung',
+        'description'      => 'Tablette terrain',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
-        'quantite_affectee' => 2,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => null,
+        'quantite_affectee'  => 2,
         'quantite_retournee' => 0,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'active',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectation->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Une unite en panne chez lemploye',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Une unite en panne chez lemploye',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->get(route('equipements.pannes'));
@@ -706,24 +706,24 @@ test('panne list keeps only resolve action for internal breakdowns', function ()
 
     $categorie = Categorie::create(['nom' => 'Affichage pannes internes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Switch coeur',
-        'marque' => 'Cisco',
-        'description' => 'Switch de datacenter',
-        'quantite' => 6,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Switch coeur',
+        'marque'           => 'Cisco',
+        'description'      => 'Switch de datacenter',
+        'quantite'         => 6,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => null,
-        'user_id' => $admin->id,
-        'quantite' => 2,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => null,
+        'user_id'                  => $admin->id,
+        'quantite'                 => 2,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Deux unites en panne au magasin',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Deux unites en panne au magasin',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->get(route('equipements.pannes'));
@@ -741,64 +741,64 @@ test('admin dashboard stats use stock quantities instead of raw row counts', fun
 
     $categorie = Categorie::create(['nom' => 'Stats admin']);
     $equipementA = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'PC portable',
-        'marque' => 'Dell',
-        'description' => 'Portable',
-        'quantite' => 10,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'PC portable',
+        'marque'           => 'Dell',
+        'description'      => 'Portable',
+        'quantite'         => 10,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
     $equipementB = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'HP',
-        'description' => 'Imprimante',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'HP',
+        'description'      => 'Imprimante',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectationActive = Affectation::create([
-        'equipement_id' => $equipementA->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
-        'quantite_affectee' => 4,
+        'equipement_id'      => $equipementA->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => null,
+        'quantite_affectee'  => 4,
         'quantite_retournee' => 1,
-        'created_by' => 'Admin Test',
-        'statut' => 'retour_partiel',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retour_partiel',
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipementB->id,
-        'user_id' => $employee->id,
-        'date_retour' => now(),
-        'quantite_affectee' => 2,
+        'equipement_id'      => $equipementB->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => now(),
+        'quantite_affectee'  => 2,
         'quantite_retournee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'retourné',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retourné',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipementA->id,
-        'affectation_id' => $affectationActive->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipementA->id,
+        'affectation_id'           => $affectationActive->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Une unite en panne chez lemploye',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Une unite en panne chez lemploye',
+        'statut'                   => 'en_attente',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipementB->id,
-        'affectation_id' => null,
-        'user_id' => $admin->id,
-        'quantite' => 2,
+        'equipement_id'            => $equipementB->id,
+        'affectation_id'           => null,
+        'user_id'                  => $admin->id,
+        'quantite'                 => 2,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Deux unites en panne interne',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Deux unites en panne interne',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->get(route('admin.homedash'));
@@ -814,69 +814,69 @@ test('employee dashboard stats use active assigned and unresolved quantities', f
 
     $categorie = Categorie::create(['nom' => 'Stats employe']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Camera',
-        'marque' => 'Sony',
-        'description' => 'Camera de service',
-        'quantite' => 8,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Camera',
+        'marque'           => 'Sony',
+        'description'      => 'Camera de service',
+        'quantite'         => 8,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectationActive = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
-        'quantite_affectee' => 4,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => null,
+        'quantite_affectee'  => 4,
         'quantite_retournee' => 1,
-        'created_by' => 'Admin Test',
-        'statut' => 'retour_partiel',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retour_partiel',
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now(),
-        'quantite_affectee' => 2,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => now(),
+        'quantite_affectee'  => 2,
         'quantite_retournee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'retourné',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'retourné',
     ]);
 
     Demande::create([
-        'lieu' => 'Agence A',
-        'motif' => 'Demande en attente',
-        'statut' => 'en_attente',
+        'lieu'    => 'Agence A',
+        'motif'   => 'Demande en attente',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
     Demande::create([
-        'lieu' => 'Agence B',
-        'motif' => 'Demande acceptee',
-        'statut' => 'acceptee',
+        'lieu'    => 'Agence B',
+        'motif'   => 'Demande acceptee',
+        'statut'  => 'acceptee',
         'user_id' => $employee->id,
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectationActive->id,
-        'user_id' => $employee->id,
-        'quantite' => 2,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectationActive->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 2,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Deux unites non resolues',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Deux unites non resolues',
+        'statut'                   => 'en_attente',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectationActive->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectationActive->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 1,
-        'description' => 'Une unite resolue',
-        'statut' => 'resolu',
+        'quantite_resolue'         => 1,
+        'description'              => 'Une unite resolue',
+        'statut'                   => 'resolu',
     ]);
 
     $response = $this->actingAs($employee)->get(route('dashboard.employee'));
@@ -894,35 +894,35 @@ test('admin panne list now returns a full collection for datatables', function (
 
     $categorie = Categorie::create(['nom' => 'DataTables pannes']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Serveur',
-        'marque' => 'HP',
-        'description' => 'Serveur rack',
-        'quantite' => 12,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Serveur',
+        'marque'           => 'HP',
+        'description'      => 'Serveur rack',
+        'quantite'         => 12,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
-        'quantite_affectee' => 6,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => null,
+        'quantite_affectee'  => 6,
         'quantite_retournee' => 0,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'active',
     ]);
 
     foreach (range(1, 6) as $index) {
         Panne::create([
-            'equipement_id' => $equipement->id,
-            'affectation_id' => $affectation->id,
-            'user_id' => $employee->id,
-            'quantite' => 1,
+            'equipement_id'            => $equipement->id,
+            'affectation_id'           => $affectation->id,
+            'user_id'                  => $employee->id,
+            'quantite'                 => 1,
             'quantite_retournee_stock' => 0,
-            'quantite_resolue' => 0,
-            'description' => 'Panne '.$index,
-            'statut' => 'en_attente',
+            'quantite_resolue'         => 0,
+            'description'              => 'Panne '.$index,
+            'statut'                   => 'en_attente',
         ]);
     }
 
@@ -944,19 +944,19 @@ test('admin demande list loads pending requests without requiring a reference co
 
     $categorie = Categorie::create(['nom' => 'Demandes admin']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Scanner réseau',
-        'marque' => 'Brother',
-        'description' => 'Scanner du service',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Scanner réseau',
+        'marque'           => 'Brother',
+        'description'      => 'Scanner du service',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Direction',
-        'motif' => 'Besoin de numérisation',
-        'statut' => 'en_attente',
+        'lieu'    => 'Direction',
+        'motif'   => 'Besoin de numérisation',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
 
@@ -975,23 +975,23 @@ test('non returned tools page shows future dated active affectations', function 
 
     $categorie = Categorie::create(['nom' => 'Retours planifiés']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Onduleur',
-        'marque' => 'APC',
-        'description' => 'Onduleur de bureau',
-        'quantite' => 2,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Onduleur',
+        'marque'           => 'APC',
+        'description'      => 'Onduleur de bureau',
+        'quantite'         => 2,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDays(5),
-        'quantite_affectee' => 1,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => now()->addDays(5),
+        'quantite_affectee'  => 1,
         'quantite_retournee' => 0,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'active',
     ]);
 
     $response = $this->actingAs($admin)->get(route('tools.lost'));
@@ -1006,9 +1006,9 @@ test('employee demande list now returns a full collection for datatables', funct
 
     foreach (range(1, 6) as $index) {
         Demande::create([
-            'lieu' => 'Site '.$index,
-            'motif' => 'Demande '.$index,
-            'statut' => 'en_attente',
+            'lieu'    => 'Site '.$index,
+            'motif'   => 'Demande '.$index,
+            'statut'  => 'en_attente',
             'user_id' => $employee->id,
         ]);
     }
@@ -1030,22 +1030,22 @@ test('employee panne list disables fixed header on datatable to avoid duplicated
 
     $categorie = Categorie::create(['nom' => 'Vue pannes employe']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante mobile',
-        'marque' => 'Canon',
-        'description' => 'Imprimante mobile',
-        'quantite' => 3,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante mobile',
+        'marque'           => 'Canon',
+        'description'      => 'Imprimante mobile',
+        'quantite'         => 3,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Panne::create([
-        'equipement_id' => $equipement->id,
+        'equipement_id'  => $equipement->id,
         'affectation_id' => null,
-        'user_id' => $employee->id,
-        'quantite' => 1,
-        'description' => 'Panne visible dans la liste employé',
-        'statut' => 'en_attente',
+        'user_id'        => $employee->id,
+        'quantite'       => 1,
+        'description'    => 'Panne visible dans la liste employé',
+        'statut'         => 'en_attente',
     ]);
 
     $response = $this->actingAs($employee)->get(route('historique.pannes'));

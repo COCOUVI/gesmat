@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Panne - Modèle pour la gestion des pannes d'équipements et du suivi de stock
+ * Panne - Modèle pour la gestion des pannes d'équipements et du suivi de stock.
  *
  * Attributs:
  * - equipement_id: foreignId (équipement concerné)
@@ -37,17 +37,18 @@ final class Panne extends Model
     protected function casts(): array
     {
         return [
-            'equipement_id' => 'integer',
-            'affectation_id' => 'integer',
-            'user_id' => 'integer',
-            'quantite' => 'integer',
+            'equipement_id'            => 'integer',
+            'affectation_id'           => 'integer',
+            'user_id'                  => 'integer',
+            'quantite'                 => 'integer',
             'quantite_retournee_stock' => 'integer',
-            'quantite_resolue' => 'integer',
+            'quantite_resolue'         => 'integer',
         ];
     }
 
     /**
-     * Relation avec l'équipement en panne
+     * Relation avec l'équipement en panne.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
      */
     public function equipement(): BelongsTo
@@ -56,7 +57,8 @@ final class Panne extends Model
     }
 
     /**
-     * Relation avec l'affectation (si la panne a été signalée sur une affectation)
+     * Relation avec l'affectation (si la panne a été signalée sur une affectation).
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Affectation, $this>
      */
     public function affectation(): BelongsTo
@@ -65,7 +67,8 @@ final class Panne extends Model
     }
 
     /**
-     * Relation avec l'utilisateur ayant signalé la panne
+     * Relation avec l'utilisateur ayant signalé la panne.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
      */
     public function user(): BelongsTo
@@ -74,7 +77,7 @@ final class Panne extends Model
     }
 
     /**
-     * Scope pour récupérer les pannes non résolues
+     * Scope pour récupérer les pannes non résolues.
      */
     protected function scopeNonResolues($query)
     {
@@ -82,7 +85,7 @@ final class Panne extends Model
     }
 
     /**
-     * Scope pour récupérer les pannes en attente
+     * Scope pour récupérer les pannes en attente.
      */
     protected function scopeEnAttente($query)
     {
@@ -90,7 +93,7 @@ final class Panne extends Model
     }
 
     /**
-     * Scope pour récupérer les pannes résolues
+     * Scope pour récupérer les pannes résolues.
      */
     protected function scopeResolues($query)
     {
@@ -188,7 +191,7 @@ final class Panne extends Model
      */
     public function getQuantiteRemplacable(): int
     {
-        if ($this->estInterne() || ! $this->affectation) {
+        if ($this->estInterne() || !$this->affectation) {
             return 0;
         }
 

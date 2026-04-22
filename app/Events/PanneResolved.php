@@ -13,8 +13,10 @@ final class PanneResolved implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     public function __construct(
         public readonly Panne $panne,
         public readonly int $resolvedQuantity,
-    ) {}
+    ) {
+    }
 }

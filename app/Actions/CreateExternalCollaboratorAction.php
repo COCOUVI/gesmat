@@ -10,7 +10,7 @@ use Illuminate\Http\UploadedFile;
 final readonly class CreateExternalCollaboratorAction
 {
     /**
-     * @param  array{nom: string, prenom: string}  $validated
+     * @param array{nom: string, prenom: string} $validated
      */
     public function handle(array $validated, ?UploadedFile $identityCard = null): CollaborateurExterne
     {
@@ -23,8 +23,8 @@ final readonly class CreateExternalCollaboratorAction
         }
 
         return CollaborateurExterne::create([
-            'nom' => $validated['nom'],
-            'prenom' => $validated['prenom'],
+            'nom'          => $validated['nom'],
+            'prenom'       => $validated['prenom'],
             'carte_chemin' => $cartePath,
         ]);
     }

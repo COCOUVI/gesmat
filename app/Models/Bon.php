@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * Bon - Modèle pour la gestion des bons d'entrée/sortie
+ * Bon - Modèle pour la gestion des bons d'entrée/sortie.
  *
  * Attributs:
  * - user_id: foreignId (employé ou collaborateur associé)
@@ -35,7 +35,7 @@ final class Bon extends Model
     ];
 
     /**
-     * Relation avec l'utilisateur (employé)
+     * Relation avec l'utilisateur (employé).
      *
      * @return BelongsTo<User, $this>
      */
@@ -45,7 +45,7 @@ final class Bon extends Model
     }
 
     /**
-     * Relation avec le collaborateur externe
+     * Relation avec le collaborateur externe.
      *
      * @return BelongsTo<CollaborateurExterne, $this>
      */
@@ -55,7 +55,7 @@ final class Bon extends Model
     }
 
     /**
-     * Relation avec les équipements du bon
+     * Relation avec les équipements du bon.
      *
      * @return BelongsToMany<Equipement, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
@@ -67,29 +67,29 @@ final class Bon extends Model
     }
 
     /**
-     * Récupère l'interlocuteur (user, collaborateur externe ou libre)
+     * Récupère l'interlocuteur (user, collaborateur externe ou libre).
      */
     public function getInterlocuteur(): ?Model
     {
         return match ($this->interlocuteur_type) {
-            'user' => User::find($this->interlocuteur_id),
+            'user'                  => User::find($this->interlocuteur_id),
             'collaborateur_externe' => CollaborateurExterne::find($this->interlocuteur_id),
-            default => null,
+            default                 => null,
         };
     }
 
     /**
-     * Récupère le nom complet de l'interlocuteur
+     * Récupère le nom complet de l'interlocuteur.
      */
     public function getInterlocuteurNom(): string
     {
         $interlocuteur = $this->getInterlocuteur();
 
         return match ($this->interlocuteur_type) {
-            'user' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
+            'user'                  => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
             'collaborateur_externe' => mb_trim(($interlocuteur?->nom ?? '').' '.($interlocuteur?->prenom ?? '')),
-            'libre' => mb_trim($this->interlocuteur_nom_libre ?? '') ?: 'Inconnu',
-            default => 'Inconnu',
+            'libre'                 => mb_trim($this->interlocuteur_nom_libre ?? '') ?: 'Inconnu',
+            default                 => 'Inconnu',
         };
     }
 
@@ -102,19 +102,19 @@ final class Bon extends Model
 
         return match ($this->interlocuteur_type) {
             'user' => [
-                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'nom'    => (string) ($interlocuteur?->nom ?? 'Inconnu'),
                 'prenom' => (string) ($interlocuteur?->prenom ?? ''),
             ],
             'collaborateur_externe' => [
-                'nom' => (string) ($interlocuteur?->nom ?? 'Inconnu'),
+                'nom'    => (string) ($interlocuteur?->nom ?? 'Inconnu'),
                 'prenom' => (string) ($interlocuteur?->prenom ?? ''),
             ],
             'libre' => [
-                'nom' => mb_trim((string) ($this->interlocuteur_nom_libre ?? '')) ?: 'Inconnu',
+                'nom'    => mb_trim((string) ($this->interlocuteur_nom_libre ?? '')) ?: 'Inconnu',
                 'prenom' => '',
             ],
             default => [
-                'nom' => 'Inconnu',
+                'nom'    => 'Inconnu',
                 'prenom' => '',
             ],
         };

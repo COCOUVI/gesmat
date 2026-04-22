@@ -19,34 +19,34 @@ test('employee equipment request sends confirmation to employee and notification
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin@example.com',
     ]);
     $manager = User::factory()->create([
-        'role' => 'gestionnaire',
+        'role'  => 'gestionnaire',
         'email' => 'manager@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Demandes mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Ordinateur',
-        'marque' => 'Dell',
-        'description' => 'Ordinateur portable',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Ordinateur',
+        'marque'           => 'Dell',
+        'description'      => 'Ordinateur portable',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($employee)->post(route('demande.soumise'), [
-        'lieu' => 'Direction',
-        'motif' => 'Besoin de travail',
+        'lieu'        => 'Direction',
+        'motif'       => 'Besoin de travail',
         'equipements' => [$equipement->id],
-        'quantites' => [1],
+        'quantites'   => [1],
     ]);
 
     $response->assertRedirect();
@@ -59,42 +59,42 @@ test('employee breakdown report sends confirmation to employee and notifications
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-panne@example.com',
     ]);
     $manager = User::factory()->create([
-        'role' => 'gestionnaire',
+        'role'  => 'gestionnaire',
         'email' => 'manager-panne@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-panne@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Pannes mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Imprimante',
-        'marque' => 'HP',
-        'description' => 'Imprimante reseau',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Imprimante',
+        'marque'           => 'HP',
+        'description'      => 'Imprimante reseau',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDays(4),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDays(4),
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $response = $this->actingAs($employee)->post(route('post.HandlePanne'), [
         'affectation_id' => $affectation->id,
-        'quantite' => 1,
-        'description' => 'Une unite presente une panne importante',
+        'quantite'       => 1,
+        'description'    => 'Une unite presente une panne importante',
     ]);
 
     $response->assertRedirect();
@@ -110,36 +110,36 @@ test('serving a demande sends the output slip by email only to the employee', fu
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-serve@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-serve@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Demande servie mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Scanner',
-        'marque' => 'Canon',
-        'description' => 'Scanner portable',
-        'quantite' => 3,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Scanner',
+        'marque'           => 'Canon',
+        'description'      => 'Scanner portable',
+        'quantite'         => 3,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $demande = Demande::create([
-        'lieu' => 'Service achats',
-        'motif' => 'Besoin de numérisation',
-        'statut' => 'en_attente',
+        'lieu'    => 'Service achats',
+        'motif'   => 'Besoin de numérisation',
+        'statut'  => 'en_attente',
         'user_id' => $employee->id,
     ]);
     $demande->equipements()->attach($equipement->id, ['nbr_equipement' => 1]);
 
     $response = $this->actingAs($admin)->put(route('valider.demande', $demande), [
         'quantites_a_affecter' => [$equipement->id => 1],
-        'dates_retour' => [$equipement->id => now()->addWeek()->toDateString()],
+        'dates_retour'         => [$equipement->id => now()->addWeek()->toDateString()],
     ]);
 
     $response->assertRedirect();
@@ -153,30 +153,30 @@ test('direct affectation sends the output slip by email only to the employee', f
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-affect@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-affect@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Affectation mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Tablette',
-        'marque' => 'Samsung',
-        'description' => 'Tablette de terrain',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Tablette',
+        'marque'           => 'Samsung',
+        'description'      => 'Tablette de terrain',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)->post(route('handle.affectation'), [
-        'employe_id' => $employee->id,
-        'motif' => 'Dotation initiale',
-        'equipements' => [$equipement->id],
-        'quantites' => [2],
+        'employe_id'   => $employee->id,
+        'motif'        => 'Dotation initiale',
+        'equipements'  => [$equipement->id],
+        'quantites'    => [2],
         'dates_retour' => [now()->addDays(15)->toDateString()],
     ]);
 
@@ -191,32 +191,32 @@ test('equipment return sends the entry slip by email only to the employee', func
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-return@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-return@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Retour mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Projecteur',
-        'marque' => 'Sony',
-        'description' => 'Projecteur mobile',
-        'quantite' => 4,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Projecteur',
+        'marque'           => 'Sony',
+        'description'      => 'Projecteur mobile',
+        'quantite'         => 4,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDay(),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDay(),
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $response = $this->actingAs($admin)->post(route('affectation.retourner', $affectation), [
@@ -233,44 +233,44 @@ test('breakdown resolution notifies the employee linked to the affectation', fun
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-resolve@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-resolve@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Resolution mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Telephone',
-        'marque' => 'Yealink',
-        'description' => 'Telephone IP',
-        'quantite' => 2,
-        'seuil_critique' => 0,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Telephone',
+        'marque'           => 'Yealink',
+        'description'      => 'Telephone IP',
+        'quantite'         => 2,
+        'seuil_critique'   => 0,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => null,
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => null,
         'quantite_affectee' => 1,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectation->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Telephone inutilisable',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Telephone inutilisable',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->put(route('pannes.resolu', $panne), [
@@ -289,43 +289,43 @@ test('breakdown replacement sends the replacement slip only to the employee', fu
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-replace@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-replace@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Remplacement mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Ecran',
-        'marque' => 'LG',
-        'description' => 'Ecran 24 pouces',
-        'quantite' => 5,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Ecran',
+        'marque'           => 'LG',
+        'description'      => 'Ecran 24 pouces',
+        'quantite'         => 5,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $affectation = Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDays(20),
+        'equipement_id'     => $equipement->id,
+        'user_id'           => $employee->id,
+        'date_retour'       => now()->addDays(20),
         'quantite_affectee' => 2,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'        => 'Admin Test',
+        'statut'            => 'active',
     ]);
 
     $panne = Panne::create([
-        'equipement_id' => $equipement->id,
-        'affectation_id' => $affectation->id,
-        'user_id' => $employee->id,
-        'quantite' => 1,
+        'equipement_id'            => $equipement->id,
+        'affectation_id'           => $affectation->id,
+        'user_id'                  => $employee->id,
+        'quantite'                 => 1,
         'quantite_retournee_stock' => 0,
-        'quantite_resolue' => 0,
-        'description' => 'Un ecran est defectueux',
-        'statut' => 'en_attente',
+        'quantite_resolue'         => 0,
+        'description'              => 'Un ecran est defectueux',
+        'statut'                   => 'en_attente',
     ]);
 
     $response = $this->actingAs($admin)->post(route('pannes.remplacer', $panne), [
@@ -345,29 +345,29 @@ test('upcoming return reminder command notifies the employee only once per day',
     Artisan::call('cache:clear');
 
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-reminder@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Rappel retour mail']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Webcam',
-        'marque' => 'Logitech',
-        'description' => 'Webcam HD',
-        'quantite' => 2,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Webcam',
+        'marque'           => 'Logitech',
+        'description'      => 'Webcam HD',
+        'quantite'         => 2,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     Affectation::create([
-        'equipement_id' => $equipement->id,
-        'user_id' => $employee->id,
-        'date_retour' => now()->addDays(2),
-        'quantite_affectee' => 1,
+        'equipement_id'      => $equipement->id,
+        'user_id'            => $employee->id,
+        'date_retour'        => now()->addDays(2),
+        'quantite_affectee'  => 1,
         'quantite_retournee' => 0,
-        'created_by' => 'Admin Test',
-        'statut' => 'active',
+        'created_by'         => 'Admin Test',
+        'statut'             => 'active',
     ]);
 
     $this->artisan('app:send-upcoming-return-reminders')
@@ -386,35 +386,35 @@ test('critical stock alert is sent to admins and managers when a direct affectat
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-critical@example.com',
     ]);
     $manager = User::factory()->create([
-        'role' => 'gestionnaire',
+        'role'  => 'gestionnaire',
         'email' => 'manager-critical@example.com',
     ]);
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-critical@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Stock critique affectation']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Routeur',
-        'marque' => 'Cisco',
-        'description' => 'Routeur agence',
-        'quantite' => 3,
-        'seuil_critique' => 1,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Routeur',
+        'marque'           => 'Cisco',
+        'description'      => 'Routeur agence',
+        'quantite'         => 3,
+        'seuil_critique'   => 1,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)->post(route('handle.affectation'), [
-        'employe_id' => $employee->id,
-        'motif' => 'Dotation terrain',
-        'equipements' => [$equipement->id],
-        'quantites' => [2],
+        'employe_id'   => $employee->id,
+        'motif'        => 'Dotation terrain',
+        'equipements'  => [$equipement->id],
+        'quantites'    => [2],
         'dates_retour' => [now()->addDays(10)->toDateString()],
     ]);
 
@@ -429,30 +429,30 @@ test('critical stock alert is sent to admins and managers when an internal break
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-critical-panne@example.com',
     ]);
     $manager = User::factory()->create([
-        'role' => 'gestionnaire',
+        'role'  => 'gestionnaire',
         'email' => 'manager-critical-panne@example.com',
     ]);
 
     $categorie = Categorie::create(['nom' => 'Stock critique panne']);
     $equipement = Equipement::create([
-        'categorie_id' => $categorie->id,
-        'nom' => 'Serveur',
-        'marque' => 'HP',
-        'description' => 'Serveur principal',
-        'quantite' => 4,
-        'seuil_critique' => 1,
+        'categorie_id'     => $categorie->id,
+        'nom'              => 'Serveur',
+        'marque'           => 'HP',
+        'description'      => 'Serveur principal',
+        'quantite'         => 4,
+        'seuil_critique'   => 1,
         'date_acquisition' => now(),
-        'image_path' => 'test.jpg',
+        'image_path'       => 'test.jpg',
     ]);
 
     $response = $this->actingAs($admin)->post(route('pannes.store-interne'), [
         'equipement_id' => $equipement->id,
-        'quantite' => 3,
-        'description' => 'Trois unités détectées en panne au magasin central',
+        'quantite'      => 3,
+        'description'   => 'Trois unités détectées en panne au magasin central',
     ]);
 
     $response->assertRedirect();
@@ -467,7 +467,7 @@ test('employee help request is queued to the configured administrator address', 
     config()->set('mail.from.address', 'support@example.com');
 
     $employee = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'employee-help@example.com',
     ]);
 
@@ -486,17 +486,17 @@ test('admin user creation queues the credentials email', function (): void {
     Mail::fake();
 
     $admin = User::factory()->create([
-        'role' => 'admin',
+        'role'  => 'admin',
         'email' => 'admin-register@example.com',
     ]);
 
     $response = $this->actingAs($admin)->post(route('registerPost'), [
-        'nom' => 'Doe',
-        'prenom' => 'Jane',
-        'email' => 'new-user@example.com',
-        'role' => 'employe',
+        'nom'     => 'Doe',
+        'prenom'  => 'Jane',
+        'email'   => 'new-user@example.com',
+        'role'    => 'employe',
         'service' => 'Informatique',
-        'poste' => 'Technicienne',
+        'poste'   => 'Technicienne',
     ]);
 
     $response->assertRedirect();
@@ -522,7 +522,7 @@ test('workflow action mail renders the company logo image', function (): void {
 
 test('credentials mail renders the company logo image', function (): void {
     $user = User::factory()->create([
-        'role' => 'employe',
+        'role'  => 'employe',
         'email' => 'logo-mail@example.com',
     ]);
 

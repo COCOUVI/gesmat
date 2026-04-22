@@ -23,6 +23,7 @@ final readonly class CreateExternalCollaboratorBonAction
      *     quantites: array<int, int|string>,
      *     dates_retour?: array<int, string|null>
      * }  $validated
+     *
      * @return array{
      *     bon: Bon,
      *     collaborateur: CollaborateurExterne,
@@ -45,11 +46,11 @@ final readonly class CreateExternalCollaboratorBonAction
 
             $bon = Bon::create([
                 'collaborateur_externe_id' => $collaborateur->id,
-                'motif' => $validated['motif'],
-                'statut' => $validated['type'],
-                'fichier_pdf' => $pdfPath,
-                'interlocuteur_type' => 'collaborateur_externe',
-                'interlocuteur_id' => $collaborateur->id,
+                'motif'                    => $validated['motif'],
+                'statut'                   => $validated['type'],
+                'fichier_pdf'              => $pdfPath,
+                'interlocuteur_type'       => 'collaborateur_externe',
+                'interlocuteur_id'         => $collaborateur->id,
             ]);
 
             $datesRetour = $validated['type'] === 'sortie'
@@ -68,19 +69,19 @@ final readonly class CreateExternalCollaboratorBonAction
                 ])
                 ->all();
 
-            if (! empty($bonEquipements)) {
+            if (!empty($bonEquipements)) {
                 $bon->equipements()->attach($bonEquipements);
             }
 
             if ($validated['type'] === 'sortie') {
                 foreach ($lignes as $line) {
                     Affectation::create([
-                        'equipement_id' => $line['equipement_id'],
+                        'equipement_id'            => $line['equipement_id'],
                         'collaborateur_externe_id' => $collaborateur->id,
-                        'date_retour' => $line['date_retour'],
-                        'quantite_affectee' => $line['quantite'],
-                        'statut' => 'active',
-                        'created_by' => $actor->nom.' '.$actor->prenom,
+                        'date_retour'              => $line['date_retour'],
+                        'quantite_affectee'        => $line['quantite'],
+                        'statut'                   => 'active',
+                        'created_by'               => $actor->nom.' '.$actor->prenom,
                     ]);
                 }
             } else {
@@ -93,7 +94,7 @@ final readonly class CreateExternalCollaboratorBonAction
                     /** @var Equipement|null $equipement */
                     $equipement = $equipementsALivrer->get($line['equipement_id']);
 
-                    if (! $equipement) {
+                    if (!$equipement) {
                         continue;
                     }
 
@@ -112,16 +113,16 @@ final readonly class CreateExternalCollaboratorBonAction
                 $equipement = $equipements->get($line['equipement_id']);
 
                 return [
-                    'nom' => $equipement?->nom ?? 'Inconnu',
-                    'quantite' => $line['quantite'],
+                    'nom'         => $equipement?->nom ?? 'Inconnu',
+                    'quantite'    => $line['quantite'],
                     'date_retour' => $line['date_retour'],
                 ];
             })->values()->all();
 
             return [
-                'bon' => $bon,
-                'collaborateur' => $collaborateur,
-                'pdf_path' => $pdfPath,
+                'bon'              => $bon,
+                'collaborateur'    => $collaborateur,
+                'pdf_path'         => $pdfPath,
                 'equipements_info' => $equipementsInfo,
             ];
         });
@@ -130,9 +131,10 @@ final readonly class CreateExternalCollaboratorBonAction
     }
 
     /**
-     * @param  array<int, int|string>  $equipements
-     * @param  array<int, int|string>  $quantites
-     * @param  array<int, string|null>  $datesRetour
+     * @param array<int, int|string>  $equipements
+     * @param array<int, int|string>  $quantites
+     * @param array<int, string|null> $datesRetour
+     *
      * @return Collection<int, array{equipement_id: int, quantite: int, date_retour: string|null}>
      */
     private function buildLines(array $equipements, array $quantites, array $datesRetour = []): Collection
@@ -154,11 +156,11 @@ final readonly class CreateExternalCollaboratorBonAction
 
             $groupKey = $equipementId.'|'.($dateRetour ?? 'sans-date');
 
-            if (! array_key_exists($groupKey, $groupedLines)) {
+            if (!array_key_exists($groupKey, $groupedLines)) {
                 $groupedLines[$groupKey] = [
                     'equipement_id' => $equipementId,
-                    'quantite' => 0,
-                    'date_retour' => $dateRetour,
+                    'quantite'      => 0,
+                    'date_retour'   => $dateRetour,
                 ];
                 $orderedKeys[] = $groupKey;
             }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Categorie - Modèle pour la gestion des catégories d'équipements
+ * Categorie - Modèle pour la gestion des catégories d'équipements.
  *
  * Attributs:
  * - nom: string (unique)
@@ -23,7 +23,8 @@ final class Categorie extends Model
     protected $table = 'categories';
 
     /**
-     * Relation avec les équipements de cette catégorie
+     * Relation avec les équipements de cette catégorie.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Equipement, $this>
      */
     public function equipements(): HasMany

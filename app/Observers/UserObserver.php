@@ -11,7 +11,8 @@ final class UserObserver
 {
     public function __construct(
         private readonly DashboardCacheService $dashboardCacheService,
-    ) {}
+    ) {
+    }
 
     public function created(User $user): void
     {
