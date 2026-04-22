@@ -12,14 +12,10 @@ final class CategoriesSeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Matériel Informatique',
             'Matériel Réseau & Télécom',
             'Outils d’Intervention Terrain',
-            'Équipements de Sécurité',
-            'Appareils de Communication',
-            'Logiciels & Licences',
-            'Équipements de Mobilité',
-            'Mobilier de Bureau',
+            'Équipements de Sécurité & Surveillance',
+            'Appareils de Communication & Téléphonie',
         ];
 
         foreach ($categories as $category) {

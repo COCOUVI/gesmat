@@ -21,7 +21,7 @@ final class AdminSeeder extends Seeder
                 'role' => 'admin',
                 'poste' => 'CEO',
                 'email_verified_at' => now(),
-                'service' => 'JASPE_DIRECTION',
+                'service' => 'JASPE_TECHNOLOGIES_DIRECTION',
             ]
         );
     }
