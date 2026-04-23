@@ -1,25 +1,23 @@
-name: Laravel Code Quality
+name: Laravel CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  pint-rector:
+  quality:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
 
-      - name: Install dependencies
-        run: composer install --no-progress
+      - run: composer install --no-progress
 
-      - name: Run Pint (format)
-        run: ./vendor/bin/pint --test
+      # 🔍 Qualité code
+      - run: ./vendor/bin/pint --test
+      - run: ./vendor/bin/rector process --dry-run
 
-      - name: Run Rector (refactor)
-        run: ./vendor/bin/rector process --dry-run
+      # 🧪 Tests (TRÈS important)
+      - run: php artisan test
