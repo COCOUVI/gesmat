@@ -45,7 +45,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec la catégorie
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Categorie, $this>
+     *
+     * @return BelongsTo<Categorie, $this>
      */
     public function categorie(): BelongsTo
     {
@@ -54,7 +55,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec les demandes via table pivot equipement_demandés
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Demande, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     *
+     * @return BelongsToMany<Demande, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function demandes(): BelongsToMany
     {
@@ -65,7 +67,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec les utilisateurs via affectations
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\User, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     *
+     * @return BelongsToMany<User, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function users(): BelongsToMany
     {
@@ -75,7 +78,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec les pannes
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
+     *
+     * @return HasMany<Panne, $this>
      */
     public function pannes(): HasMany
     {
@@ -84,7 +88,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec les affectations
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Affectation, $this>
+     *
+     * @return HasMany<Affectation, $this>
      */
     public function affectations(): HasMany
     {
@@ -93,7 +98,8 @@ final class Equipement extends Model
 
     /**
      * Relation avec les bons des collaborateurs externes portant sur cet équipement.
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Bon, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
+     *
+     * @return BelongsToMany<Bon, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function bonsCollaborateurs(): BelongsToMany
     {

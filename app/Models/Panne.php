@@ -48,7 +48,8 @@ final class Panne extends Model
 
     /**
      * Relation avec l'équipement en panne
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
+     *
+     * @return BelongsTo<Equipement, $this>
      */
     public function equipement(): BelongsTo
     {
@@ -57,7 +58,8 @@ final class Panne extends Model
 
     /**
      * Relation avec l'affectation (si la panne a été signalée sur une affectation)
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Affectation, $this>
+     *
+     * @return BelongsTo<Affectation, $this>
      */
     public function affectation(): BelongsTo
     {
@@ -66,35 +68,12 @@ final class Panne extends Model
 
     /**
      * Relation avec l'utilisateur ayant signalé la panne
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    /**
-     * Scope pour récupérer les pannes non résolues
-     */
-    protected function scopeNonResolues($query)
-    {
-        return $query->where('statut', '!=', 'resolu');
-    }
-
-    /**
-     * Scope pour récupérer les pannes en attente
-     */
-    protected function scopeEnAttente($query)
-    {
-        return $query->where('statut', 'en_attente');
-    }
-
-    /**
-     * Scope pour récupérer les pannes résolues
-     */
-    protected function scopeResolues($query)
-    {
-        return $query->where('statut', 'resolu');
     }
 
     /**
@@ -222,5 +201,29 @@ final class Panne extends Model
         return $this->estInterne()
             ? 'Stock interne'
             : 'Affectation #'.$this->affectation_id;
+    }
+
+    /**
+     * Scope pour récupérer les pannes non résolues
+     */
+    protected function scopeNonResolues($query)
+    {
+        return $query->where('statut', '!=', 'resolu');
+    }
+
+    /**
+     * Scope pour récupérer les pannes en attente
+     */
+    protected function scopeEnAttente($query)
+    {
+        return $query->where('statut', 'en_attente');
+    }
+
+    /**
+     * Scope pour récupérer les pannes résolues
+     */
+    protected function scopeResolues($query)
+    {
+        return $query->where('statut', 'resolu');
     }
 }

@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Models\Affectation;
 use App\Services\WorkflowNotificationService;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 

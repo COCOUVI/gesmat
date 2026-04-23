@@ -15,6 +15,7 @@ final class HelpRequestMail extends Mailable implements ShouldQueue
 {
     use Queueable;
     use SerializesModels;
+
     public function __construct(
         private readonly string $senderEmail,
         private readonly string $body,

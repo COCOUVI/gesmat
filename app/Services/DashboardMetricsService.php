@@ -156,7 +156,7 @@ final readonly class DashboardMetricsService
 
         $totalsByMonth = Affectation::query()
             ->whereYear('created_at', now()->year)
-            ->selectRaw($monthExpression . ' as month_number, COALESCE(SUM(quantite_affectee), 0) as total')
+            ->selectRaw($monthExpression.' as month_number, COALESCE(SUM(quantite_affectee), 0) as total')
             ->groupBy('month_number')
             ->pluck('total', 'month_number');
 

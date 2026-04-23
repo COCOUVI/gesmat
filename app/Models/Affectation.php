@@ -52,7 +52,8 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'équipement affecté
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Equipement, $this>
+     *
+     * @return BelongsTo<Equipement, $this>
      */
     public function equipement(): BelongsTo
     {
@@ -61,7 +62,8 @@ final class Affectation extends Model
 
     /**
      * Relation avec l'utilisateur ayant l'affectation
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\User, $this>
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -70,7 +72,8 @@ final class Affectation extends Model
 
     /**
      * Relation avec le collaborateur externe ayant l'affectation (polymorphe)
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\CollaborateurExterne, $this>
+     *
+     * @return BelongsTo<CollaborateurExterne, $this>
      */
     public function collaborateurExterne(): BelongsTo
     {
@@ -79,7 +82,8 @@ final class Affectation extends Model
 
     /**
      * Demande d'origine, si l'affectation découle d'une demande.
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Demande, $this>
+     *
+     * @return BelongsTo<Demande, $this>
      */
     public function demande(): BelongsTo
     {
@@ -88,19 +92,12 @@ final class Affectation extends Model
 
     /**
      * Relation avec les pannes liées à cette affectation
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Panne, $this>
+     *
+     * @return HasMany<Panne, $this>
      */
     public function pannes(): HasMany
     {
         return $this->hasMany(Panne::class);
-    }
-
-    /**
-     * Scope des affectations toujours en circulation.
-     */
-    protected function scopeActive($query)
-    {
-        return $query->whereRaw('quantite_affectee > COALESCE(quantite_retournee, 0)');
     }
 
     /**
@@ -293,5 +290,13 @@ final class Affectation extends Model
     public function estCompletementRetournee(): bool
     {
         return $this->getQuantiteActive() === 0;
+    }
+
+    /**
+     * Scope des affectations toujours en circulation.
+     */
+    protected function scopeActive($query)
+    {
+        return $query->whereRaw('quantite_affectee > COALESCE(quantite_retournee, 0)');
     }
 }

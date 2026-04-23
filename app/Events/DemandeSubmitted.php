@@ -13,6 +13,7 @@ final class DemandeSubmitted implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     public function __construct(
         public readonly Demande $demande,
     ) {}

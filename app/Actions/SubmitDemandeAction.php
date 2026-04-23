@@ -41,7 +41,7 @@ final readonly class SubmitDemandeAction
                 $equipementDemande->save();
             }
 
-            event(new \App\Events\DemandeSubmitted($demande->fresh(['user', 'equipements'])));
+            event(new DemandeSubmitted($demande->fresh(['user', 'equipements'])));
 
             return $demande;
         });

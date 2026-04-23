@@ -452,7 +452,7 @@ final class WorkflowNotificationService
 
     private function attachmentNameForBon(?Bon $bon): ?string
     {
-        if (!$bon instanceof \App\Models\Bon || $bon->fichier_pdf === null) {
+        if (! $bon instanceof Bon || $bon->fichier_pdf === null) {
             return null;
         }
 

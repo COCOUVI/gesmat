@@ -14,6 +14,7 @@ final class DemandeServed implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
     use SerializesModels;
+
     /**
      * @param  array<int, array{nom: string, quantite: int, date_retour: ?string}>  $affectationsDetails
      */

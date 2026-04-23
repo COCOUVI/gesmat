@@ -195,13 +195,13 @@ Route::get('/trigger-queue', function () {
 
     try {
         // Exécuter les jobs en attente
-        \Illuminate\Support\Facades\Artisan::call('queue:work', [
+        Illuminate\Support\Facades\Artisan::call('queue:work', [
             '--once' => true,
             '--max-time' => 55, // 55 secondes max (Hostinger limit ~60s)
             '--max-jobs' => 10, // Max 10 jobs par appel
         ]);
 
-        \Illuminate\Support\Facades\Log::info('Queue triggered successfully via webhook');
+        Log::info('Queue triggered successfully via webhook');
 
         return response()->json([
             'status' => 'success',
@@ -209,7 +209,7 @@ Route::get('/trigger-queue', function () {
             'timestamp' => now(),
         ]);
     } catch (Exception $exception) {
-        \Illuminate\Support\Facades\Log::error('Queue trigger error: ' . $exception->getMessage());
+        Log::error('Queue trigger error: '.$exception->getMessage());
 
         return response()->json([
             'status' => 'error',

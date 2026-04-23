@@ -24,7 +24,8 @@ final class Categorie extends Model
 
     /**
      * Relation avec les équipements de cette catégorie
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Equipement, $this>
+     *
+     * @return HasMany<Equipement, $this>
      */
     public function equipements(): HasMany
     {
